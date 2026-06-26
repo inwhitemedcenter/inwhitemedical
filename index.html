@@ -2398,12 +2398,7 @@
                 <form id="bookingForm" onsubmit="submitForm(event)">
                     <div class="form-group">
                         <label>Оберіть послугу</label>
-                        <div class="service-selector">
-                            <div class="service-option selected" onclick="selectService(this)">🧠 Психологія</div>
-                            <div class="service-option" onclick="selectService(this)">👨‍⚕️ Сімейний лікар</div>
-                            <div class="service-option" onclick="selectService(this)">🔬 УЗД</div>
-                            <div class="service-option" onclick="selectService(this)">💉 Вакцинація</div>
-                        </div>
+                        <div id="bookingServiceSelector" class="service-selector"></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -2868,6 +2863,22 @@
                                 <label for="adminAnnouncementText">Оголошення під головним екраном</label>
                                 <textarea id="adminAnnouncementText"></textarea>
                             </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroLogoImage">Лого/картинка на головній</label>
+                                <input id="adminHeroLogoImage" placeholder="assets/inwhite-logo.svg або https://...">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroBackgroundImage">Фонова картинка головної</label>
+                                <input id="adminHeroBackgroundImage" placeholder="assets/clinic-interior.jpg або https://...">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminAppointmentServices">Кнопки послуг у записі</label>
+                                <textarea id="adminAppointmentServices" style="min-height: 150px;"></textarea>
+                                <div class="admin-help">
+                                    Одна кнопка = один рядок. Формат: емодзі | назва | visible або hidden.
+                                    Приклад: 💉 | Вакцинація | hidden
+                                </div>
+                            </div>
                             <div class="bpr-field">
                                 <label for="adminContactPhone">Телефон</label>
                                 <input id="adminContactPhone" placeholder="+380 XX XXX XX XX">
@@ -3263,12 +3274,7 @@
         <form onsubmit="submitForm(event)">
             <div class="form-group">
                 <label>Послуга</label>
-                <div class="service-selector">
-                    <div class="service-option selected" onclick="selectService(this)">🧠 Психологія</div>
-                    <div class="service-option" onclick="selectService(this)">👨‍⚕️ Лікар</div>
-                    <div class="service-option" onclick="selectService(this)">🔬 УЗД</div>
-                    <div class="service-option" onclick="selectService(this)">💉 Вакцина</div>
-                </div>
+                <div id="modalServiceSelector" class="service-selector"></div>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -3361,10 +3367,54 @@
     }
 
     // ===== FORM SUBMIT =====
-    function submitForm(e) {
+    async function submitForm(e) {
         e.preventDefault();
-        closeModal();
-        showNotification();
+        const form = e.target;
+        const selectedService = form.querySelector('.service-option.selected');
+        const fields = form.querySelectorAll('input, select, textarea');
+        const appointment = {
+            service: selectedService ? selectedService.textContent.trim() : '',
+            fullName: fields[0] ? fields[0].value.trim() : '',
+            phone: fields[1] ? fields[1].value.trim() : '',
+            date: fields[2] && fields[2].type === 'date' ? fields[2].value : '',
+            time: fields[3] && fields[3].tagName === 'SELECT' ? fields[3].value : '',
+            format: '',
+            comment: ''
+        };
+
+        const selects = Array.from(form.querySelectorAll('select'));
+        const textareas = Array.from(form.querySelectorAll('textarea'));
+        appointment.format = selects.length ? selects[selects.length - 1].value : '';
+        appointment.comment = textareas.length ? textareas[textareas.length - 1].value.trim() : '';
+
+        try {
+            const response = await fetch(FORMSPREE_APPOINTMENT_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    _subject: 'Новий запис на прийом INWHITE MEDICAL',
+                    type: 'appointment',
+                    service: appointment.service,
+                    fullName: appointment.fullName,
+                    phone: appointment.phone,
+                    date: appointment.date,
+                    time: appointment.time,
+                    format: appointment.format,
+                    comment: appointment.comment,
+                    page: window.location.href
+                })
+            });
+            if (!response.ok) throw new Error('Formspree error');
+            form.reset();
+            adminRenderAppointmentServices();
+            closeModal();
+            showNotification();
+        } catch (error) {
+            alert('Не вдалося надіслати заявку. Спробуйте ще раз або зателефонуйте нам.');
+        }
     }
 
     function showNotification() {
@@ -3456,6 +3506,7 @@
     const DEFAULT_SUPABASE_URL = 'https://ukfldbbsbyjkyussbyfq.supabase.co';
     const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Uf83B_3OPvSOKgDjbIlGHw_YOcqOKTW';
     const FORMSPREE_CERTIFICATE_ENDPOINT = 'https://formspree.io/f/xaqgodol';
+    const FORMSPREE_APPOINTMENT_ENDPOINT = 'https://formspree.io/f/xaqgodol';
     const BPR_TRAININGS_STORAGE = 'inwhite_bpr_trainings_v1';
     const BPR_PARTICIPANTS_STORAGE = 'inwhite_bpr_participants_v1';
     const BPR_DEVELOPER_PASSWORD = 'developer2026';
@@ -3486,7 +3537,15 @@
             heroBadge: 'Відкриваємось у 2025 · Чоп, Закарпаття',
             heroTitle: 'Медицина,<br>що <em>турбується</em><br>про вас',
             heroSubtitle: 'Сучасний медичний центр первинної допомоги. Вже зараз — психологічна підтримка онлайн для вас та вашої родини.',
+            heroLogoImage: 'assets/inwhite-logo.svg',
+            heroBackgroundImage: 'assets/clinic-interior.jpg',
             announcementText: '🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно',
+            appointmentServices: [
+                { icon: '🧠', name: 'Психологія', visible: true },
+                { icon: '👨‍⚕️', name: 'Сімейний лікар', visible: true },
+                { icon: '🔬', name: 'УЗД', visible: true },
+                { icon: '💉', name: 'Вакцинація', visible: true }
+            ],
             phone: '+380 XX XXX XX XX',
             whatsapp: '380XXXXXXXXX',
             email: 'info@inwhitemedical.ua',
@@ -3889,6 +3948,46 @@
         ].join(' | ')).join('\n');
     }
 
+    function adminAppointmentServicesToText(items) {
+        return (items || []).map(item => [
+            item.icon || '•',
+            item.name || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParseAppointmentServices(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                return {
+                    icon: parts[0] || '•',
+                    name: parts[1] || parts[0] || 'Послуга',
+                    visible: ((parts[2] || 'visible').toLowerCase() !== 'hidden')
+                };
+            });
+    }
+
+    function adminRenderAppointmentServices() {
+        const selectors = [
+            document.getElementById('bookingServiceSelector'),
+            document.getElementById('modalServiceSelector')
+        ].filter(Boolean);
+        const services = (siteConfig.appointmentServices || [])
+            .filter(service => service.visible !== false && service.name);
+        const visibleServices = services.length ? services : adminDefaultSiteConfig().appointmentServices;
+        selectors.forEach(selector => {
+            selector.innerHTML = visibleServices.map((service, index) => `
+                <div class="service-option ${index === 0 ? 'selected' : ''}" onclick="selectService(this)">
+                    ${bprEscapeText(service.icon || '')} ${bprEscapeText(service.name || '')}
+                </div>
+            `).join('');
+        });
+    }
+
     function adminSaveSiteState() {
         localStorage.setItem(SITE_CONFIG_STORAGE, JSON.stringify(siteConfig));
         localStorage.setItem(SITE_TEAM_STORAGE, JSON.stringify(siteTeam));
@@ -3908,6 +4007,14 @@
 
         const heroSubtitle = document.querySelector('.hero-subtitle');
         if (heroSubtitle) heroSubtitle.textContent = siteConfig.heroSubtitle || '';
+
+        const heroLogo = document.querySelector('.hero-brand-logo');
+        if (heroLogo && siteConfig.heroLogoImage) heroLogo.src = siteConfig.heroLogoImage;
+
+        const heroImage = document.querySelector('.hero-bg-image');
+        if (heroImage && siteConfig.heroBackgroundImage) {
+            heroImage.style.backgroundImage = 'url("' + String(siteConfig.heroBackgroundImage).replace(/"/g, '\\"') + '")';
+        }
 
         const announcement = document.querySelector('.announcement p');
         if (announcement) announcement.innerHTML = siteConfig.announcementText || '';
@@ -3940,6 +4047,7 @@
 
         adminRenderTeam();
         adminRenderPrices();
+        adminRenderAppointmentServices();
     }
 
     function adminRenderTeam() {
@@ -4000,6 +4108,9 @@
         document.getElementById('adminHeroTitle').value = siteConfig.heroTitle || '';
         document.getElementById('adminHeroSubtitle').value = siteConfig.heroSubtitle || '';
         document.getElementById('adminAnnouncementText').value = siteConfig.announcementText || '';
+        document.getElementById('adminHeroLogoImage').value = siteConfig.heroLogoImage || '';
+        document.getElementById('adminHeroBackgroundImage').value = siteConfig.heroBackgroundImage || '';
+        document.getElementById('adminAppointmentServices').value = adminAppointmentServicesToText(siteConfig.appointmentServices || []);
         document.getElementById('adminContactPhone').value = siteConfig.phone || '';
         document.getElementById('adminContactWhatsapp').value = siteConfig.whatsapp || '';
         document.getElementById('adminContactEmail').value = siteConfig.email || '';
@@ -4024,6 +4135,9 @@
         siteConfig.heroTitle = document.getElementById('adminHeroTitle').value.trim();
         siteConfig.heroSubtitle = document.getElementById('adminHeroSubtitle').value.trim();
         siteConfig.announcementText = document.getElementById('adminAnnouncementText').value.trim();
+        siteConfig.heroLogoImage = document.getElementById('adminHeroLogoImage').value.trim() || adminDefaultSiteConfig().heroLogoImage;
+        siteConfig.heroBackgroundImage = document.getElementById('adminHeroBackgroundImage').value.trim() || adminDefaultSiteConfig().heroBackgroundImage;
+        siteConfig.appointmentServices = adminParseAppointmentServices(document.getElementById('adminAppointmentServices').value);
         siteConfig.phone = document.getElementById('adminContactPhone').value.trim();
         siteConfig.whatsapp = document.getElementById('adminContactWhatsapp').value.trim();
         siteConfig.email = document.getElementById('adminContactEmail').value.trim();
