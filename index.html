@@ -3303,6 +3303,33 @@
     </div>
 </div>
 
+<div id="supabaseRecoveryModal" class="bpr-modal-overlay" hidden>
+    <div class="bpr-modal" style="max-width: 520px;">
+        <div class="bpr-modal-body">
+            <div class="bpr-modal-head">
+                <div>
+                    <div class="bpr-eyebrow">Supabase Auth</div>
+                    <h2 class="bpr-panel-title">Встановіть новий пароль</h2>
+                </div>
+                <button class="bpr-close" type="button" onclick="supabaseCloseRecoveryModal()">×</button>
+            </div>
+            <p class="bpr-panel-subtitle">
+                Ви відкрили посилання для відновлення доступу. Введіть новий пароль для адміністратора Supabase.
+            </p>
+            <form onsubmit="supabaseUpdatePasswordFromModal(event)">
+                <div class="bpr-field">
+                    <label for="supabaseRecoveryPassword">Новий пароль</label>
+                    <input id="supabaseRecoveryPassword" type="password" autocomplete="new-password" minlength="6" required>
+                </div>
+                <p id="supabaseRecoveryStatus" class="bpr-note" style="margin-top: 12px;"></p>
+                <div class="bpr-inline-actions">
+                    <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти новий пароль</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     // ===== LOADER =====
     window.addEventListener('load', () => {
@@ -3353,6 +3380,22 @@
         if (e.target === document.getElementById('modalOverlay')) {
             closeModal();
         }
+    }
+
+    function supabaseOpenRecoveryModal() {
+        const modal = document.getElementById('supabaseRecoveryModal');
+        const status = document.getElementById('supabaseRecoveryStatus');
+        if (!modal || !supabaseReadRecoveryToken()) return;
+        if (status) status.textContent = 'Введіть новий пароль і натисніть “Зберегти новий пароль”.';
+        modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => document.getElementById('supabaseRecoveryPassword')?.focus(), 50);
+    }
+
+    function supabaseCloseRecoveryModal() {
+        const modal = document.getElementById('supabaseRecoveryModal');
+        if (modal) modal.hidden = true;
+        document.body.style.overflow = '';
     }
 
     // Close modal with Escape
@@ -3789,6 +3832,47 @@
             supabaseSetStatus('Пароль змінено. Ви увійшли в Supabase і можете зберігати сайт у базу.');
         } catch (error) {
             supabaseSetStatus('Не вдалося змінити пароль. Спробуйте надіслати новий recovery-лінк.');
+        }
+    }
+
+    async function supabaseUpdatePasswordFromModal(event) {
+        event.preventDefault();
+        supabaseConfig = supabaseNormalizeConfig(supabaseConfig);
+        const status = document.getElementById('supabaseRecoveryStatus');
+        const recoveryToken = supabaseReadRecoveryToken();
+        const passwordInput = document.getElementById('supabaseRecoveryPassword');
+        const password = passwordInput ? passwordInput.value : '';
+
+        if (!recoveryToken) {
+            if (status) status.textContent = 'Recovery-токен не знайдено. Надішліть новий лист для зміни пароля.';
+            return;
+        }
+        if (!password || password.length < 6) {
+            if (status) status.textContent = 'Пароль має містити мінімум 6 символів.';
+            return;
+        }
+
+        try {
+            if (status) status.textContent = 'Змінюю пароль...';
+            const response = await fetch(supabaseConfig.url + '/auth/v1/user', {
+                method: 'PUT',
+                headers: {
+                    apikey: supabaseConfig.publishableKey,
+                    Authorization: 'Bearer ' + recoveryToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ password })
+            });
+            if (!response.ok) throw new Error(await response.text());
+            supabaseAccessToken = recoveryToken;
+            sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
+            if (passwordInput) passwordInput.value = '';
+            window.history.replaceState({}, document.title, supabaseCurrentPageUrl());
+            if (status) status.textContent = 'Пароль змінено. Тепер можна зберігати сайт у Supabase.';
+            supabaseFillForm();
+            setTimeout(supabaseCloseRecoveryModal, 1200);
+        } catch (error) {
+            if (status) status.textContent = 'Не вдалося змінити пароль. Надішліть новий recovery-лінк і відкрийте його ще раз.';
         }
     }
 
@@ -4877,6 +4961,7 @@
 
     bprInitTrainingModule();
     supabaseLoadSiteState({ silent: true });
+    supabaseOpenRecoveryModal();
 </script>
 </body>
 </html>
