@@ -3455,6 +3455,7 @@
     const SUPABASE_TOKEN_STORAGE = 'inwhite_supabase_token_v1';
     const DEFAULT_SUPABASE_URL = 'https://ukfldbbsbyjkyussbyfq.supabase.co';
     const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Uf83B_3OPvSOKgDjbIlGHw_YOcqOKTW';
+    const FORMSPREE_CERTIFICATE_ENDPOINT = 'https://formspree.io/f/xaqgodol';
     const BPR_TRAININGS_STORAGE = 'inwhite_bpr_trainings_v1';
     const BPR_PARTICIPANTS_STORAGE = 'inwhite_bpr_participants_v1';
     const BPR_DEVELOPER_PASSWORD = 'developer2026';
@@ -4470,21 +4471,44 @@
         document.getElementById('bprCertificatePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function bprSendCertificateEmail() {
+    async function bprSendCertificateEmail() {
         const participant = bprFindParticipant(bprCurrentParticipantId);
         const training = bprFindTraining(bprCurrentTrainingId);
         if (!participant || !training || !participant.certificateCode) return;
 
-        const subject = encodeURIComponent('Сертифікат БПР ' + participant.certificateCode);
-        const body = encodeURIComponent(
-            'Вітаємо, ' + participant.fullName + '!\n\n' +
-            'Ваш сертифікат за захід "' + training.title + '".\n' +
-            'Код сертифіката: ' + participant.certificateCode + '\n' +
-            'Результат тестування: ' + participant.score + '%\n' +
-            'Балів БПР: ' + participant.pointsAwarded + '\n\n' +
-            'INWHITE MEDICAL'
-        );
-        window.location.href = 'mailto:' + participant.email + '?subject=' + subject + '&body=' + body;
+        try {
+            const response = await fetch(FORMSPREE_CERTIFICATE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    _subject: 'Сертифікат БПР ' + participant.certificateCode,
+                    email: participant.email,
+                    fullName: participant.fullName,
+                    birthDate: participant.birthDate,
+                    trainingTitle: training.title,
+                    certificateCode: participant.certificateCode,
+                    score: participant.score,
+                    pointsAwarded: participant.pointsAwarded,
+                    education: participant.education,
+                    workplace: participant.workplace,
+                    position: participant.position,
+                    message:
+                        'Вітаємо, ' + participant.fullName + '!\n\n' +
+                        'Ваш сертифікат за захід "' + training.title + '".\n' +
+                        'Код сертифіката: ' + participant.certificateCode + '\n' +
+                        'Результат тестування: ' + participant.score + '%\n' +
+                        'Балів БПР: ' + participant.pointsAwarded + '\n\n' +
+                        'INWHITE MEDICAL'
+                })
+            });
+            if (!response.ok) throw new Error('Formspree error');
+            alert('Дані сертифіката надіслано через Formspree.');
+        } catch (error) {
+            alert('Не вдалося надіслати через Formspree. Перевірте підключення або endpoint.');
+        }
     }
 
     function bprOpenDeveloperPanel() {
