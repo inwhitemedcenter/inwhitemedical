@@ -1,0 +1,4744 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INWHITE MEDICAL — Медичний центр</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --white: #FAFAF8;
+            --beige: #E8DDD0;
+            --beige-dark: #D4C4B0;
+            --gold: #C9A96E;
+            --gold-light: #E8C98A;
+            --sage: #A8B5A0;
+            --sage-dark: #7A9070;
+            --graphite: #4A4A4A;
+            --graphite-light: #6B6B6B;
+            --dark: #2A2A2A;
+            --wood: #C4956A;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--white);
+            color: var(--graphite);
+            overflow-x: hidden;
+        }
+
+        /* ===== LOADER ===== */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            letter-spacing: 0.3em;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ===== NAVIGATION ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 20px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.4s ease;
+            background: transparent;
+        }
+
+        nav.scrolled {
+            background: rgba(250, 250, 248, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 60px;
+            box-shadow: 0 2px 30px rgba(0,0,0,0.08);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-logo-icon {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .nav-logo-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            color: var(--dark);
+        }
+
+        .nav-logo-text span {
+            color: var(--gold);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--graphite);
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            background: var(--gold);
+            color: white !important;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 500 !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(201, 169, 110, 0.3);
+        }
+
+        .nav-cta:hover {
+            background: var(--gold-light) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(201, 169, 110, 0.4) !important;
+        }
+
+        .nav-cta::after {
+            display: none !important;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 2px;
+            background: var(--graphite);
+            transition: all 0.3s ease;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #F5F0EA 0%, #EDE5D8 50%, #E8DDD0 100%);
+        }
+
+        .hero-bg-image {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 55%;
+            height: 100%;
+            background: url('assets/clinic-interior.jpg') center/cover;
+            clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(250,250,248,1) 40%, rgba(250,250,248,0) 70%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 0 60px;
+            max-width: 650px;
+        }
+
+        .hero-brand-logo {
+            width: 82px;
+            height: 82px;
+            object-fit: contain;
+            margin-bottom: 22px;
+            opacity: 0.82;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(201, 169, 110, 0.1);
+            border: 1px solid rgba(201, 169, 110, 0.3);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 400;
+            line-height: 1.1;
+            color: var(--dark);
+            margin-bottom: 25px;
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+            opacity: 0;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--gold);
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+            color: var(--graphite-light);
+            line-height: 1.7;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease 0.4s forwards;
+            opacity: 0;
+            max-width: 480px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.6s forwards;
+            opacity: 0;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: white;
+            padding: 16px 36px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(201, 169, 110, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(201, 169, 110, 0.45);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--graphite);
+            padding: 16px 36px;
+            border: 1.5px solid var(--beige-dark);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 400;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            transform: translateY(-3px);
+        }
+
+        .hero-stats {
+            position: absolute;
+            bottom: 60px;
+            left: 60px;
+            display: flex;
+            gap: 50px;
+            animation: fadeInUp 0.8s ease 0.8s forwards;
+            opacity: 0;
+            z-index: 2;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 500;
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--graphite-light);
+            letter-spacing: 0.05em;
+            margin-top: 5px;
+        }
+
+        .hero-scroll {
+            position: absolute;
+            bottom: 40px;
+            right: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .hero-scroll span {
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--graphite-light);
+            writing-mode: vertical-lr;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, var(--gold), transparent);
+            animation: scrollAnim 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollAnim {
+            0% { transform: scaleY(0); transform-origin: top; }
+            50% { transform: scaleY(1); transform-origin: top; }
+            51% { transform: scaleY(1); transform-origin: bottom; }
+            100% { transform: scaleY(0); transform-origin: bottom; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== ANNOUNCEMENT BANNER ===== */
+        .announcement {
+            background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+            padding: 16px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            color: white;
+        }
+
+        .announcement p {
+            font-size: 0.9rem;
+            letter-spacing: 0.03em;
+        }
+
+        .announcement strong {
+            font-weight: 600;
+        }
+
+        .announcement-btn {
+            background: white;
+            color: var(--sage-dark);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .announcement-btn:hover {
+            background: var(--gold);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* ===== SERVICES SECTION ===== */
+        .services {
+            padding: 100px 60px;
+            background: var(--white);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 70px;
+        }
+
+        .section-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 400;
+            color: var(--dark);
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: var(--graphite-light);
+            margin-top: 15px;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 35px;
+            border: 1px solid rgba(232, 221, 208, 0.5);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--sage));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.1);
+            border-color: transparent;
+        }
+
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .service-icon.psychology { background: rgba(168, 181, 160, 0.15); }
+        .service-icon.family { background: rgba(201, 169, 110, 0.15); }
+        .service-icon.ultrasound { background: rgba(74, 74, 74, 0.08); }
+        .service-icon.vaccination { background: rgba(196, 149, 106, 0.15); }
+
+        .service-card h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .service-card p {
+            font-size: 0.88rem;
+            color: var(--graphite-light);
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .service-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--gold);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: gap 0.3s ease;
+        }
+
+        .service-card:hover .service-link {
+            gap: 14px;
+        }
+
+        /* ===== PSYCHOLOGY FOCUS SECTION ===== */
+        .psychology-section {
+            padding: 100px 60px;
+            background: linear-gradient(135deg, #F0EDE8 0%, #E8DDD0 100%);
+        }
+
+        .psychology-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .psychology-visual {
+            position: relative;
+        }
+
+        .psychology-image-main {
+            width: 100%;
+            height: 500px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--beige) 0%, var(--wood) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .psychology-image-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 30px;
+        }
+
+        .psychology-card-float {
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            background: white;
+            border-radius: 20px;
+            padding: 20px 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+            max-width: 220px;
+        }
+
+        .psychology-card-float p {
+            font-size: 0.8rem;
+            color: var(--graphite-light);
+            margin-bottom: 5px;
+        }
+
+        .psychology-card-float strong {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+        }
+
+        .psychology-content h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            font-weight: 400;
+            color: var(--dark);
+            line-height: 1.2;
+            margin-bottom: 25px;
+        }
+
+        .psychology-content p {
+            font-size: 0.95rem;
+            color: var(--graphite-light);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .psychology-list {
+            list-style: none;
+            margin: 30px 0;
+        }
+
+        .psychology-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(232, 221, 208, 0.5);
+            font-size: 0.9rem;
+            color: var(--graphite);
+        }
+
+        .psychology-list li:last-child {
+            border-bottom: none;
+        }
+
+        .list-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        /* ===== BOOKING SECTION ===== */
+        .booking-section {
+            padding: 100px 60px;
+            background: var(--white);
+        }
+
+        .booking-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 80px;
+            align-items: start;
+        }
+
+        .booking-info h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 400;
+            color: var(--dark);
+            line-height: 1.2;
+            margin-bottom: 25px;
+        }
+
+        .booking-info p {
+            font-size: 0.95rem;
+            color: var(--graphite-light);
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .contact-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--white);
+            border: 1px solid var(--beige);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .contact-item:hover {
+            border-color: var(--gold);
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(201, 169, 110, 0.15);
+        }
+
+        .contact-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: rgba(201, 169, 110, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .contact-text small {
+            font-size: 0.72rem;
+            color: var(--graphite-light);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: block;
+        }
+
+        .contact-text strong {
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+
+        /* ===== BOOKING FORM ===== */
+        .booking-form-wrapper {
+            background: white;
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.08);
+            border: 1px solid rgba(232, 221, 208, 0.3);
+        }
+
+        .form-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+            font-size: 0.85rem;
+            color: var(--graphite-light);
+            margin-bottom: 35px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--graphite);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1.5px solid var(--beige);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: var(--dark);
+            background: var(--white);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .service-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .service-option {
+            padding: 12px 15px;
+            border: 1.5px solid var(--beige);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: var(--graphite);
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .service-option:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .service-option.selected {
+            background: rgba(201, 169, 110, 0.1);
+            border-color: var(--gold);
+            color: var(--gold);
+            font-weight: 500;
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(201, 169, 110, 0.35);
+            margin-top: 10px;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(201, 169, 110, 0.45);
+        }
+
+        .form-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--graphite-light);
+            margin-top: 15px;
+        }
+
+        /* ===== TEAM SECTION ===== */
+        .team-section {
+            padding: 100px 60px;
+            background: linear-gradient(180deg, #F5F2EE 0%, var(--white) 100%);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(232, 221, 208, 0.4);
+        }
+
+        .team-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.1);
+        }
+
+        .team-photo {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, var(--beige) 0%, var(--beige-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-photo-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.3));
+        }
+
+        .team-info {
+            padding: 25px 30px;
+        }
+
+        .team-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .team-role {
+            font-size: 0.8rem;
+            color: var(--gold);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .team-desc {
+            font-size: 0.85rem;
+            color: var(--graphite-light);
+            line-height: 1.6;
+        }
+
+        /* ===== FAQ SECTION ===== */
+        .faq-section {
+            padding: 100px 60px;
+            background: var(--white);
+        }
+
+        .faq-inner {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--beige);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 25px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--dark);
+            transition: color 0.3s ease;
+        }
+
+        .faq-question:hover {
+            color: var(--gold);
+        }
+
+        .faq-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--beige);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            color: var(--graphite);
+        }
+
+        .faq-item.open .faq-icon {
+            background: var(--gold);
+            color: white;
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            padding-bottom: 25px;
+        }
+
+        .faq-answer p {
+            font-size: 0.9rem;
+            color: var(--graphite-light);
+            line-height: 1.8;
+        }
+
+        /* ===== TESTIMONIALS ===== */
+        .testimonials {
+            padding: 100px 60px;
+            background: linear-gradient(135deg, #2A2A2A 0%, #3A3530 100%);
+            color: white;
+        }
+
+        .testimonials .section-title {
+            color: white;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 35px;
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-5px);
+        }
+
+        .testimonial-stars {
+            color: var(--gold);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .testimonial-text {
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .author-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--sage));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .author-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .author-detail {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ===== ONLINE BOOKING MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 30px;
+            padding: 50px;
+            max-width: 560px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--beige);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            color: var(--graphite);
+        }
+
+        .modal-close:hover {
+            background: var(--gold);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        /* ===== SUCCESS NOTIFICATION ===== */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10000;
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            max-width: 380px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: rgba(168, 181, 160, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .notification-text {
+            font-size: 0.8rem;
+            color: var(--graphite-light);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: var(--dark);
+            color: rgba(255,255,255,0.7);
+            padding: 70px 60px 40px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 50px;
+        }
+
+        .footer-brand .nav-logo-text {
+            color: white;
+            font-size: 1.3rem;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .footer-brand p {
+            font-size: 0.85rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--gold);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .footer-col h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-col ul li a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-col ul li a:hover {
+            color: var(--gold);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        /* ===== FLOATING CHAT BUTTON ===== */
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .float-action {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .float-action.phone {
+            background: var(--sage);
+            color: white;
+        }
+
+        .float-action.chat {
+            background: #25D366;
+            color: white;
+        }
+
+        .float-action:hover {
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* ===== PAGES ===== */
+        .page {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-hero {
+            height: 40vh;
+            background: linear-gradient(135deg, #F0EDE8 0%, #E8DDD0 100%);
+            display: flex;
+            align-items: center;
+            padding: 0 60px;
+            margin-top: 80px;
+        }
+
+        .page-hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 400;
+            color: var(--dark);
+        }
+
+        .page-content {
+            padding: 80px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ===== PSYCHOLOGY PAGE ===== */
+        .psych-services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .psych-service-item {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--beige);
+            transition: all 0.3s ease;
+        }
+
+        .psych-service-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            border-color: var(--gold);
+        }
+
+        .psych-service-item h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .psych-service-item p {
+            font-size: 0.85rem;
+            color: var(--graphite-light);
+            line-height: 1.6;
+        }
+
+        .price-tag {
+            display: inline-block;
+            background: rgba(201, 169, 110, 0.1);
+            color: var(--gold);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        /* ===== BPR TRAINING PLATFORM ===== */
+        .bpr-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #F5F0EA 0%, #FAFAF8 45%, #E8DDD0 100%);
+            padding: 120px 60px 90px;
+        }
+
+        .bpr-shell {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        .bpr-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+            margin-bottom: 42px;
+        }
+
+        .bpr-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(201, 169, 110, 0.12);
+            color: var(--gold);
+            border: 1px solid rgba(201, 169, 110, 0.25);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .bpr-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.4rem, 5vw, 4.5rem);
+            line-height: 0.98;
+            color: var(--dark);
+            font-weight: 400;
+            margin-bottom: 18px;
+        }
+
+        .bpr-lead {
+            max-width: 720px;
+            color: var(--graphite-light);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .bpr-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .bpr-btn {
+            border: none;
+            border-radius: 50px;
+            padding: 13px 22px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .bpr-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .bpr-btn-primary {
+            background: var(--gold);
+            color: white;
+            box-shadow: 0 10px 24px rgba(201, 169, 110, 0.24);
+        }
+
+        .bpr-btn-primary:hover {
+            background: var(--gold-light);
+            box-shadow: 0 14px 30px rgba(201, 169, 110, 0.3);
+        }
+
+        .bpr-btn-secondary {
+            background: white;
+            color: var(--graphite);
+            border: 1px solid var(--beige);
+        }
+
+        .bpr-btn-quiet {
+            background: rgba(255,255,255,0.55);
+            color: var(--graphite);
+            border: 1px solid rgba(212, 196, 176, 0.8);
+        }
+
+        .bpr-btn-danger {
+            background: rgba(150, 55, 45, 0.1);
+            color: #8B2F2A;
+            border: 1px solid rgba(150, 55, 45, 0.2);
+        }
+
+        .bpr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+            gap: 24px;
+            margin-bottom: 34px;
+        }
+
+        .bpr-card {
+            background: rgba(255,255,255,0.84);
+            border: 1px solid rgba(212, 196, 176, 0.76);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 18px 45px rgba(74,74,74,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .bpr-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(201, 169, 110, 0.55);
+            box-shadow: 0 24px 60px rgba(74,74,74,0.13);
+        }
+
+        .bpr-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            display: block;
+            background: var(--beige);
+        }
+
+        .bpr-card-body {
+            padding: 24px;
+        }
+
+        .bpr-card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .bpr-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 11px;
+            border-radius: 50px;
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border: 1px solid rgba(201, 169, 110, 0.22);
+            background: rgba(201, 169, 110, 0.08);
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        .bpr-pill-muted {
+            background: rgba(168, 181, 160, 0.11);
+            border-color: rgba(168, 181, 160, 0.24);
+            color: var(--sage-dark);
+        }
+
+        .bpr-card h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.55rem;
+            color: var(--dark);
+            line-height: 1.2;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .bpr-card p {
+            color: var(--graphite-light);
+            line-height: 1.7;
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+        }
+
+        .bpr-card-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            color: var(--graphite);
+            font-size: 0.86rem;
+        }
+
+        .bpr-panel {
+            background: rgba(255,255,255,0.88);
+            border: 1px solid rgba(212, 196, 176, 0.78);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 18px 45px rgba(74,74,74,0.08);
+            margin-top: 28px;
+        }
+
+        .bpr-panel[hidden],
+        .bpr-modal-overlay[hidden] {
+            display: none !important;
+        }
+
+        .bpr-panel-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .bpr-panel-subtitle {
+            color: var(--graphite-light);
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .bpr-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .bpr-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bpr-field.bpr-full {
+            grid-column: 1 / -1;
+        }
+
+        .bpr-field label {
+            font-size: 0.78rem;
+            color: var(--graphite);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .bpr-field input,
+        .bpr-field textarea,
+        .bpr-field select {
+            width: 100%;
+            border: 1px solid var(--beige);
+            background: white;
+            border-radius: 14px;
+            padding: 13px 14px;
+            font: inherit;
+            color: var(--graphite);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .bpr-field textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .bpr-field input:focus,
+        .bpr-field textarea:focus,
+        .bpr-field select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.12);
+        }
+
+        .bpr-note {
+            font-size: 0.82rem;
+            color: var(--graphite-light);
+            line-height: 1.6;
+        }
+
+        .bpr-course-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+            gap: 24px;
+        }
+
+        .bpr-video-box {
+            background: #111;
+            border-radius: 22px;
+            min-height: 280px;
+            padding: 28px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 28px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bpr-video-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 15% 15%, rgba(201,169,110,0.28), transparent 28%);
+            pointer-events: none;
+        }
+
+        .bpr-video-box > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .bpr-video-box h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .bpr-video-box p {
+            color: rgba(255,255,255,0.7);
+            line-height: 1.7;
+        }
+
+        .bpr-quiz-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .bpr-question {
+            background: white;
+            border: 1px solid var(--beige);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .bpr-question h4 {
+            color: var(--dark);
+            font-size: 1rem;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .bpr-answer {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 0;
+            color: var(--graphite-light);
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .bpr-answer input {
+            margin-top: 3px;
+            accent-color: var(--gold);
+        }
+
+        .bpr-certificate {
+            border: 1px solid rgba(201, 169, 110, 0.38);
+            background: linear-gradient(135deg, white 0%, #FAF7F0 100%);
+            border-radius: 22px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: inset 0 0 0 8px rgba(201,169,110,0.08);
+        }
+
+        .bpr-certificate-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.35rem;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .bpr-certificate-code {
+            display: inline-flex;
+            background: var(--dark);
+            color: white;
+            padding: 11px 18px;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            margin: 18px 0;
+            word-break: break-word;
+        }
+
+        .bpr-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(168, 181, 160, 0.14);
+            color: var(--sage-dark);
+            border: 1px solid rgba(168, 181, 160, 0.28);
+            font-size: 0.85rem;
+            margin-bottom: 18px;
+        }
+
+        .bpr-status-warning {
+            background: rgba(201, 169, 110, 0.12);
+            color: var(--gold);
+            border-color: rgba(201, 169, 110, 0.24);
+        }
+
+        .bpr-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(42, 42, 42, 0.62);
+            backdrop-filter: blur(14px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .bpr-modal {
+            width: min(880px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.24);
+            border: 1px solid rgba(212, 196, 176, 0.8);
+        }
+
+        .bpr-modal-cover {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            display: block;
+            background: var(--beige);
+        }
+
+        .bpr-modal-body {
+            padding: 30px;
+        }
+
+        .bpr-modal-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .bpr-close {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--beige);
+            background: white;
+            color: var(--graphite);
+            cursor: pointer;
+            font-size: 1.2rem;
+            flex: 0 0 auto;
+        }
+
+        .bpr-dev-layout {
+            display: grid;
+            grid-template-columns: 360px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .bpr-dev-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bpr-dev-item {
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--beige);
+            background: white;
+            border-radius: 14px;
+            padding: 13px 14px;
+            color: var(--graphite);
+            cursor: pointer;
+            line-height: 1.5;
+        }
+
+        .bpr-dev-item.active {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.1);
+        }
+
+        .bpr-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--beige);
+            border-radius: 18px;
+            background: white;
+        }
+
+        .bpr-table {
+            width: 100%;
+            min-width: 980px;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+        }
+
+        .bpr-table th,
+        .bpr-table td {
+            padding: 13px 14px;
+            border-bottom: 1px solid var(--beige);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .bpr-table th {
+            background: rgba(232, 221, 208, 0.32);
+            color: var(--dark);
+            font-size: 0.74rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .bpr-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .bpr-empty {
+            border: 1px dashed var(--beige-dark);
+            border-radius: 18px;
+            padding: 28px;
+            color: var(--graphite-light);
+            text-align: center;
+            background: rgba(255,255,255,0.54);
+        }
+
+        .bpr-inline-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 18px;
+        }
+
+        .bpr-checkbox {
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bpr-checkbox input {
+            width: auto;
+            accent-color: var(--gold);
+        }
+
+        .bpr-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 26px 0 30px;
+        }
+
+        .bpr-tab {
+            border: 1px solid rgba(201, 169, 110, 0.26);
+            background: rgba(255,255,255,0.72);
+            color: var(--graphite);
+            border-radius: 50px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.86rem;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .bpr-tab.active {
+            background: var(--gold);
+            color: white;
+            border-color: var(--gold);
+        }
+
+        .admin-section {
+            border-top: 1px solid var(--beige);
+            padding-top: 26px;
+            margin-top: 30px;
+        }
+
+        .admin-section:first-of-type {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .admin-help {
+            background: rgba(232, 221, 208, 0.35);
+            border: 1px solid rgba(212, 196, 176, 0.7);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: var(--graphite-light);
+            line-height: 1.6;
+            font-size: 0.86rem;
+            margin: 14px 0 18px;
+        }
+
+        .price-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .price-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 18px;
+            align-items: center;
+            background: white;
+            border: 1px solid var(--beige);
+            border-radius: 16px;
+            padding: 18px 20px;
+        }
+
+        .price-row h3 {
+            color: var(--dark);
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .price-row p {
+            color: var(--graphite-light);
+            line-height: 1.6;
+            font-size: 0.88rem;
+        }
+
+        .price-value {
+            color: var(--gold);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .team-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .bpr-certificate,
+            .bpr-certificate * {
+                visibility: visible;
+            }
+
+            .bpr-certificate {
+                position: absolute;
+                inset: 40px;
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .bpr-section { padding: 110px 30px 70px; }
+            .bpr-topbar { flex-direction: column; }
+            .bpr-actions { justify-content: flex-start; }
+            .bpr-course-layout,
+            .bpr-dev-layout { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .bpr-section { padding: 100px 20px 55px; }
+            .bpr-form-grid { grid-template-columns: 1fr; }
+            .bpr-panel { padding: 22px; }
+            .bpr-modal-body { padding: 22px; }
+            .bpr-modal-cover { height: 190px; }
+            .bpr-card img { height: 170px; }
+            .price-row { grid-template-columns: 1fr; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            nav { padding: 20px 30px; }
+            .hero-content { padding: 0 30px; }
+            .hero-stats { left: 30px; }
+            .services { padding: 80px 30px; }
+            .psychology-inner { grid-template-columns: 1fr; gap: 50px; }
+            .booking-inner { grid-template-columns: 1fr; gap: 50px; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .psychology-section, .booking-section, .team-section,
+            .faq-section, .testimonials { padding: 80px 30px; }
+            .page-hero { padding: 0 30px; }
+            .page-content { padding: 60px 30px; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hamburger { display: flex; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero-stats { gap: 25px; }
+            .form-row { grid-template-columns: 1fr; }
+            .service-selector { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .booking-form-wrapper { padding: 30px 25px; }
+            .modal { padding: 30px 25px; }
+            .hero-bg-image { display: none; }
+            .hero-overlay { background: linear-gradient(90deg, rgba(250,250,248,0.9) 0%, rgba(250,250,248,0.9) 100%); }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+    </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+    <div class="loader-logo">INWHITE MEDICAL</div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notification" id="notification">
+    <div class="notification-icon">✅</div>
+    <div>
+        <div class="notification-title">Запит надіслано!</div>
+        <div class="notification-text">Ми зв'яжемось з вами протягом 30 хвилин</div>
+    </div>
+</div>
+
+<!-- FLOATING BUTTONS -->
+<div class="floating-btn">
+    <a id="siteFloatingPhone" href="tel:+380XXXXXXXXX" class="float-action phone" title="Зателефонувати">📞</a>
+    <a id="siteFloatingWhatsapp" href="https://wa.me/380XXXXXXXXX" target="_blank" class="float-action chat" title="WhatsApp">💬</a>
+</div>
+
+<!-- NAVIGATION -->
+<nav id="navbar">
+    <a href="#" class="nav-logo" onclick="showPage('home')">
+        <img class="nav-logo-icon" src="assets/inwhite-logo.svg" alt="INWHITE MEDICAL логотип">
+        <span class="nav-logo-text">INWHITE <span>MEDICAL</span></span>
+    </a>
+    <ul class="nav-links">
+        <li data-nav-page="home"><a href="#" onclick="showPage('home'); return false;">Головна</a></li>
+        <li data-nav-page="psychology"><a href="#" onclick="showPage('psychology'); return false;">Психологія</a></li>
+        <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Послуги</a></li>
+        <li data-nav-page="prices"><a href="#" onclick="showPage('prices'); return false;">Прайс</a></li>
+        <li data-nav-page="team"><a href="#" onclick="showPage('team'); return false;">Команда</a></li>
+        <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
+        <li data-nav-page="training"><a href="#" onclick="showPage('training'); return false;">Навчання</a></li>
+        <li><a href="#" onclick="bprOpenDeveloperPanel(); return false;">Адмін</a></li>
+        <li><a href="#" class="nav-cta" onclick="openModal(); return false;">Записатись</a></li>
+    </ul>
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+</nav>
+
+<!-- ==================== HOME PAGE ==================== -->
+<div id="page-home" class="page active">
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-bg-image"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <img class="hero-brand-logo" src="assets/inwhite-logo.svg" alt="INWHITE MEDICAL логотип">
+            <div class="hero-badge">
+                <div class="hero-badge-dot"></div>
+                Відкриваємось у 2025 · Чоп, Закарпаття
+            </div>
+            <h1>Медицина,<br>що <em>турбується</em><br>про вас</h1>
+            <p class="hero-subtitle">
+                Сучасний медичний центр первинної допомоги. 
+                Вже зараз — психологічна підтримка онлайн для вас та вашої родини.
+            </p>
+            <div class="hero-buttons">
+                <a href="#" class="btn-primary" onclick="openModal(); return false;">
+                    ✦ Записатись онлайн
+                </a>
+                <a href="#" class="btn-secondary" onclick="showPage('psychology'); return false;">
+                    Психологічна допомога →
+                </a>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-number">3+</div>
+                <div class="stat-label">Спеціалісти</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">5+</div>
+                <div class="stat-label">Напрямки</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Доказова медицина</div>
+            </div>
+        </div>
+        <div class="hero-scroll">
+            <div class="scroll-line"></div>
+            <span>Scroll</span>
+        </div>
+    </section>
+
+    <!-- ANNOUNCEMENT -->
+    <div class="announcement">
+        <p>🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно</p>
+        <a href="#" class="announcement-btn" onclick="showPage('psychology'); return false;">Дізнатись більше</a>
+    </div>
+
+    <!-- SERVICES -->
+    <section class="services" id="services">
+        <div class="section-header reveal">
+            <div class="section-tag">Наші послуги</div>
+            <h2 class="section-title">Комплексна турбота<br>про ваше здоров'я</h2>
+            <p class="section-subtitle">Від первинної медицини до психологічної підтримки — все в одному місці, поруч з домом</p>
+        </div>
+        <div class="services-grid">
+            <a href="#" class="service-card reveal reveal-delay-1" onclick="showPage('psychology'); return false;">
+                <div class="service-icon psychology">🧠</div>
+                <h3>Психологічна допомога</h3>
+                <p>Робота з тривогою, стресом, ПТСР. Короткотривала терапія. Онлайн та офлайн сесії з медичним психологом.</p>
+                <span class="service-link">Детальніше →</span>
+            </a>
+            <a href="#" class="service-card reveal reveal-delay-2" onclick="showPage('services'); return false;">
+                <div class="service-icon family">👨‍👩‍👧</div>
+                <h3>Сімейна медицина</h3>
+                <p>Сімейний лікар для дорослих і дітей. Декларації, рецепти, лікарняні. Безкоштовно за програмою НСЗУ.</p>
+                <span class="service-link">Детальніше →</span>
+            </a>
+            <a href="#" class="service-card reveal reveal-delay-3" onclick="showPage('services'); return false;">
+                <div class="service-icon ultrasound">🔬</div>
+                <h3>УЗД-діагностика</h3>
+                <p>Ультразвукова діагностика органів черевної порожнини, щитоподібної залози, судин. Швидко та за записом.</p>
+                <span class="service-link">Детальніше →</span>
+            </a>
+            <a href="#" class="service-card reveal reveal-delay-4" onclick="showPage('services'); return false;">
+                <div class="service-icon vaccination">💉</div>
+                <h3>Вакцинація</h3>
+                <p>Державні та комерційні вакцини. Дотримання холодового ланцюга. Вакцинація для дітей та дорослих.</p>
+                <span class="service-link">Детальніше →</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- PSYCHOLOGY FOCUS -->
+    <section class="psychology-section">
+        <div class="psychology-inner">
+            <div class="psychology-visual reveal">
+                <div class="psychology-image-main">
+                    🌿
+                </div>
+                <div class="psychology-card-float">
+                    <p>Доступно вже зараз</p>
+                    <strong>Онлайн-сесії</strong>
+                    <p style="margin-top:5px; font-size:0.75rem; color: var(--graphite-light);">Конфіденційно · Безпечно</p>
+                </div>
+            </div>
+            <div class="psychology-content reveal">
+                <div class="section-tag">Психологічна допомога</div>
+                <h2>Підтримка, яка<br>потрібна вам<br><em>вже сьогодні</em></h2>
+                <p>В умовах війни та постійного стресу психологічна допомога — це не розкіш, а необхідність. Наш медичний психолог надає доказову, ефективну підтримку.</p>
+                <ul class="psychology-list">
+                    <li><div class="list-dot"></div>Робота з тривожними розладами та панічними атаками</li>
+                    <li><div class="list-dot"></div>Гострий стрес та ПТСР (посттравматичний стресовий розлад)</li>
+                    <li><div class="list-dot"></div>Короткотривала терапія (особливо актуально в умовах війни)</li>
+                    <li><div class="list-dot"></div>Підтримка при хронічних захворюваннях</li>
+                    <li><div class="list-dot"></div>Психоедукація та навчання навичкам саморегуляції</li>
+                    <li><div class="list-dot"></div>Онлайн та офлайн формат</li>
+                </ul>
+                <a href="#" class="btn-primary" onclick="openModal(); return false;">
+                    Записатись на консультацію
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BOOKING -->
+    <section class="booking-section" id="booking">
+        <div class="booking-inner">
+            <div class="booking-info reveal">
+                <div class="section-tag">Запис</div>
+                <h2>Запишіться<br>на прийом</h2>
+                <p>Залиште заявку і ми зв'яжемось з вами протягом 30 хвилин для підтвердження часу та деталей консультації.</p>
+                <div class="contact-items">
+                    <a href="tel:+380XXXXXXXXX" class="contact-item">
+                        <div class="contact-icon">📞</div>
+                        <div class="contact-text">
+                            <small>Телефон</small>
+                            <strong>+380 XX XXX XX XX</strong>
+                        </div>
+                    </a>
+                    <a href="https://instagram.com/inwhitemedical" target="_blank" class="contact-item">
+                        <div class="contact-icon">📸</div>
+                        <div class="contact-text">
+                            <small>Instagram</small>
+                            <strong>@inwhitemedical</strong>
+                        </div>
+                    </a>
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div class="contact-text">
+                            <small>Адреса</small>
+                            <strong>м. Чоп, Закарпатська обл.</strong>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">🕐</div>
+                        <div class="contact-text">
+                            <small>Графік роботи</small>
+                            <strong>Пн–Пт: 08:00–18:00</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="booking-form-wrapper reveal">
+                <div class="form-title">Онлайн-запис</div>
+                <div class="form-subtitle">Заповніть форму — ми зв'яжемось з вами</div>
+                <form id="bookingForm" onsubmit="submitForm(event)">
+                    <div class="form-group">
+                        <label>Оберіть послугу</label>
+                        <div class="service-selector">
+                            <div class="service-option selected" onclick="selectService(this)">🧠 Психологія</div>
+                            <div class="service-option" onclick="selectService(this)">👨‍⚕️ Сімейний лікар</div>
+                            <div class="service-option" onclick="selectService(this)">🔬 УЗД</div>
+                            <div class="service-option" onclick="selectService(this)">💉 Вакцинація</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ім'я та прізвище</label>
+                            <input type="text" placeholder="Ваше ім'я" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон</label>
+                            <input type="tel" placeholder="+380 XX XXX XX XX" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Бажана дата</label>
+                            <input type="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Зручний час</label>
+                            <select>
+                                <option>08:00 – 10:00</option>
+                                <option>10:00 – 12:00</option>
+                                <option>12:00 – 14:00</option>
+                                <option>14:00 – 16:00</option>
+                                <option>16:00 – 18:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Формат (для психології)</label>
+                        <select>
+                            <option>Онлайн-сесія</option>
+                            <option>Офлайн (в клініці)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Коментар (необов'язково)</label>
+                        <textarea placeholder="Опишіть ваш запит або побажання..."></textarea>
+                    </div>
+                    <button type="submit" class="form-submit">
+                        Записатись на прийом ✦
+                    </button>
+                    <p class="form-note">🔒 Ваші дані конфіденційні та захищені</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials">
+        <div class="section-header reveal">
+            <div class="section-tag" style="color: var(--gold);">Відгуки</div>
+            <h2 class="section-title">Що кажуть<br>наші пацієнти</h2>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial-card reveal reveal-delay-1">
+                <div class="testimonial-stars">★★★★★</div>
+                <p class="testimonial-text">"Нарешті в Чопі є місце, де до тебе ставляться як до людини. Психолог дуже допоміг після складного періоду. Рекомендую всім."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">О</div>
+                    <div>
+                        <div class="author-name">Оксана М.</div>
+                        <div class="author-detail">Психологічна консультація</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card reveal reveal-delay-2">
+                <div class="testimonial-stars">★★★★★</div>
+                <p class="testimonial-text">"Онлайн-сесія виявилась навіть зручнішою — можна з дому, без черг. Дуже вдячна за підтримку та розуміння."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">М</div>
+                    <div>
+                        <div class="author-name">Марія К.</div>
+                        <div class="author-detail">Онлайн-консультація</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card reveal reveal-delay-3">
+                <div class="testimonial-stars">★★★★★</div>
+                <p class="testimonial-text">"Сучасний підхід, доказова медицина, увага до деталей. Нарешті не треба їхати до Ужгорода за кожним питанням."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">В</div>
+                    <div>
+                        <div class="author-name">Василь Г.</div>
+                        <div class="author-detail">Сімейний лікар</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+        <div class="section-header reveal">
+            <div class="section-tag">FAQ</div>
+            <h2 class="section-title">Часті запитання</h2>
+        </div>
+        <div class="faq-inner">
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Як записатись на консультацію?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Ви можете записатись через форму на сайті, зателефонувати нам або написати в Instagram Direct. Ми зв'яжемось з вами протягом 30 хвилин для підтвердження.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Чи доступна психологічна допомога онлайн?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Так! Онлайн-сесії вже доступні. Ви можете отримати консультацію медичного психолога з будь-якого місця України. Сесії проводяться у Zoom або Telegram — конфіденційно та безпечно.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Скільки коштує консультація психолога?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Вартість консультації залежить від типу послуги та тривалості сесії. Зверніться до нас для отримання актуальних цін. Ми також надаємо підтримку ветеранам та їх родинам за спеціальними умовами.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Коли відкриється клініка офіційно?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Офіційне відкриття заплановано на кінець 2025 року. Наразі в приміщенні тривають ремонтні роботи. Слідкуйте за нашим Instagram для отримання актуальних новин!</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Чи можна підписати декларацію із сімейним лікарем?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Так, після офіційного відкриття ви зможете підписати декларацію з нашим сімейним лікарем та отримувати первинну медичну допомогу безкоштовно в рамках програми НСЗУ.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<!-- ==================== PSYCHOLOGY PAGE ==================== -->
+<div id="page-psychology" class="page">
+    <div class="page-hero">
+        <div>
+            <div class="section-tag">Психологічна допомога</div>
+            <h1>Ваш психологічний<br>добробут — наш пріоритет</h1>
+        </div>
+    </div>
+    <div class="page-content">
+        <p style="font-size: 1.1rem; color: var(--graphite-light); line-height: 1.8; max-width: 700px; margin-bottom: 50px;">
+            В умовах сьогодення психологічна підтримка — це не слабкість, а мудрість. 
+            Наша команда надає доказову, ефективну допомогу з повагою до кожного клієнта.
+        </p>
+        <div class="psych-services-grid">
+            <div class="psych-service-item">
+                <div style="font-size: 2rem; margin-bottom: 15px;">😰</div>
+                <h3>Тривожні розлади</h3>
+                <p>Робота з генералізованою тривогою, панічними атаками, фобіями. Когнітивно-поведінкові методи.</p>
+                <span class="price-tag">Онлайн / Офлайн</span>
+            </div>
+            <div class="psych-service-item">
+                <div style="font-size: 2rem; margin-bottom: 15px;">🛡️</div>
+                <h3>ПТСР та гострий стрес</h3>
+                <p>Спеціалізована допомога для людей, які пережили травматичні події. Безпечний простір для відновлення.</p>
+                <span class="price-tag">Індивідуально</span>
+            </div>
+            <div class="psych-service-item">
+                <div style="font-size: 2rem; margin-bottom: 15px;">💊</div>
+                <h3>Підтримка при хронічних хворобах</h3>
+                <p>Психологічна адаптація до діагнозу, робота з прийняттям та якістю життя при хронічних станах.</p>
+                <span class="price-tag">Комплексно</span>
+            </div>
+            <div class="psych-service-item">
+                <div style="font-size: 2rem; margin-bottom: 15px;">📚</div>
+                <h3>Психоедукація</h3>
+                <p>Навчання навичкам саморегуляції, управління стресом, розуміння власних реакцій та емоцій.</p>
+                <span class="price-tag">Групи / Індивідуально</span>
+            </div>
+            <div class="psych-service-item">
+                <div style="font-size: 2rem; margin-bottom: 15px;">⚡</div>
+                <h3>Короткотривала терапія</h3>
+                <p>Ефективні методи для швидкого результату. Особливо актуально в умовах воєнного часу.</p>
+                <span class="price-tag">4-12 сесій</span>
+            </div>
+            <div class="psych-service-item">
+                <div style="font-size: 2rem; margin-bottom: 15px;">💻</div>
+                <h3>Онлайн-консультації</h3>
+                <p>Зручний формат з будь-якого місця. Zoom, Telegram. Конфіденційно та безпечно.</p>
+                <span class="price-tag">Доступно зараз ✓</span>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 50px;">
+            <a href="#" class="btn-primary" onclick="openModal(); return false;" style="display: inline-flex;">
+                ✦ Записатись на консультацію
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SERVICES PAGE ==================== -->
+<div id="page-services" class="page">
+    <div class="page-hero">
+        <div>
+            <div class="section-tag">Послуги клініки</div>
+            <h1>Всі послуги<br>INWHITE MEDICAL</h1>
+        </div>
+    </div>
+    <div class="page-content">
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon psychology">👨‍👩‍👧</div>
+                <h3>Сімейна медицина</h3>
+                <p>Сімейний лікар для дорослих і дітей. Декларації НСЗУ, рецепти програми "Доступні ліки", лікарняні листи.</p>
+                <span class="price-tag">Безкоштовно за НСЗУ</span>
+            </div>
+            <div class="service-card">
+                <div class="service-icon family">🔬</div>
+                <h3>УЗД-діагностика</h3>
+                <p>Черевна порожнина, щитоподібна залоза, судини шиї та нижніх кінцівок. Швидко та за записом.</p>
+                <span class="price-tag">Комерційна послуга</span>
+            </div>
+            <div class="service-card">
+                <div class="service-icon ultrasound">💉</div>
+                <h3>Вакцинація</h3>
+                <p>Державні вакцини за календарем. Комерційні вакцини. Дотримання холодового ланцюга.</p>
+                <span class="price-tag">Держ. / Комерційна</span>
+            </div>
+            <div class="service-card">
+                <div class="service-icon vaccination">🧪</div>
+                <h3>Швидкі тести</h3>
+                <p>COVID-19, грип, ВІЛ, гепатит B/C, глюкоза, CRP, H.Pylori та інші. Результат за 15 хвилин.</p>
+                <span class="price-tag">Комерційна послуга</span>
+            </div>
+            <div class="service-card">
+                <div class="service-icon psychology">📋</div>
+                <h3>Скринінг 40+</h3>
+                <p>Державна програма раннього виявлення захворювань. Компенсація 2000 грн для осіб 40+ років.</p>
+                <span class="price-tag">Держ. програма</span>
+            </div>
+            <div class="service-card">
+                <div class="service-icon family">❤️</div>
+                <h3>ЕКГ</h3>
+                <p>Електрокардіограма з розшифровкою лікаря. Базова серцева діагностика без черг.</p>
+                <span class="price-tag">Комерційна послуга</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== TEAM PAGE ==================== -->
+<div id="page-team" class="page">
+    <div class="page-hero">
+        <div>
+            <div class="section-tag">Наша команда</div>
+            <h1>Фахівці, яким<br>можна довіряти</h1>
+        </div>
+    </div>
+    <div class="page-content">
+        <div id="siteTeamGrid" class="team-grid"></div>
+    </div>
+</div>
+
+<!-- ==================== PRICES PAGE ==================== -->
+<div id="page-prices" class="page">
+    <div class="page-hero">
+        <div>
+            <div class="section-tag">Прайс</div>
+            <h1>Вартість<br>послуг</h1>
+        </div>
+    </div>
+    <div class="page-content">
+        <p style="font-size: 1.1rem; color: var(--graphite-light); line-height: 1.8; max-width: 760px; margin-bottom: 34px;">
+            Актуальні ціни на послуги клініки. Остаточна вартість може залежати від обсягу консультації,
+            матеріалів або індивідуального плану обстеження.
+        </p>
+        <div id="sitePriceList" class="price-list"></div>
+        <div id="sitePriceEmpty" class="bpr-empty" hidden>Прайс тимчасово не заповнений.</div>
+    </div>
+</div>
+
+<!-- ==================== ABOUT PAGE ==================== -->
+<div id="page-about" class="page">
+    <div class="page-hero">
+        <div>
+            <div class="section-tag">Про клініку</div>
+            <h1>INWHITE MEDICAL —<br>медицина що формує довіру</h1>
+        </div>
+    </div>
+    <div class="page-content">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start;">
+            <div>
+                <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--dark); margin-bottom: 20px;">Наша місія</h2>
+                <p style="color: var(--graphite-light); line-height: 1.8; margin-bottom: 20px;">
+                    INWHITE MEDICAL — сучасний медичний центр первинної медичної допомоги у місті Чоп, Закарпатська область. Ми прагнемо забезпечити мешканців громади якісною, доступною та доказовою медициною поруч з домом.
+                </p>
+                <p style="color: var(--graphite-light); line-height: 1.8; margin-bottom: 20px;">
+                    Наша мета — створити місце, де кожен пацієнт відчуває повагу, турботу та отримує допомогу на рівні сучасних медичних стандартів.
+                </p>
+                <p style="color: var(--graphite-light); line-height: 1.8;">
+                    Ми — команда однодумців, яка вірить: якісна медицина має бути доступна кожному, незалежно від розміру міста.
+                </p>
+            </div>
+            <div>
+                <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--dark); margin-bottom: 20px;">Наші цінності</h2>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
+                        <strong style="color: var(--gold);">🎯 Доказовість</strong>
+                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">Лише перевірені методи лікування та діагностики</p>
+                    </div>
+                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
+                        <strong style="color: var(--gold);">❤️ Людяність</strong>
+                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">До кожного пацієнта — з повагою та увагою</p>
+                    </div>
+                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
+                        <strong style="color: var(--gold);">🌍 Доступність</strong>
+                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">Якісна медицина без потреби їхати до обласного центру</p>
+                    </div>
+                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
+                        <strong style="color: var(--gold);">🔒 Конфіденційність</strong>
+                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">Повна приватність та захист даних пацієнтів</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== TRAINING PAGE ==================== -->
+<div id="page-training" class="page">
+    <section class="bpr-section">
+        <div class="bpr-shell">
+            <div class="bpr-topbar">
+                <div>
+                    <div class="bpr-eyebrow">Провайдер БПР</div>
+                    <h1 class="bpr-title">Навчання лікарів</h1>
+                    <p class="bpr-lead">
+                        Оберіть онлайн-курс із записом та сертифікатом або офлайн-захід із реєстрацією
+                        через форму. Усі картки та посилання змінюються в адмін-панелі.
+                    </p>
+                </div>
+                <div class="bpr-actions">
+                    <button class="bpr-btn bpr-btn-secondary" type="button" onclick="bprOpenDeveloperPanel()">Адмін-панель</button>
+                </div>
+            </div>
+
+            <div class="bpr-tabs">
+                <button id="bprOnlineTab" class="bpr-tab active" type="button" onclick="bprSetTrainingCategory('online')">Онлайн навчання</button>
+                <button id="bprOfflineTab" class="bpr-tab" type="button" onclick="bprSetTrainingCategory('offline')">Офлайн навчання</button>
+            </div>
+            <div id="bprEventsGrid" class="bpr-grid"></div>
+            <div id="bprEmptyState" class="bpr-empty" hidden>Наразі немає активних навчальних заходів.</div>
+
+            <div id="bprCoursePanel" class="bpr-panel" hidden>
+                <div class="bpr-course-layout">
+                    <div class="bpr-video-box">
+                        <div>
+                            <div class="bpr-eyebrow" style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.72); border-color: rgba(255,255,255,0.14);">Доступ після оплати</div>
+                            <h3 id="bprCourseTitle">Назва тренінгу</h3>
+                            <p id="bprCourseDescription">Посилання на запис відкривається після реєстрації та підтвердження оплати.</p>
+                        </div>
+                        <div class="bpr-inline-actions">
+                            <a id="bprRecordingLink" class="bpr-btn bpr-btn-primary" href="#" target="_blank" rel="noopener noreferrer">Відкрити запис</a>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="bprStartQuiz()">Почати тест</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="bpr-status" id="bprParticipantStatus">Учасник зареєстрований</div>
+                        <h2 class="bpr-panel-title" id="bprParticipantName">ПІБ учасника</h2>
+                        <p class="bpr-panel-subtitle">
+                            Для отримання сертифіката потрібно відповісти правильно мінімум на 8 з 10 питань.
+                            Після успішної здачі система сформує унікальний код сертифіката.
+                        </p>
+                        <div id="bprPaymentBox">
+                            <div class="bpr-status bpr-status-warning">Демо-режим оплати</div>
+                            <p class="bpr-note">
+                                У цьому статичному файлі оплата підтверджується кнопкою. Для реального сайту тут
+                                потрібно підключити платіжну систему та серверну перевірку платежу.
+                            </p>
+                            <div class="bpr-inline-actions">
+                                <a id="bprPaymentLink" class="bpr-btn bpr-btn-secondary" href="#" target="_blank" rel="noopener noreferrer">Перейти до оплати</a>
+                                <button class="bpr-btn bpr-btn-primary" type="button" onclick="bprConfirmPayment()">Я оплатив, відкрити доступ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="bprQuizPanel" class="bpr-panel" hidden>
+                <h2 class="bpr-panel-title">Тестування</h2>
+                <p class="bpr-panel-subtitle">Оберіть одну правильну відповідь у кожному питанні. Прохідний результат: 80%.</p>
+                <form id="bprQuizForm" onsubmit="bprSubmitQuiz(event)">
+                    <div id="bprQuizList" class="bpr-quiz-list"></div>
+                    <div class="bpr-inline-actions">
+                        <button class="bpr-btn bpr-btn-primary" type="submit">Завершити тест</button>
+                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="bprResetQuiz()">Очистити відповіді</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="bprCertificatePanel" class="bpr-panel" hidden>
+                <div id="bprCertificate" class="bpr-certificate">
+                    <div class="bpr-eyebrow">Сертифікат БПР</div>
+                    <h2 class="bpr-certificate-title">Сертифікат учасника</h2>
+                    <p id="bprCertificatePerson" style="font-size: 1.2rem; color: var(--dark); margin-bottom: 10px;"></p>
+                    <p id="bprCertificateCourse" style="color: var(--graphite-light); line-height: 1.7;"></p>
+                    <div id="bprCertificateCode" class="bpr-certificate-code"></div>
+                    <p id="bprCertificateMeta" class="bpr-note"></p>
+                </div>
+                <div class="bpr-inline-actions">
+                    <button class="bpr-btn bpr-btn-primary" type="button" onclick="window.print()">Друк або PDF</button>
+                    <button class="bpr-btn bpr-btn-secondary" type="button" onclick="bprSendCertificateEmail()">Надіслати на email</button>
+                </div>
+            </div>
+
+            <div id="bprDevPanel" class="bpr-panel" hidden>
+                <div class="bpr-topbar" style="margin-bottom: 24px;">
+                    <div>
+                        <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
+                        <p class="bpr-panel-subtitle">
+                            Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
+                            редагувати команду, прайс і навчальні заходи.
+                        </p>
+                    </div>
+                    <div class="bpr-actions">
+                        <button class="bpr-btn bpr-btn-secondary" type="button" onclick="bprCreateTraining()">Новий захід</button>
+                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="bprCloseDeveloperPanel()">Закрити</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Сторінки та головний екран</h3>
+                    <p class="bpr-panel-subtitle">Керуйте видимістю сторінок і базовими текстами головного екрана.</p>
+                    <form id="siteAdminForm" onsubmit="adminSaveSiteSettings(event)">
+                        <div class="bpr-form-grid">
+                            <label class="bpr-field bpr-checkbox"><input id="adminPageHome" type="checkbox"> Головна</label>
+                            <label class="bpr-field bpr-checkbox"><input id="adminPagePsychology" type="checkbox"> Психологія</label>
+                            <label class="bpr-field bpr-checkbox"><input id="adminPageServices" type="checkbox"> Послуги</label>
+                            <label class="bpr-field bpr-checkbox"><input id="adminPagePrices" type="checkbox"> Прайс</label>
+                            <label class="bpr-field bpr-checkbox"><input id="adminPageTeam" type="checkbox"> Команда</label>
+                            <label class="bpr-field bpr-checkbox"><input id="adminPageAbout" type="checkbox"> Про нас</label>
+                            <label class="bpr-field bpr-checkbox"><input id="adminPageTraining" type="checkbox"> Навчання</label>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroBadge">Плашка на головній</label>
+                                <input id="adminHeroBadge">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroTitle">Заголовок головної сторінки</label>
+                                <textarea id="adminHeroTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroSubtitle">Опис головної сторінки</label>
+                                <textarea id="adminHeroSubtitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminAnnouncementText">Оголошення під головним екраном</label>
+                                <textarea id="adminAnnouncementText"></textarea>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminContactPhone">Телефон</label>
+                                <input id="adminContactPhone" placeholder="+380 XX XXX XX XX">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminContactWhatsapp">WhatsApp без +</label>
+                                <input id="adminContactWhatsapp" placeholder="380XXXXXXXXX">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminContactEmail">Email</label>
+                                <input id="adminContactEmail" type="email" placeholder="info@inwhitemedical.ua">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminContactHours">Графік роботи</label>
+                                <input id="adminContactHours" placeholder="Пн–Пт: 08:00–18:00">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminContactAddress">Адреса</label>
+                                <input id="adminContactAddress" placeholder="м. Чоп, Закарпаття">
+                            </div>
+                        </div>
+                        <div class="bpr-inline-actions">
+                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти налаштування</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="admin-section">
+                    <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Supabase база даних</h3>
+                    <p class="bpr-panel-subtitle">
+                        Зберігайте зміни сайту в базі даних, щоб вони були видимі всім користувачам.
+                        У браузер вводиться тільки URL, publishable key та логін адміністратора Supabase Auth.
+                    </p>
+                    <div class="admin-help">
+                        Secret key і пароль PostgreSQL не вставляйте в сайт. Для запису змін створіть адміністратора
+                        в Supabase Auth і увійдіть тут через email та пароль.
+                    </div>
+                    <form id="supabaseConfigForm" onsubmit="supabaseSaveConfig(event)">
+                        <div class="bpr-form-grid">
+                            <div class="bpr-field">
+                                <label for="supabaseUrlInput">Supabase URL</label>
+                                <input id="supabaseUrlInput" placeholder="https://...supabase.co">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="supabaseKeyInput">Publishable key</label>
+                                <input id="supabaseKeyInput" placeholder="sb_publishable_...">
+                            </div>
+                        </div>
+                        <div class="bpr-inline-actions">
+                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти підключення</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseLoadSiteState()">Завантажити з бази</button>
+                        </div>
+                    </form>
+
+                    <form id="supabaseLoginForm" onsubmit="supabaseLogin(event)" style="margin-top: 22px;">
+                        <div class="bpr-form-grid">
+                            <div class="bpr-field">
+                                <label for="supabaseAdminEmail">Email адміністратора</label>
+                                <input id="supabaseAdminEmail" type="email" placeholder="admin@example.com">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="supabaseAdminPassword">Пароль адміністратора</label>
+                                <input id="supabaseAdminPassword" type="password" autocomplete="current-password">
+                            </div>
+                        </div>
+                        <p id="supabaseStatus" class="bpr-note" style="margin-top: 12px;">База ще не підключена.</p>
+                        <div class="bpr-inline-actions">
+                            <button class="bpr-btn bpr-btn-primary" type="submit">Увійти в Supabase</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseRegisterAdmin()">Створити адміна</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseSendPasswordReset()">Надіслати зміну пароля</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseUpdatePassword()">Змінити пароль</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseSaveSiteState()">Зберегти сайт у базу</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseLoadParticipants()">Завантажити учасників</button>
+                            <button class="bpr-btn bpr-btn-quiet" type="button" onclick="supabaseSyncParticipants()">Синхронізувати учасників</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="admin-section">
+                    <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Команда</h3>
+                    <p class="bpr-panel-subtitle">Додавайте, приховуйте або змінюйте фахівців без редагування коду.</p>
+                    <form onsubmit="adminSaveTeam(event)">
+                        <div class="bpr-field">
+                            <label for="adminTeamEditor">Фахівці</label>
+                            <textarea id="adminTeamEditor" style="min-height: 210px;"></textarea>
+                            <div class="admin-help">
+                                Один фахівець = один рядок. Формат: фото або емодзі | ПІБ | посада | опис | visible або hidden.
+                                Для фото можна вставити посилання або шлях, наприклад assets/doctor.jpg.
+                            </div>
+                        </div>
+                        <div class="bpr-inline-actions">
+                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти команду</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="admin-section">
+                    <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Прайс для пацієнтів</h3>
+                    <p class="bpr-panel-subtitle">Ці позиції показуються на сторінці “Прайс”.</p>
+                    <form onsubmit="adminSavePrices(event)">
+                        <div class="bpr-field">
+                            <label for="adminPricesEditor">Позиції прайсу</label>
+                            <textarea id="adminPricesEditor" style="min-height: 210px;"></textarea>
+                            <div class="admin-help">
+                                Одна послуга = один рядок. Формат: категорія | назва послуги | опис | ціна | visible або hidden.
+                                Приклад: Консультації | Сімейний лікар | Первинний прийом | 600 грн | visible
+                            </div>
+                        </div>
+                        <div class="bpr-inline-actions">
+                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти прайс</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="admin-section">
+                    <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Навчальні заходи</h3>
+                    <p class="bpr-panel-subtitle">Онлайн-заходи мають запис, тест і сертифікат. Офлайн-заходи ведуть на ваше посилання Google Forms.</p>
+
+                <div class="bpr-dev-layout">
+                    <div>
+                        <h3 style="color: var(--dark); margin-bottom: 14px;">Заходи</h3>
+                        <div id="bprDevTrainingList" class="bpr-dev-list"></div>
+                    </div>
+
+                    <form id="bprTrainingForm" onsubmit="bprSaveTraining(event)">
+                        <input type="hidden" id="bprEditId">
+                        <div class="bpr-form-grid">
+                            <div class="bpr-field bpr-full">
+                                <label for="bprEditTitle">Назва заходу</label>
+                                <input id="bprEditTitle" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditType">Тип заходу</label>
+                                <input id="bprEditType" placeholder="Майстер-клас, тренінг, електронний курс" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditCategory">Категорія навчання</label>
+                                <select id="bprEditCategory" required>
+                                    <option value="online">Онлайн навчання</option>
+                                    <option value="offline">Офлайн навчання</option>
+                                </select>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditMode">Формат</label>
+                                <input id="bprEditMode" placeholder="Онлайн, офлайн, запис" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditPoints">Кількість балів БПР</label>
+                                <input id="bprEditPoints" type="number" min="0" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditPrice">Вартість</label>
+                                <input id="bprEditPrice" placeholder="1200 грн">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditYear">Рік</label>
+                                <input id="bprEditYear" type="number" min="2020" max="2100" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditProvider">Номер провайдера БПР</label>
+                                <input id="bprEditProvider" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditTrainingNumber">Унікальний номер тренінгу/курсу</label>
+                                <input id="bprEditTrainingNumber" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditCertificateNext">Наступний номер сертифіката</label>
+                                <input id="bprEditCertificateNext" type="number" min="1" required>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditCertificateDigits">Кількість цифр у порядковому номері</label>
+                                <input id="bprEditCertificateDigits" type="number" min="5" max="8" required>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="bprEditImage">Посилання на картинку</label>
+                                <input id="bprEditImage" placeholder="https://...">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditPaymentUrl">Посилання на оплату</label>
+                                <input id="bprEditPaymentUrl" placeholder="https://...">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditRecordingUrl">Посилання на запис</label>
+                                <input id="bprEditRecordingUrl" placeholder="https://...">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="bprEditGoogleFormUrl">Посилання Google Forms для офлайн-реєстрації</label>
+                                <input id="bprEditGoogleFormUrl" placeholder="https://forms.gle/...">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="bprEditShort">Короткий опис для картки</label>
+                                <textarea id="bprEditShort" required></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="bprEditFull">Детальний опис</label>
+                                <textarea id="bprEditFull" required></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="bprEditQuiz">Тестові питання</label>
+                                <textarea id="bprEditQuiz" required></textarea>
+                                <p class="bpr-note">
+                                    Формат одного питання: питання | відповідь 1 | відповідь 2 | відповідь 3 | відповідь 4 | номер правильної відповіді від 1 до 4.
+                                    Має бути 10 рядків.
+                                </p>
+                            </div>
+                            <label class="bpr-field bpr-checkbox bpr-full">
+                                <input id="bprEditVisible" type="checkbox">
+                                Показувати картку на сайті
+                            </label>
+                        </div>
+                        <div class="bpr-inline-actions">
+                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти захід</button>
+                            <button class="bpr-btn bpr-btn-danger" type="button" onclick="bprDeleteTraining()">Видалити захід</button>
+                        </div>
+                    </form>
+                </div>
+                </div>
+
+                <div class="bpr-panel" style="margin-top: 28px;">
+                    <div class="bpr-topbar" style="margin-bottom: 18px;">
+                        <div>
+                            <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Таблиця учасників</h3>
+                            <p class="bpr-panel-subtitle">Дані реєстрації, результат тесту, бали БПР та код сертифіката.</p>
+                        </div>
+                        <div class="bpr-actions">
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="bprExportParticipants()">CSV</button>
+                            <button class="bpr-btn bpr-btn-danger" type="button" onclick="bprClearParticipants()">Очистити таблицю</button>
+                        </div>
+                    </div>
+                    <div class="bpr-table-wrap">
+                        <table class="bpr-table">
+                            <thead>
+                                <tr>
+                                    <th>ПІБ</th>
+                                    <th>Дата народження</th>
+                                    <th>Email</th>
+                                    <th>Освіта</th>
+                                    <th>Місце роботи</th>
+                                    <th>Посада</th>
+                                    <th>Захід</th>
+                                    <th>Результат</th>
+                                    <th>Бали</th>
+                                    <th>Сертифікат</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bprParticipantsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="bprEventModal" class="bpr-modal-overlay" hidden onclick="bprCloseEventModalOnOverlay(event)">
+    <div class="bpr-modal">
+        <img id="bprModalImage" class="bpr-modal-cover" src="" alt="Навчальний захід">
+        <div class="bpr-modal-body">
+            <div class="bpr-modal-head">
+                <div>
+                    <div id="bprModalMeta" class="bpr-card-meta"></div>
+                    <h2 id="bprModalTitle" class="bpr-panel-title"></h2>
+                </div>
+                <button class="bpr-close" type="button" onclick="bprCloseEventModal()">×</button>
+            </div>
+            <p id="bprModalDescription" class="bpr-panel-subtitle"></p>
+            <div id="bprModalPrice" class="bpr-status bpr-status-warning"></div>
+            <div id="bprOfflineRegistrationBox" class="bpr-inline-actions" hidden>
+                <a id="bprOfflineRegistrationLink" class="bpr-btn bpr-btn-primary" href="#" target="_blank" rel="noopener noreferrer">Зареєструватись на офлайн-захід</a>
+            </div>
+
+            <form id="bprRegisterForm" onsubmit="bprSubmitRegistration(event)">
+                <h3 style="color: var(--dark); margin: 24px 0 16px;">Обов'язкова реєстрація учасника</h3>
+                <div class="bpr-form-grid">
+                    <div class="bpr-field bpr-full">
+                        <label for="bprRegFullName">Прізвище, ім'я, по батькові</label>
+                        <input id="bprRegFullName" required>
+                    </div>
+                    <div class="bpr-field">
+                        <label for="bprRegBirthDate">Дата народження</label>
+                        <input id="bprRegBirthDate" type="date" required>
+                    </div>
+                    <div class="bpr-field">
+                        <label for="bprRegEmail">Email</label>
+                        <input id="bprRegEmail" type="email" required>
+                    </div>
+                    <div class="bpr-field bpr-full">
+                        <label for="bprRegEducation">Освіта, заклад у якому здобуто освіту</label>
+                        <input id="bprRegEducation" required>
+                    </div>
+                    <div class="bpr-field">
+                        <label for="bprRegWorkplace">Місце роботи</label>
+                        <input id="bprRegWorkplace" required>
+                    </div>
+                    <div class="bpr-field">
+                        <label for="bprRegPosition">Посада</label>
+                        <input id="bprRegPosition" required>
+                    </div>
+                </div>
+                <div class="bpr-inline-actions">
+                    <button class="bpr-btn bpr-btn-primary" type="submit">Зареєструватись і перейти до оплати</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="bprDeveloperLoginModal" class="bpr-modal-overlay" hidden onclick="bprCloseDeveloperLoginOnOverlay(event)">
+    <div class="bpr-modal" style="max-width: 520px;">
+        <div class="bpr-modal-body">
+            <div class="bpr-modal-head">
+                <div>
+                    <div class="bpr-eyebrow">Доступ розробника</div>
+                    <h2 class="bpr-panel-title">Вхід у кабінет</h2>
+                </div>
+                <button class="bpr-close" type="button" onclick="bprCloseDeveloperLogin()">×</button>
+            </div>
+            <p class="bpr-panel-subtitle">
+                Введіть пароль, щоб змінювати навчальні заходи, коди сертифікатів і таблицю учасників.
+            </p>
+            <form onsubmit="bprUnlockDeveloperPanel(event)">
+                <div class="bpr-field">
+                    <label for="bprDeveloperPasswordInput">Пароль</label>
+                    <input id="bprDeveloperPasswordInput" type="password" autocomplete="current-password" required>
+                </div>
+                <p id="bprDeveloperLoginMessage" class="bpr-note" style="margin-top: 12px;"></p>
+                <div class="bpr-inline-actions">
+                    <button class="bpr-btn bpr-btn-primary" type="submit">Увійти</button>
+                    <button class="bpr-btn bpr-btn-quiet" type="button" onclick="bprCloseDeveloperLogin()">Скасувати</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <span class="nav-logo-text">INWHITE MEDICAL</span>
+            <p>Сучасний медичний центр первинної допомоги у місті Чоп. Доказова медицина. Психологічна підтримка. Турбота про кожного.</p>
+            <div class="social-links">
+                <a href="https://instagram.com/inwhitemedical" target="_blank" class="social-link">📸</a>
+                <a href="https://facebook.com" target="_blank" class="social-link">👥</a>
+                <a href="https://t.me/" target="_blank" class="social-link">✈️</a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Послуги</h4>
+            <ul>
+                <li data-nav-page="psychology"><a href="#" onclick="showPage('psychology'); return false;">Психологічна допомога</a></li>
+                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Сімейна медицина</a></li>
+                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">УЗД-діагностика</a></li>
+                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Вакцинація</a></li>
+                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Скринінг 40+</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Клініка</h4>
+            <ul>
+                <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
+                <li data-nav-page="team"><a href="#" onclick="showPage('team'); return false;">Команда</a></li>
+                <li data-nav-page="prices"><a href="#" onclick="showPage('prices'); return false;">Прайс</a></li>
+                <li data-nav-page="training"><a href="#" onclick="showPage('training'); return false;">Навчання</a></li>
+                <li data-nav-page="home"><a href="#" onclick="showPage('home'); return false;">Новини</a></li>
+                <li><a href="#" onclick="openModal(); return false;">Записатись</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Контакти</h4>
+            <ul>
+                <li><a id="siteFooterPhone" href="tel:+380XXXXXXXXX">📞 +380 XX XXX XX XX</a></li>
+                <li><a id="siteFooterEmail" href="mailto:info@inwhitemedical.ua">✉️ info@inwhitemedical.ua</a></li>
+                <li><a id="siteFooterAddress" href="#">📍 м. Чоп, Закарпаття</a></li>
+                <li><a id="siteFooterHours" href="#">🕐 Пн–Пт: 08:00–18:00</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2025 INWHITE MEDICAL. Всі права захищені.</span>
+        <span>Розроблено з ❤️ для громади Чопа</span>
+    </div>
+</footer>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">Онлайн-запис</div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <form onsubmit="submitForm(event)">
+            <div class="form-group">
+                <label>Послуга</label>
+                <div class="service-selector">
+                    <div class="service-option selected" onclick="selectService(this)">🧠 Психологія</div>
+                    <div class="service-option" onclick="selectService(this)">👨‍⚕️ Лікар</div>
+                    <div class="service-option" onclick="selectService(this)">🔬 УЗД</div>
+                    <div class="service-option" onclick="selectService(this)">💉 Вакцина</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ім'я</label>
+                    <input type="text" placeholder="Ваше ім'я" required>
+                </div>
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input type="tel" placeholder="+380..." required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Формат</label>
+                <select>
+                    <option>Онлайн-сесія</option>
+                    <option>Офлайн (в клініці)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Побажання</label>
+                <textarea placeholder="Ваш запит..." style="min-height: 80px;"></textarea>
+            </div>
+            <button type="submit" class="form-submit">Записатись ✦</button>
+            <p class="form-note">🔒 Конфіденційно · Відповідь протягом 30 хв</p>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ===== LOADER =====
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('loader').classList.add('hidden');
+        }, 1500);
+    });
+
+    // ===== NAVIGATION SCROLL =====
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('navbar');
+        if (window.scrollY > 50) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+    });
+
+    // ===== PAGE NAVIGATION =====
+    function showPage(pageName) {
+        if (typeof siteConfig !== 'undefined' && siteConfig.pages && siteConfig.pages[pageName] === false && !bprDeveloperUnlocked) {
+            pageName = 'home';
+        }
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        // Show target page
+        const targetPage = document.getElementById('page-' + pageName);
+        if (!targetPage) return;
+        targetPage.classList.add('active');
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Re-trigger animations
+        setTimeout(initReveal, 100);
+    }
+
+    // ===== MODAL =====
+    function openModal() {
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function closeModalOutside(e) {
+        if (e.target === document.getElementById('modalOverlay')) {
+            closeModal();
+        }
+    }
+
+    // Close modal with Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // ===== SERVICE SELECTOR =====
+    function selectService(el) {
+        el.closest('.service-selector').querySelectorAll('.service-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    // ===== FORM SUBMIT =====
+    function submitForm(e) {
+        e.preventDefault();
+        closeModal();
+        showNotification();
+    }
+
+    function showNotification() {
+        const notif = document.getElementById('notification');
+        notif.classList.add('show');
+        setTimeout(() => notif.classList.remove('show'), 4000);
+    }
+
+    // ===== FAQ =====
+    function toggleFaq(btn) {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+    }
+
+    // ===== REVEAL ON SCROLL =====
+    function initReveal() {
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        reveals.forEach(el => observer.observe(el));
+    }
+
+    initReveal();
+
+    // ===== HAMBURGER MENU =====
+    function toggleMenu() {
+        const links = document.querySelector('.nav-links');
+        links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+        links.style.flexDirection = 'column';
+        links.style.position = 'absolute';
+        links.style.top = '80px';
+        links.style.left = '0';
+        links.style.right = '0';
+        links.style.background = 'rgba(250,250,248,0.98)';
+        links.style.padding = '20px';
+        links.style.backdropFilter = 'blur(20px)';
+        links.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+        links.style.zIndex = '999';
+    }
+
+    // ===== SMOOTH COUNTER ANIMATION =====
+    function animateCounters() {
+        const counters = document.querySelectorAll('.stat-number');
+        counters.forEach(counter => {
+            const target = counter.textContent;
+            if (target.includes('+')) {
+                const num = parseInt(target);
+                let current = 0;
+                const increment = num / 30;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= num) {
+                        counter.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current) + '+';
+                    }
+                }, 50);
+            }
+        });
+    }
+
+    // Trigger counter animation when hero is visible
+    const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounters();
+                heroObserver.unobserve(entry.target);
+            }
+        });
+    });
+
+    const heroStats = document.querySelector('.hero-stats');
+    if (heroStats) heroObserver.observe(heroStats);
+
+    // ===== BPR TRAINING PLATFORM =====
+    const SITE_CONFIG_STORAGE = 'inwhite_site_config_v1';
+    const SITE_TEAM_STORAGE = 'inwhite_site_team_v1';
+    const SITE_PRICES_STORAGE = 'inwhite_site_prices_v1';
+    const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
+    const SUPABASE_TOKEN_STORAGE = 'inwhite_supabase_token_v1';
+    const DEFAULT_SUPABASE_URL = 'https://ukfldbbsbyjkyussbyfq.supabase.co';
+    const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Uf83B_3OPvSOKgDjbIlGHw_YOcqOKTW';
+    const BPR_TRAININGS_STORAGE = 'inwhite_bpr_trainings_v1';
+    const BPR_PARTICIPANTS_STORAGE = 'inwhite_bpr_participants_v1';
+    const BPR_DEVELOPER_PASSWORD = 'developer2026';
+
+    let siteConfig = {};
+    let siteTeam = [];
+    let sitePrices = [];
+    let supabaseConfig = {};
+    let supabaseAccessToken = '';
+    let bprTrainings = [];
+    let bprParticipants = [];
+    let bprCurrentTrainingId = null;
+    let bprCurrentParticipantId = null;
+    let bprDeveloperUnlocked = false;
+    let bprActiveTrainingCategory = 'online';
+
+    function adminDefaultSiteConfig() {
+        return {
+            pages: {
+                home: true,
+                psychology: true,
+                services: true,
+                prices: true,
+                team: true,
+                about: true,
+                training: true
+            },
+            heroBadge: 'Відкриваємось у 2025 · Чоп, Закарпаття',
+            heroTitle: 'Медицина,<br>що <em>турбується</em><br>про вас',
+            heroSubtitle: 'Сучасний медичний центр первинної допомоги. Вже зараз — психологічна підтримка онлайн для вас та вашої родини.',
+            announcementText: '🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно',
+            phone: '+380 XX XXX XX XX',
+            whatsapp: '380XXXXXXXXX',
+            email: 'info@inwhitemedical.ua',
+            address: 'м. Чоп, Закарпаття',
+            hours: 'Пн–Пт: 08:00–18:00'
+        };
+    }
+
+    function adminDefaultTeam() {
+        return [
+            {
+                photo: '👨‍⚕️',
+                name: 'Медичний психолог',
+                role: 'Засновник · Медичний психолог',
+                description: 'Спеціаліст з медичної психології. Досвід у психосоціальних втручаннях, ПТСР, тривожних розладах. Засновник INWHITE MEDICAL.',
+                visible: true
+            },
+            {
+                photo: '👩‍⚕️',
+                name: 'Сімейний лікар',
+                role: 'Лікар загальної практики',
+                description: '8 років досвіду у сімейній медицині. Педіатричний та терапевтичний напрямок. Доказова медицина.',
+                visible: true
+            },
+            {
+                photo: '🔬',
+                name: 'Лікар УЗД',
+                role: 'Ультразвукова діагностика',
+                description: 'Фахівець з ультразвукової діагностики. Внутрішні органи, щитоподібна залоза, судинна система.',
+                visible: true
+            }
+        ];
+    }
+
+    function adminDefaultPrices() {
+        return [
+            { category: 'Консультації', name: 'Консультація сімейного лікаря', description: 'Первинний або повторний прийом сімейного лікаря.', price: '600 грн', visible: true },
+            { category: 'Діагностика', name: 'ЕКГ з розшифровкою', description: 'Електрокардіограма з оцінкою результату лікарем.', price: '350 грн', visible: true },
+            { category: 'Діагностика', name: 'УЗД органів черевної порожнини', description: 'Ультразвукова діагностика за попереднім записом.', price: 'від 700 грн', visible: true },
+            { category: 'Психологія', name: 'Консультація медичного психолога', description: 'Онлайн або офлайн консультація за попереднім записом.', price: 'уточнюється', visible: true }
+        ];
+    }
+
+    function adminNormalizeSiteConfig(config) {
+        const defaults = adminDefaultSiteConfig();
+        return {
+            ...defaults,
+            ...config,
+            pages: {
+                ...defaults.pages,
+                ...(config && config.pages ? config.pages : {})
+            }
+        };
+    }
+
+    function supabaseDefaultConfig() {
+        return {
+            url: DEFAULT_SUPABASE_URL,
+            publishableKey: DEFAULT_SUPABASE_PUBLISHABLE_KEY
+        };
+    }
+
+    function supabaseSetStatus(message) {
+        const status = document.getElementById('supabaseStatus');
+        if (status) status.textContent = message;
+    }
+
+    function supabaseNormalizeConfig(config) {
+        const defaults = supabaseDefaultConfig();
+        return {
+            url: String((config && config.url) || defaults.url).replace(/\/$/, ''),
+            publishableKey: (config && config.publishableKey) || defaults.publishableKey
+        };
+    }
+
+    function supabaseHeaders(useAdminToken) {
+        const token = useAdminToken && supabaseAccessToken ? supabaseAccessToken : supabaseConfig.publishableKey;
+        return {
+            apikey: supabaseConfig.publishableKey,
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+    }
+
+    function supabaseCurrentPageUrl() {
+        return window.location.href.split('#')[0].split('?')[0];
+    }
+
+    function supabaseReadRecoveryToken() {
+        const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const query = new URLSearchParams(window.location.search);
+        const type = hash.get('type') || query.get('type');
+        const token = hash.get('access_token') || query.get('access_token');
+        if (type === 'recovery' && token) return token;
+        return '';
+    }
+
+    async function supabaseRequest(path, options, useAdminToken) {
+        supabaseConfig = supabaseNormalizeConfig(supabaseConfig);
+        if (!supabaseConfig.url || !supabaseConfig.publishableKey) {
+            throw new Error('Supabase не налаштований.');
+        }
+        const response = await fetch(supabaseConfig.url + path, {
+            ...options,
+            headers: {
+                ...supabaseHeaders(useAdminToken),
+                ...((options && options.headers) || {})
+            }
+        });
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || ('Supabase error ' + response.status));
+        }
+        if (response.status === 204) return null;
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
+    }
+
+    function supabaseFillForm() {
+        const urlInput = document.getElementById('supabaseUrlInput');
+        const keyInput = document.getElementById('supabaseKeyInput');
+        if (urlInput) urlInput.value = supabaseConfig.url || '';
+        if (keyInput) keyInput.value = supabaseConfig.publishableKey || '';
+        supabaseSetStatus(supabaseAccessToken ? 'Supabase: адмін увійшов.' : 'Supabase: підключення готове, потрібен адмін-вхід для запису.');
+    }
+
+    function supabaseSaveConfig(event) {
+        if (event) event.preventDefault();
+        supabaseConfig = supabaseNormalizeConfig({
+            url: document.getElementById('supabaseUrlInput').value.trim(),
+            publishableKey: document.getElementById('supabaseKeyInput').value.trim()
+        });
+        localStorage.setItem(SUPABASE_CONFIG_STORAGE, JSON.stringify(supabaseConfig));
+        supabaseSetStatus('Підключення Supabase збережено.');
+    }
+
+    async function supabaseLogin(event) {
+        event.preventDefault();
+        supabaseSaveConfig();
+        const email = document.getElementById('supabaseAdminEmail').value.trim();
+        const password = document.getElementById('supabaseAdminPassword').value;
+        if (!email || !password) {
+            supabaseSetStatus('Введіть email і пароль адміністратора Supabase Auth.');
+            return;
+        }
+        try {
+            supabaseSetStatus('Вхід у Supabase...');
+            const data = await supabaseRequest('/auth/v1/token?grant_type=password', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            }, false);
+            supabaseAccessToken = data.access_token;
+            sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
+            document.getElementById('supabaseAdminPassword').value = '';
+            supabaseSetStatus('Supabase: адмін увійшов, можна зберігати зміни.');
+        } catch (error) {
+            supabaseSetStatus('Помилка входу: перевірте email, пароль і чи підтверджений користувач у Supabase Auth.');
+        }
+    }
+
+    async function supabaseRegisterAdmin() {
+        supabaseSaveConfig();
+        const email = document.getElementById('supabaseAdminEmail').value.trim();
+        const password = document.getElementById('supabaseAdminPassword').value;
+        if (!email || !password) {
+            supabaseSetStatus('Введіть email і пароль для створення адміністратора.');
+            return;
+        }
+        if (email.toLowerCase() !== 'inwhite.medcenter@gmail.com') {
+            supabaseSetStatus('Адміністратором може бути тільки inwhite.medcenter@gmail.com.');
+            return;
+        }
+        try {
+            supabaseSetStatus('Створення адміністратора Supabase...');
+            await supabaseRequest('/auth/v1/signup', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email,
+                    password,
+                    options: { emailRedirectTo: supabaseCurrentPageUrl() },
+                    redirect_to: supabaseCurrentPageUrl()
+                })
+            }, false);
+            supabaseSetStatus('Адміністратора створено. Якщо Supabase просить підтвердження email, відкрийте лист і підтвердьте акаунт, потім увійдіть.');
+        } catch (error) {
+            supabaseSetStatus('Не вдалося створити адміністратора. Можливо, користувач уже існує або пароль занадто короткий.');
+        }
+    }
+
+    async function supabaseSendPasswordReset() {
+        supabaseSaveConfig();
+        const email = document.getElementById('supabaseAdminEmail').value.trim();
+        if (!email) {
+            supabaseSetStatus('Введіть email адміністратора, щоб надіслати лінк зміни пароля.');
+            return;
+        }
+        try {
+            supabaseSetStatus('Надсилаю лист для зміни пароля...');
+            await supabaseRequest('/auth/v1/recover', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email,
+                    options: { redirectTo: supabaseCurrentPageUrl() },
+                    redirect_to: supabaseCurrentPageUrl()
+                })
+            }, false);
+            supabaseSetStatus('Лист надіслано. Відкрийте посилання з пошти, поверніться на цю сторінку, введіть новий пароль у поле пароля і натисніть “Змінити пароль”.');
+        } catch (error) {
+            supabaseSetStatus('Не вдалося надіслати лист. Перевірте email та Redirect URL у Supabase.');
+        }
+    }
+
+    async function supabaseUpdatePassword() {
+        supabaseSaveConfig();
+        const recoveryToken = supabaseReadRecoveryToken();
+        const password = document.getElementById('supabaseAdminPassword').value;
+        if (!recoveryToken) {
+            supabaseSetStatus('Спочатку відкрийте recovery-посилання з листа на цій сторінці.');
+            return;
+        }
+        if (!password || password.length < 6) {
+            supabaseSetStatus('Введіть новий пароль мінімум 6 символів.');
+            return;
+        }
+        try {
+            supabaseSetStatus('Змінюю пароль...');
+            const response = await fetch(supabaseNormalizeConfig(supabaseConfig).url + '/auth/v1/user', {
+                method: 'PUT',
+                headers: {
+                    apikey: supabaseConfig.publishableKey,
+                    Authorization: 'Bearer ' + recoveryToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ password })
+            });
+            if (!response.ok) throw new Error(await response.text());
+            supabaseAccessToken = recoveryToken;
+            sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
+            document.getElementById('supabaseAdminPassword').value = '';
+            window.history.replaceState({}, document.title, supabaseCurrentPageUrl());
+            supabaseSetStatus('Пароль змінено. Ви увійшли в Supabase і можете зберігати сайт у базу.');
+        } catch (error) {
+            supabaseSetStatus('Не вдалося змінити пароль. Спробуйте надіслати новий recovery-лінк.');
+        }
+    }
+
+    function supabaseSitePayload() {
+        return {
+            id: 'main',
+            site_config: siteConfig,
+            site_team: siteTeam,
+            site_prices: sitePrices,
+            bpr_trainings: bprTrainings,
+            updated_at: new Date().toISOString()
+        };
+    }
+
+    function supabaseApplySitePayload(row) {
+        if (!row) return;
+        siteConfig = adminNormalizeSiteConfig(row.site_config || adminDefaultSiteConfig());
+        siteTeam = Array.isArray(row.site_team) ? row.site_team : adminDefaultTeam();
+        sitePrices = Array.isArray(row.site_prices) ? row.site_prices : adminDefaultPrices();
+        bprTrainings = Array.isArray(row.bpr_trainings) ? row.bpr_trainings : bprDefaultTrainings();
+        adminSaveSiteState();
+        bprSaveState();
+        adminRenderSite();
+        adminFillForms();
+        bprRenderTrainingCards();
+        bprRenderDeveloperTrainingList();
+    }
+
+    async function supabaseLoadSiteState(options = {}) {
+        try {
+            supabaseConfig = supabaseNormalizeConfig(supabaseConfig);
+            const rows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=*', {
+                method: 'GET'
+            }, false);
+            if (rows && rows[0]) {
+                supabaseApplySitePayload(rows[0]);
+                if (!options.silent) supabaseSetStatus('Дані сайту завантажені з Supabase.');
+            } else if (!options.silent) {
+                supabaseSetStatus('У базі ще немає запису сайту. Натисніть “Зберегти сайт у базу”.');
+            }
+        } catch (error) {
+            if (!options.silent) supabaseSetStatus('Не вдалося завантажити з Supabase. Перевірте SQL-таблиці.');
+        }
+    }
+
+    async function supabaseSaveSiteState() {
+        if (!supabaseAccessToken) {
+            supabaseSetStatus('Спочатку увійдіть в Supabase як адміністратор.');
+            return;
+        }
+        try {
+            supabaseSetStatus('Збереження сайту в Supabase...');
+            await supabaseRequest('/rest/v1/inwhite_site_state?on_conflict=id', {
+                method: 'POST',
+                headers: { Prefer: 'resolution=merge-duplicates' },
+                body: JSON.stringify(supabaseSitePayload())
+            }, true);
+            supabaseSetStatus('Сайт збережено в Supabase.');
+        } catch (error) {
+            supabaseSetStatus('Помилка збереження сайту. Перевірте права таблиці.');
+        }
+    }
+
+    function supabaseParticipantPayload(participant) {
+        return {
+            id: participant.id,
+            training_id: participant.trainingId,
+            full_name: participant.fullName,
+            email: participant.email,
+            payload: participant,
+            updated_at: new Date().toISOString()
+        };
+    }
+
+    async function supabaseUpsertParticipant(participant, options = {}) {
+        try {
+            await supabaseRequest('/rest/v1/inwhite_participants?on_conflict=id', {
+                method: 'POST',
+                headers: { Prefer: 'resolution=merge-duplicates' },
+                body: JSON.stringify(supabaseParticipantPayload(participant))
+            }, false);
+            if (!options.silent) supabaseSetStatus('Учасника синхронізовано з Supabase.');
+        } catch (error) {
+            if (!options.silent) supabaseSetStatus('Не вдалося синхронізувати учасника. Перевірте RLS-політики.');
+        }
+    }
+
+    async function supabaseSyncParticipants() {
+        if (!bprParticipants.length) {
+            supabaseSetStatus('Немає учасників для синхронізації.');
+            return;
+        }
+        try {
+            supabaseSetStatus('Синхронізація учасників...');
+            await supabaseRequest('/rest/v1/inwhite_participants?on_conflict=id', {
+                method: 'POST',
+                headers: { Prefer: 'resolution=merge-duplicates' },
+                body: JSON.stringify(bprParticipants.map(supabaseParticipantPayload))
+            }, supabaseAccessToken ? true : false);
+            supabaseSetStatus('Учасників синхронізовано з Supabase.');
+        } catch (error) {
+            supabaseSetStatus('Помилка синхронізації учасників. Перевірте SQL-політики.');
+        }
+    }
+
+    async function supabaseLoadParticipants() {
+        if (!supabaseAccessToken) {
+            supabaseSetStatus('Щоб бачити персональні дані учасників, увійдіть як адміністратор.');
+            return;
+        }
+        try {
+            const rows = await supabaseRequest('/rest/v1/inwhite_participants?select=payload&order=updated_at.desc', {
+                method: 'GET'
+            }, true);
+            bprParticipants = (rows || []).map(row => row.payload).filter(Boolean);
+            bprSaveState();
+            bprRenderParticipants();
+            supabaseSetStatus('Учасників завантажено з Supabase.');
+        } catch (error) {
+            supabaseSetStatus('Не вдалося завантажити учасників.');
+        }
+    }
+
+    function adminParseRows(text, fields) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                const item = {};
+                fields.forEach((field, index) => {
+                    item[field] = parts[index] || '';
+                });
+                item.visible = (item.visible || 'visible').toLowerCase() !== 'hidden';
+                return item;
+            });
+    }
+
+    function adminTeamToText(items) {
+        return items.map(item => [
+            item.photo || '👨‍⚕️',
+            item.name || '',
+            item.role || '',
+            item.description || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminPricesToText(items) {
+        return items.map(item => [
+            item.category || '',
+            item.name || '',
+            item.description || '',
+            item.price || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminSaveSiteState() {
+        localStorage.setItem(SITE_CONFIG_STORAGE, JSON.stringify(siteConfig));
+        localStorage.setItem(SITE_TEAM_STORAGE, JSON.stringify(siteTeam));
+        localStorage.setItem(SITE_PRICES_STORAGE, JSON.stringify(sitePrices));
+    }
+
+    function adminRenderSite() {
+        siteConfig = adminNormalizeSiteConfig(siteConfig);
+
+        const heroBadge = document.querySelector('.hero-badge');
+        if (heroBadge) {
+            heroBadge.innerHTML = '<div class="hero-badge-dot"></div>' + bprEscapeText(siteConfig.heroBadge);
+        }
+
+        const heroTitle = document.querySelector('.hero h1');
+        if (heroTitle) heroTitle.innerHTML = siteConfig.heroTitle || '';
+
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroSubtitle) heroSubtitle.textContent = siteConfig.heroSubtitle || '';
+
+        const announcement = document.querySelector('.announcement p');
+        if (announcement) announcement.innerHTML = siteConfig.announcementText || '';
+
+        const cleanPhone = String(siteConfig.phone || '').replace(/[^\d+]/g, '');
+        const whatsapp = String(siteConfig.whatsapp || '').replace(/[^\d]/g, '');
+        const floatingPhone = document.getElementById('siteFloatingPhone');
+        const floatingWhatsapp = document.getElementById('siteFloatingWhatsapp');
+        const footerPhone = document.getElementById('siteFooterPhone');
+        const footerEmail = document.getElementById('siteFooterEmail');
+        const footerAddress = document.getElementById('siteFooterAddress');
+        const footerHours = document.getElementById('siteFooterHours');
+        if (floatingPhone) floatingPhone.href = 'tel:' + cleanPhone;
+        if (floatingWhatsapp) floatingWhatsapp.href = 'https://wa.me/' + whatsapp;
+        if (footerPhone) {
+            footerPhone.href = 'tel:' + cleanPhone;
+            footerPhone.textContent = '📞 ' + (siteConfig.phone || '');
+        }
+        if (footerEmail) {
+            footerEmail.href = 'mailto:' + (siteConfig.email || '');
+            footerEmail.textContent = '✉️ ' + (siteConfig.email || '');
+        }
+        if (footerAddress) footerAddress.textContent = '📍 ' + (siteConfig.address || '');
+        if (footerHours) footerHours.textContent = '🕐 ' + (siteConfig.hours || '');
+
+        document.querySelectorAll('[data-nav-page]').forEach(item => {
+            const page = item.getAttribute('data-nav-page');
+            item.style.display = siteConfig.pages[page] === false ? 'none' : '';
+        });
+
+        adminRenderTeam();
+        adminRenderPrices();
+    }
+
+    function adminRenderTeam() {
+        const grid = document.getElementById('siteTeamGrid');
+        if (!grid) return;
+        const visibleTeam = siteTeam.filter(item => item.visible !== false);
+        if (!visibleTeam.length) {
+            grid.innerHTML = '<div class="bpr-empty">Команда тимчасово не заповнена.</div>';
+            return;
+        }
+
+        grid.innerHTML = visibleTeam.map(item => {
+            const photo = item.photo || '👨‍⚕️';
+            const isImage = /^(https?:\/\/|assets\/|data:image|file:)/.test(photo);
+            const photoHtml = isImage ? '<img src="' + bprEscapeText(photo) + '" alt="' + bprEscapeText(item.name) + '">' : bprEscapeText(photo);
+            return `
+                <div class="team-card">
+                    <div class="team-photo">${photoHtml}</div>
+                    <div class="team-info">
+                        <div class="team-name">${bprEscapeText(item.name)}</div>
+                        <div class="team-role">${bprEscapeText(item.role)}</div>
+                        <p class="team-desc">${bprEscapeText(item.description)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function adminRenderPrices() {
+        const list = document.getElementById('sitePriceList');
+        const empty = document.getElementById('sitePriceEmpty');
+        if (!list || !empty) return;
+
+        const visiblePrices = sitePrices.filter(item => item.visible !== false);
+        empty.hidden = visiblePrices.length > 0;
+        list.innerHTML = visiblePrices.map(item => `
+            <div class="price-row">
+                <div>
+                    <span class="bpr-pill">${bprEscapeText(item.category || 'Послуга')}</span>
+                    <h3>${bprEscapeText(item.name)}</h3>
+                    <p>${bprEscapeText(item.description)}</p>
+                </div>
+                <div class="price-value">${bprEscapeText(item.price)}</div>
+            </div>
+        `).join('');
+    }
+
+    function adminFillForms() {
+        if (!document.getElementById('siteAdminForm')) return;
+        document.getElementById('adminPageHome').checked = siteConfig.pages.home !== false;
+        document.getElementById('adminPagePsychology').checked = siteConfig.pages.psychology !== false;
+        document.getElementById('adminPageServices').checked = siteConfig.pages.services !== false;
+        document.getElementById('adminPagePrices').checked = siteConfig.pages.prices !== false;
+        document.getElementById('adminPageTeam').checked = siteConfig.pages.team !== false;
+        document.getElementById('adminPageAbout').checked = siteConfig.pages.about !== false;
+        document.getElementById('adminPageTraining').checked = siteConfig.pages.training !== false;
+        document.getElementById('adminHeroBadge').value = siteConfig.heroBadge || '';
+        document.getElementById('adminHeroTitle').value = siteConfig.heroTitle || '';
+        document.getElementById('adminHeroSubtitle').value = siteConfig.heroSubtitle || '';
+        document.getElementById('adminAnnouncementText').value = siteConfig.announcementText || '';
+        document.getElementById('adminContactPhone').value = siteConfig.phone || '';
+        document.getElementById('adminContactWhatsapp').value = siteConfig.whatsapp || '';
+        document.getElementById('adminContactEmail').value = siteConfig.email || '';
+        document.getElementById('adminContactAddress').value = siteConfig.address || '';
+        document.getElementById('adminContactHours').value = siteConfig.hours || '';
+        document.getElementById('adminTeamEditor').value = adminTeamToText(siteTeam);
+        document.getElementById('adminPricesEditor').value = adminPricesToText(sitePrices);
+    }
+
+    function adminSaveSiteSettings(event) {
+        event.preventDefault();
+        siteConfig.pages = {
+            home: document.getElementById('adminPageHome').checked,
+            psychology: document.getElementById('adminPagePsychology').checked,
+            services: document.getElementById('adminPageServices').checked,
+            prices: document.getElementById('adminPagePrices').checked,
+            team: document.getElementById('adminPageTeam').checked,
+            about: document.getElementById('adminPageAbout').checked,
+            training: document.getElementById('adminPageTraining').checked
+        };
+        siteConfig.heroBadge = document.getElementById('adminHeroBadge').value.trim();
+        siteConfig.heroTitle = document.getElementById('adminHeroTitle').value.trim();
+        siteConfig.heroSubtitle = document.getElementById('adminHeroSubtitle').value.trim();
+        siteConfig.announcementText = document.getElementById('adminAnnouncementText').value.trim();
+        siteConfig.phone = document.getElementById('adminContactPhone').value.trim();
+        siteConfig.whatsapp = document.getElementById('adminContactWhatsapp').value.trim();
+        siteConfig.email = document.getElementById('adminContactEmail').value.trim();
+        siteConfig.address = document.getElementById('adminContactAddress').value.trim();
+        siteConfig.hours = document.getElementById('adminContactHours').value.trim();
+        adminSaveSiteState();
+        adminRenderSite();
+        alert('Налаштування сайту збережено.');
+    }
+
+    function adminSaveTeam(event) {
+        event.preventDefault();
+        siteTeam = adminParseRows(document.getElementById('adminTeamEditor').value, ['photo', 'name', 'role', 'description', 'visible']);
+        adminSaveSiteState();
+        adminRenderTeam();
+        alert('Команду збережено.');
+    }
+
+    function adminSavePrices(event) {
+        event.preventDefault();
+        sitePrices = adminParseRows(document.getElementById('adminPricesEditor').value, ['category', 'name', 'description', 'price', 'visible']);
+        adminSaveSiteState();
+        adminRenderPrices();
+        alert('Прайс збережено.');
+    }
+
+    function bprImageData(label) {
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E8DDD0"/><stop offset="0.55" stop-color="#FAFAF8"/><stop offset="1" stop-color="#C9A96E"/></linearGradient></defs><rect width="900" height="520" fill="url(#g)"/><circle cx="760" cy="90" r="120" fill="#C9A96E" opacity="0.18"/><circle cx="110" cy="430" r="150" fill="#A8B5A0" opacity="0.22"/><text x="72" y="245" font-family="Georgia, serif" font-size="44" fill="#2A2A2A">INWHITE MEDICAL</text><text x="72" y="302" font-family="Arial, sans-serif" font-size="25" fill="#6B6B6B">' + bprEscapeText(label) + '</text></svg>';
+        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    function bprEscapeText(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function bprDefaultQuizText() {
+        return [
+            'Який мінімальний результат потрібен для отримання сертифіката? | 50% | 60% | 80% | 100% | 3',
+            'Що має зробити учасник перед доступом до навчання? | Лише відкрити запис | Зареєструватись | Надіслати повідомлення | Нічого | 2',
+            'Скільки питань містить підсумкове тестування? | 5 | 8 | 10 | 12 | 3',
+            'Що формується після успішного тестування? | Купон | Сертифікат | Чернетка | Рахунок | 2',
+            'Які дані потрібні для сертифіката? | ПІБ та email | Лише телефон | Лише імʼя | Тільки посада | 1',
+            'Що означають бали БПР? | Професійний розвиток | Номер телефону | Вартість курсу | Назва клініки | 1',
+            'Коли відкривається тестування у цій системі? | До реєстрації | Після перегляду запису або доступу до нього | Без оплати | Лише адміністратору | 2',
+            'Що повинен мати кожен сертифікат? | Унікальний код | Однаковий номер | Пароль | Номер кабінету | 1',
+            'Хто може змінювати номер провайдера і тренінгу? | Будь-який відвідувач | Розробник у кабінеті | Лише учасник | Ніхто | 2',
+            'Що записується у таблицю учасників? | Дані учасника, результат і сертифікат | Лише назва курсу | Лише ціна | Тільки дата | 1'
+        ].join('\n');
+    }
+
+    function bprDefaultTrainings() {
+        return [
+            {
+                id: 'bpr-ptsd-2026',
+                title: 'ПТСР та гострий стрес: діагностика та перша допомога',
+                category: 'online',
+                type: 'Тренінг',
+                mode: 'Онлайн, запис',
+                points: 10,
+                price: '1200 грн',
+                year: 2026,
+                providerCode: '2356',
+                trainingNumber: '1029684',
+                certificateNext: 147,
+                certificateDigits: 6,
+                image: bprImageData('Тренінг для лікарів'),
+                paymentUrl: 'https://example.com/payment',
+                recordingUrl: 'https://example.com/recording',
+                googleFormUrl: '',
+                shortDescription: 'Практичний тренінг для лікарів щодо розпізнавання гострих стресових реакцій та ПТСР.',
+                fullDescription: 'Учасники розглянуть алгоритми первинного скринінгу, комунікацію з пацієнтами після травматичних подій, маршрутизацію та базові принципи першої психологічної допомоги. Після доступу до запису потрібно скласти тестування з 10 питань.',
+                quizText: bprDefaultQuizText(),
+                visible: true
+            },
+            {
+                id: 'bpr-ultrasound-2026',
+                title: 'УЗД у практиці сімейного лікаря',
+                category: 'online',
+                type: 'Майстер-клас',
+                mode: 'Онлайн, запис',
+                points: 8,
+                price: '1500 грн',
+                year: 2026,
+                providerCode: '2356',
+                trainingNumber: '1029685',
+                certificateNext: 1,
+                certificateDigits: 6,
+                image: bprImageData('Майстер-клас БПР'),
+                paymentUrl: 'https://example.com/payment',
+                recordingUrl: 'https://example.com/recording',
+                googleFormUrl: '',
+                shortDescription: 'Майстер-клас з базових УЗД-навичок та інтерпретації типових клінічних випадків.',
+                fullDescription: 'Програма включає огляд показань, типових помилок, структури висновку та практичні клінічні сценарії. Після перегляду запису учасник проходить тестування і отримує сертифікат за умови результату 80% або вище.',
+                quizText: bprDefaultQuizText(),
+                visible: true
+            },
+            {
+                id: 'bpr-offline-2026',
+                title: 'Практичний офлайн-семінар для лікарів первинної ланки',
+                category: 'offline',
+                type: 'Офлайн тренінг',
+                mode: 'Офлайн, очна участь',
+                points: 10,
+                price: 'уточнюється',
+                year: 2026,
+                providerCode: '2356',
+                trainingNumber: '1029686',
+                certificateNext: 1,
+                certificateDigits: 6,
+                image: bprImageData('Офлайн навчання'),
+                paymentUrl: '',
+                recordingUrl: '',
+                googleFormUrl: 'https://forms.gle/ВАШЕ_ПОСИЛАННЯ',
+                shortDescription: 'Очний захід із реєстрацією через Google Forms. Дані учасників збираються у вашій окремій таблиці.',
+                fullDescription: 'Офлайн-захід проводиться наживо. Для реєстрації натисніть кнопку та заповніть форму. Посилання на Google Forms змінюється в адмін-панелі.',
+                quizText: bprDefaultQuizText(),
+                visible: true
+            }
+        ];
+    }
+
+    function bprReadStorage(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : fallback;
+        } catch (error) {
+            return fallback;
+        }
+    }
+
+    function bprSaveState() {
+        localStorage.setItem(BPR_TRAININGS_STORAGE, JSON.stringify(bprTrainings));
+        localStorage.setItem(BPR_PARTICIPANTS_STORAGE, JSON.stringify(bprParticipants));
+    }
+
+    function bprFindTraining(trainingId) {
+        return bprTrainings.find(training => training.id === trainingId);
+    }
+
+    function bprFindParticipant(participantId) {
+        return bprParticipants.find(participant => participant.id === participantId);
+    }
+
+    function bprInitTrainingModule() {
+        siteConfig = adminNormalizeSiteConfig(bprReadStorage(SITE_CONFIG_STORAGE, adminDefaultSiteConfig()));
+        siteTeam = bprReadStorage(SITE_TEAM_STORAGE, adminDefaultTeam());
+        sitePrices = bprReadStorage(SITE_PRICES_STORAGE, adminDefaultPrices());
+        supabaseConfig = supabaseNormalizeConfig(bprReadStorage(SUPABASE_CONFIG_STORAGE, supabaseDefaultConfig()));
+        supabaseAccessToken = sessionStorage.getItem(SUPABASE_TOKEN_STORAGE) || '';
+        const defaultTrainings = bprDefaultTrainings();
+        const storedTrainings = bprReadStorage(BPR_TRAININGS_STORAGE, defaultTrainings);
+        defaultTrainings.forEach(defaultTraining => {
+            if (!storedTrainings.some(training => training.id === defaultTraining.id)) {
+                storedTrainings.push(defaultTraining);
+            }
+        });
+        bprTrainings = storedTrainings.map(training => ({
+            category: 'online',
+            googleFormUrl: '',
+            ...training
+        }));
+        bprParticipants = bprReadStorage(BPR_PARTICIPANTS_STORAGE, []);
+        adminRenderSite();
+        adminFillForms();
+        supabaseFillForm();
+        bprRenderTrainingCards();
+        bprRenderParticipants();
+        bprRenderDeveloperTrainingList();
+        if (bprTrainings.length) {
+            bprFillTrainingForm(bprTrainings[0]);
+        }
+    }
+
+    function bprSetTrainingCategory(category) {
+        bprActiveTrainingCategory = category;
+        const onlineTab = document.getElementById('bprOnlineTab');
+        const offlineTab = document.getElementById('bprOfflineTab');
+        if (onlineTab) onlineTab.classList.toggle('active', category === 'online');
+        if (offlineTab) offlineTab.classList.toggle('active', category === 'offline');
+        bprRenderTrainingCards();
+    }
+
+    function bprRenderTrainingCards() {
+        const grid = document.getElementById('bprEventsGrid');
+        const empty = document.getElementById('bprEmptyState');
+        if (!grid || !empty) return;
+
+        const visibleTrainings = bprTrainings.filter(training => training.visible && (training.category || 'online') === bprActiveTrainingCategory);
+        empty.hidden = visibleTrainings.length > 0;
+        empty.textContent = bprActiveTrainingCategory === 'online'
+            ? 'Наразі немає онлайн тренінгів.'
+            : 'Наразі немає офлайн навчальних заходів.';
+        grid.innerHTML = visibleTrainings.map(training => `
+            <article class="bpr-card" onclick="bprOpenEventModal('${bprEscapeText(training.id)}')">
+                <img src="${bprEscapeText(training.image || bprImageData('Навчальний захід'))}" alt="${bprEscapeText(training.title)}">
+                <div class="bpr-card-body">
+                    <div class="bpr-card-meta">
+                        <span class="bpr-pill">${bprEscapeText(training.type)}</span>
+                        <span class="bpr-pill bpr-pill-muted">${bprEscapeText(training.mode)}</span>
+                        <span class="bpr-pill bpr-pill-muted">${Number(training.points) || 0} балів БПР</span>
+                    </div>
+                    <h3>${bprEscapeText(training.title)}</h3>
+                    <p>${bprEscapeText(training.shortDescription)}</p>
+                    <div class="bpr-card-footer">
+                        <span>${bprEscapeText(training.price || 'Вартість уточнюється')}</span>
+                        <span>${(training.category || 'online') === 'offline' ? 'Реєстрація' : 'Детальніше'}</span>
+                    </div>
+                </div>
+            </article>
+        `).join('');
+    }
+
+    function bprOpenEventModal(trainingId) {
+        const training = bprFindTraining(trainingId);
+        if (!training) return;
+
+        bprCurrentTrainingId = trainingId;
+        document.getElementById('bprModalImage').src = training.image || bprImageData('Навчальний захід');
+        document.getElementById('bprModalTitle').textContent = training.title;
+        document.getElementById('bprModalDescription').textContent = training.fullDescription;
+        document.getElementById('bprModalPrice').textContent = 'Вартість: ' + (training.price || 'уточнюється');
+        document.getElementById('bprModalMeta').innerHTML = `
+            <span class="bpr-pill">${bprEscapeText(training.type)}</span>
+            <span class="bpr-pill bpr-pill-muted">${bprEscapeText(training.mode)}</span>
+            <span class="bpr-pill bpr-pill-muted">${Number(training.points) || 0} балів БПР</span>
+        `;
+        const isOffline = (training.category || 'online') === 'offline';
+        document.getElementById('bprRegisterForm').hidden = isOffline;
+        document.getElementById('bprOfflineRegistrationBox').hidden = !isOffline;
+        document.getElementById('bprOfflineRegistrationLink').href = training.googleFormUrl || '#';
+        if (!isOffline) document.getElementById('bprRegisterForm').reset();
+        document.getElementById('bprEventModal').hidden = false;
+        document.body.style.overflow = 'hidden';
+    }
+
+    function bprCloseEventModal() {
+        document.getElementById('bprEventModal').hidden = true;
+        document.body.style.overflow = '';
+    }
+
+    function bprCloseEventModalOnOverlay(event) {
+        if (event.target === event.currentTarget) {
+            bprCloseEventModal();
+        }
+    }
+
+    async function bprSubmitRegistration(event) {
+        event.preventDefault();
+        const training = bprFindTraining(bprCurrentTrainingId);
+        if (!training) return;
+
+        const participant = {
+            id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('participant-' + Date.now() + '-' + Math.random().toString(36).slice(2)),
+            trainingId: training.id,
+            fullName: document.getElementById('bprRegFullName').value.trim(),
+            birthDate: document.getElementById('bprRegBirthDate').value,
+            email: document.getElementById('bprRegEmail').value.trim(),
+            education: document.getElementById('bprRegEducation').value.trim(),
+            workplace: document.getElementById('bprRegWorkplace').value.trim(),
+            position: document.getElementById('bprRegPosition').value.trim(),
+            paymentStatus: 'pending',
+            score: null,
+            correctAnswers: null,
+            totalQuestions: null,
+            pointsAwarded: 0,
+            certificateCode: '',
+            createdAt: new Date().toISOString(),
+            completedAt: ''
+        };
+
+        bprParticipants.push(participant);
+        bprCurrentParticipantId = participant.id;
+        bprSaveState();
+        bprRenderParticipants();
+        await supabaseUpsertParticipant(participant, { silent: true });
+        bprCloseEventModal();
+        bprOpenCourse(training.id, participant.id);
+    }
+
+    function bprOpenCourse(trainingId, participantId) {
+        const training = bprFindTraining(trainingId);
+        const participant = bprFindParticipant(participantId);
+        if (!training || !participant) return;
+
+        bprCurrentTrainingId = trainingId;
+        bprCurrentParticipantId = participantId;
+
+        const paid = participant.paymentStatus === 'paid';
+        document.getElementById('bprCoursePanel').hidden = false;
+        document.getElementById('bprQuizPanel').hidden = true;
+        document.getElementById('bprCertificatePanel').hidden = true;
+        document.getElementById('bprCourseTitle').textContent = training.title;
+        document.getElementById('bprCourseDescription').textContent = paid
+            ? 'Доступ відкрито. Перегляньте запис та переходьте до тестування.'
+            : 'Після підтвердження оплати відкриється посилання на запис і тестування.';
+        document.getElementById('bprParticipantName').textContent = participant.fullName;
+        document.getElementById('bprParticipantStatus').textContent = paid ? 'Оплата підтверджена, доступ відкрито' : 'Зареєстровано, очікується оплата';
+
+        const recordingLink = document.getElementById('bprRecordingLink');
+        recordingLink.href = training.recordingUrl || '#';
+        recordingLink.style.opacity = paid ? '1' : '0.45';
+        recordingLink.style.pointerEvents = paid ? 'auto' : 'none';
+
+        const startButton = document.querySelector('#bprCoursePanel button[onclick="bprStartQuiz()"]');
+        if (startButton) {
+            startButton.disabled = !paid;
+            startButton.style.opacity = paid ? '1' : '0.45';
+        }
+
+        const paymentLink = document.getElementById('bprPaymentLink');
+        paymentLink.href = training.paymentUrl || '#';
+        document.getElementById('bprPaymentBox').hidden = paid;
+        document.getElementById('bprCoursePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function bprConfirmPayment() {
+        const participant = bprFindParticipant(bprCurrentParticipantId);
+        if (!participant) return;
+        participant.paymentStatus = 'paid';
+        bprSaveState();
+        bprRenderParticipants();
+        await supabaseUpsertParticipant(participant, { silent: true });
+        bprOpenCourse(participant.trainingId, participant.id);
+    }
+
+    function bprParseQuiz(quizText) {
+        return String(quizText || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                return {
+                    question: parts[0] || '',
+                    answers: parts.slice(1, 5),
+                    correct: Math.max(0, Number(parts[5]) - 1)
+                };
+            })
+            .filter(item => item.question && item.answers.length === 4)
+            .slice(0, 10);
+    }
+
+    function bprStartQuiz() {
+        const training = bprFindTraining(bprCurrentTrainingId);
+        const participant = bprFindParticipant(bprCurrentParticipantId);
+        if (!training || !participant) return;
+        if (participant.paymentStatus !== 'paid') {
+            alert('Спочатку потрібно підтвердити оплату.');
+            return;
+        }
+
+        const questions = bprParseQuiz(training.quizText);
+        if (questions.length !== 10) {
+            alert('Для цього заходу потрібно налаштувати рівно 10 тестових питань у кабінеті розробника.');
+            return;
+        }
+
+        document.getElementById('bprQuizList').innerHTML = questions.map((question, questionIndex) => `
+            <div class="bpr-question">
+                <h4>${questionIndex + 1}. ${bprEscapeText(question.question)}</h4>
+                ${question.answers.map((answer, answerIndex) => `
+                    <label class="bpr-answer">
+                        <input type="radio" name="bprQuestion${questionIndex}" value="${answerIndex}" required>
+                        <span>${bprEscapeText(answer)}</span>
+                    </label>
+                `).join('')}
+            </div>
+        `).join('');
+        document.getElementById('bprQuizPanel').hidden = false;
+        document.getElementById('bprCertificatePanel').hidden = true;
+        document.getElementById('bprQuizPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function bprResetQuiz() {
+        document.getElementById('bprQuizForm').reset();
+    }
+
+    async function bprSubmitQuiz(event) {
+        event.preventDefault();
+        const training = bprFindTraining(bprCurrentTrainingId);
+        const participant = bprFindParticipant(bprCurrentParticipantId);
+        if (!training || !participant) return;
+
+        const questions = bprParseQuiz(training.quizText);
+        let correct = 0;
+        questions.forEach((question, questionIndex) => {
+            const checked = document.querySelector(`input[name="bprQuestion${questionIndex}"]:checked`);
+            if (checked && Number(checked.value) === question.correct) {
+                correct += 1;
+            }
+        });
+
+        const score = Math.round((correct / questions.length) * 100);
+        participant.score = score;
+        participant.correctAnswers = correct;
+        participant.totalQuestions = questions.length;
+        participant.completedAt = new Date().toISOString();
+
+        if (score >= 80) {
+            participant.pointsAwarded = Number(training.points) || 0;
+            if (!participant.certificateCode) {
+                participant.certificateCode = bprGenerateCertificateCode(training);
+            }
+            bprSaveState();
+            bprRenderParticipants();
+            bprRenderDeveloperTrainingList();
+            await supabaseUpsertParticipant(participant, { silent: true });
+            if (supabaseAccessToken) await supabaseSaveSiteState();
+            bprRenderCertificate(participant, training);
+            alert('Тест складено успішно: ' + score + '%. Сертифікат сформовано.');
+        } else {
+            participant.pointsAwarded = 0;
+            bprSaveState();
+            bprRenderParticipants();
+            await supabaseUpsertParticipant(participant, { silent: true });
+            alert('Результат: ' + score + '%. Потрібно не менше 80%. Спробуйте пройти тест ще раз.');
+        }
+    }
+
+    function bprGenerateCertificateCode(training) {
+        const digits = Number(training.certificateDigits) || 6;
+        const serial = String(Number(training.certificateNext) || 1).padStart(digits, '0');
+        const code = [
+            training.year || new Date().getFullYear(),
+            training.providerCode || '0000',
+            training.trainingNumber || '0000000',
+            serial
+        ].join('-');
+        training.certificateNext = (Number(training.certificateNext) || 1) + 1;
+        return code;
+    }
+
+    function bprRenderCertificate(participant, training) {
+        document.getElementById('bprQuizPanel').hidden = true;
+        document.getElementById('bprCertificatePanel').hidden = false;
+        document.getElementById('bprCertificatePerson').textContent = participant.fullName + ', дата народження: ' + participant.birthDate;
+        document.getElementById('bprCertificateCourse').textContent = 'успішно пройшов(ла) навчальний захід "' + training.title + '" та набрав(ла) ' + participant.score + '%. Нараховано балів БПР: ' + participant.pointsAwarded + '.';
+        document.getElementById('bprCertificateCode').textContent = participant.certificateCode;
+        document.getElementById('bprCertificateMeta').textContent = 'Email: ' + participant.email + '. Освіта: ' + participant.education + '. Місце роботи: ' + participant.workplace + '. Посада: ' + participant.position + '.';
+        document.getElementById('bprCertificatePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function bprSendCertificateEmail() {
+        const participant = bprFindParticipant(bprCurrentParticipantId);
+        const training = bprFindTraining(bprCurrentTrainingId);
+        if (!participant || !training || !participant.certificateCode) return;
+
+        const subject = encodeURIComponent('Сертифікат БПР ' + participant.certificateCode);
+        const body = encodeURIComponent(
+            'Вітаємо, ' + participant.fullName + '!\n\n' +
+            'Ваш сертифікат за захід "' + training.title + '".\n' +
+            'Код сертифіката: ' + participant.certificateCode + '\n' +
+            'Результат тестування: ' + participant.score + '%\n' +
+            'Балів БПР: ' + participant.pointsAwarded + '\n\n' +
+            'INWHITE MEDICAL'
+        );
+        window.location.href = 'mailto:' + participant.email + '?subject=' + subject + '&body=' + body;
+    }
+
+    function bprOpenDeveloperPanel() {
+        if (!bprDeveloperUnlocked) {
+            document.getElementById('bprDeveloperLoginModal').hidden = false;
+            document.getElementById('bprDeveloperLoginMessage').textContent = '';
+            document.getElementById('bprDeveloperPasswordInput').value = '';
+            setTimeout(() => document.getElementById('bprDeveloperPasswordInput').focus(), 50);
+            document.body.style.overflow = 'hidden';
+            return;
+        }
+        bprShowDeveloperPanel();
+    }
+
+    function bprUnlockDeveloperPanel(event) {
+        event.preventDefault();
+        const input = document.getElementById('bprDeveloperPasswordInput');
+        const message = document.getElementById('bprDeveloperLoginMessage');
+        if (input.value !== BPR_DEVELOPER_PASSWORD) {
+            message.textContent = 'Невірний пароль. Спробуйте ще раз.';
+            input.focus();
+            return;
+        }
+        bprDeveloperUnlocked = true;
+        bprCloseDeveloperLogin();
+        bprShowDeveloperPanel();
+    }
+
+    function bprShowDeveloperPanel() {
+        showPage('training');
+        document.getElementById('bprDevPanel').hidden = false;
+        adminFillForms();
+        bprRenderDeveloperTrainingList();
+        bprRenderParticipants();
+        document.getElementById('bprDevPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function bprCloseDeveloperLogin() {
+        document.getElementById('bprDeveloperLoginModal').hidden = true;
+        document.body.style.overflow = '';
+    }
+
+    function bprCloseDeveloperLoginOnOverlay(event) {
+        if (event.target === event.currentTarget) {
+            bprCloseDeveloperLogin();
+        }
+    }
+
+    function bprCloseDeveloperPanel() {
+        document.getElementById('bprDevPanel').hidden = true;
+    }
+
+    function bprRenderDeveloperTrainingList() {
+        const list = document.getElementById('bprDevTrainingList');
+        if (!list) return;
+        list.innerHTML = bprTrainings.map(training => `
+            <button class="bpr-dev-item ${training.id === document.getElementById('bprEditId')?.value ? 'active' : ''}" type="button" onclick="bprEditTraining('${bprEscapeText(training.id)}')">
+                <strong>${bprEscapeText(training.title)}</strong><br>
+                <span>${(training.category || 'online') === 'offline' ? 'Офлайн' : 'Онлайн'} · ${training.visible ? 'Показується' : 'Приховано'} · ${bprEscapeText(training.year)}-${bprEscapeText(training.providerCode)}-${bprEscapeText(training.trainingNumber)}-${String(training.certificateNext).padStart(Number(training.certificateDigits) || 6, '0')}</span>
+            </button>
+        `).join('');
+    }
+
+    function bprFillTrainingForm(training) {
+        if (!training) return;
+        document.getElementById('bprEditId').value = training.id;
+        document.getElementById('bprEditTitle').value = training.title || '';
+        document.getElementById('bprEditType').value = training.type || '';
+        document.getElementById('bprEditCategory').value = training.category || 'online';
+        document.getElementById('bprEditMode').value = training.mode || '';
+        document.getElementById('bprEditPoints').value = training.points || 0;
+        document.getElementById('bprEditPrice').value = training.price || '';
+        document.getElementById('bprEditYear').value = training.year || new Date().getFullYear();
+        document.getElementById('bprEditProvider').value = training.providerCode || '';
+        document.getElementById('bprEditTrainingNumber').value = training.trainingNumber || '';
+        document.getElementById('bprEditCertificateNext').value = training.certificateNext || 1;
+        document.getElementById('bprEditCertificateDigits').value = training.certificateDigits || 6;
+        document.getElementById('bprEditImage').value = training.image || '';
+        document.getElementById('bprEditPaymentUrl').value = training.paymentUrl || '';
+        document.getElementById('bprEditRecordingUrl').value = training.recordingUrl || '';
+        document.getElementById('bprEditGoogleFormUrl').value = training.googleFormUrl || '';
+        document.getElementById('bprEditShort').value = training.shortDescription || '';
+        document.getElementById('bprEditFull').value = training.fullDescription || '';
+        document.getElementById('bprEditQuiz').value = training.quizText || bprDefaultQuizText();
+        document.getElementById('bprEditVisible').checked = Boolean(training.visible);
+        bprRenderDeveloperTrainingList();
+    }
+
+    function bprEditTraining(trainingId) {
+        bprFillTrainingForm(bprFindTraining(trainingId));
+    }
+
+    function bprCreateTraining() {
+        const training = {
+            id: 'bpr-training-' + Date.now(),
+            title: 'Новий навчальний захід',
+            category: bprActiveTrainingCategory,
+            type: 'Тренінг',
+            mode: bprActiveTrainingCategory === 'offline' ? 'Офлайн, очна участь' : 'Онлайн, запис',
+            points: 5,
+            price: '',
+            year: new Date().getFullYear(),
+            providerCode: '2356',
+            trainingNumber: String(Date.now()).slice(-7),
+            certificateNext: 1,
+            certificateDigits: 6,
+            image: bprImageData('Новий захід'),
+            paymentUrl: '',
+            recordingUrl: '',
+            googleFormUrl: '',
+            shortDescription: 'Короткий опис навчального заходу.',
+            fullDescription: 'Детальний опис навчального заходу, програма, цільова аудиторія та умови отримання сертифіката.',
+            quizText: bprDefaultQuizText(),
+            visible: false
+        };
+        bprTrainings.push(training);
+        bprSaveState();
+        bprRenderTrainingCards();
+        bprFillTrainingForm(training);
+    }
+
+    function bprValidateQuizText(quizText) {
+        const questions = bprParseQuiz(quizText);
+        return questions.length === 10;
+    }
+
+    function bprSaveTraining(event) {
+        event.preventDefault();
+        const quizText = document.getElementById('bprEditQuiz').value.trim();
+        const category = document.getElementById('bprEditCategory').value;
+        if (category === 'online' && !bprValidateQuizText(quizText)) {
+            alert('Тест має містити рівно 10 коректних питань у вказаному форматі.');
+            return;
+        }
+
+        const id = document.getElementById('bprEditId').value || ('bpr-training-' + Date.now());
+        const training = {
+            id,
+            title: document.getElementById('bprEditTitle').value.trim(),
+            category,
+            type: document.getElementById('bprEditType').value.trim(),
+            mode: document.getElementById('bprEditMode').value.trim(),
+            points: Number(document.getElementById('bprEditPoints').value) || 0,
+            price: document.getElementById('bprEditPrice').value.trim(),
+            year: Number(document.getElementById('bprEditYear').value) || new Date().getFullYear(),
+            providerCode: document.getElementById('bprEditProvider').value.trim(),
+            trainingNumber: document.getElementById('bprEditTrainingNumber').value.trim(),
+            certificateNext: Number(document.getElementById('bprEditCertificateNext').value) || 1,
+            certificateDigits: Number(document.getElementById('bprEditCertificateDigits').value) || 6,
+            image: document.getElementById('bprEditImage').value.trim() || bprImageData('Навчальний захід'),
+            paymentUrl: document.getElementById('bprEditPaymentUrl').value.trim(),
+            recordingUrl: document.getElementById('bprEditRecordingUrl').value.trim(),
+            googleFormUrl: document.getElementById('bprEditGoogleFormUrl').value.trim(),
+            shortDescription: document.getElementById('bprEditShort').value.trim(),
+            fullDescription: document.getElementById('bprEditFull').value.trim(),
+            quizText: quizText || bprDefaultQuizText(),
+            visible: document.getElementById('bprEditVisible').checked
+        };
+
+        const index = bprTrainings.findIndex(item => item.id === id);
+        if (index >= 0) {
+            bprTrainings[index] = training;
+        } else {
+            bprTrainings.push(training);
+        }
+        bprSaveState();
+        bprActiveTrainingCategory = training.category || 'online';
+        bprSetTrainingCategory(bprActiveTrainingCategory);
+        bprRenderTrainingCards();
+        bprRenderDeveloperTrainingList();
+        alert('Захід збережено.');
+    }
+
+    function bprDeleteTraining() {
+        const id = document.getElementById('bprEditId').value;
+        if (!id) return;
+        if (!confirm('Видалити цей навчальний захід?')) return;
+        bprTrainings = bprTrainings.filter(training => training.id !== id);
+        bprSaveState();
+        bprRenderTrainingCards();
+        bprRenderDeveloperTrainingList();
+        if (bprTrainings.length) {
+            bprFillTrainingForm(bprTrainings[0]);
+        } else {
+            document.getElementById('bprTrainingForm').reset();
+            document.getElementById('bprEditId').value = '';
+        }
+    }
+
+    function bprRenderParticipants() {
+        const table = document.getElementById('bprParticipantsTable');
+        if (!table) return;
+        if (!bprParticipants.length) {
+            table.innerHTML = '<tr><td colspan="10">Поки що немає зареєстрованих учасників.</td></tr>';
+            return;
+        }
+
+        table.innerHTML = bprParticipants.map(participant => {
+            const training = bprFindTraining(participant.trainingId);
+            return `
+                <tr>
+                    <td>${bprEscapeText(participant.fullName)}</td>
+                    <td>${bprEscapeText(participant.birthDate)}</td>
+                    <td>${bprEscapeText(participant.email)}</td>
+                    <td>${bprEscapeText(participant.education)}</td>
+                    <td>${bprEscapeText(participant.workplace)}</td>
+                    <td>${bprEscapeText(participant.position)}</td>
+                    <td>${bprEscapeText(training ? training.title : 'Захід видалено')}</td>
+                    <td>${participant.score === null ? 'Не складено' : bprEscapeText(participant.score + '% (' + participant.correctAnswers + '/' + participant.totalQuestions + ')')}</td>
+                    <td>${Number(participant.pointsAwarded) || 0}</td>
+                    <td>${bprEscapeText(participant.certificateCode || 'Не сформовано')}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function bprExportParticipants() {
+        const headers = ['ПІБ', 'Дата народження', 'Email', 'Освіта', 'Місце роботи', 'Посада', 'Захід', 'Результат', 'Бали БПР', 'Код сертифіката'];
+        const rows = bprParticipants.map(participant => {
+            const training = bprFindTraining(participant.trainingId);
+            return [
+                participant.fullName,
+                participant.birthDate,
+                participant.email,
+                participant.education,
+                participant.workplace,
+                participant.position,
+                training ? training.title : 'Захід видалено',
+                participant.score === null ? 'Не складено' : participant.score + '%',
+                participant.pointsAwarded || 0,
+                participant.certificateCode || ''
+            ];
+        });
+
+        const csv = [headers, ...rows]
+            .map(row => row.map(cell => '"' + String(cell || '').replace(/"/g, '""') + '"').join(','))
+            .join('\n');
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'bpr-participants.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+    function bprClearParticipants() {
+        if (!confirm('Очистити всю таблицю учасників?')) return;
+        bprParticipants = [];
+        bprSaveState();
+        bprRenderParticipants();
+    }
+
+    bprInitTrainingModule();
+    supabaseLoadSiteState({ silent: true });
+</script>
+</body>
+</html>
