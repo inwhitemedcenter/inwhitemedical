@@ -2820,7 +2820,7 @@
                                 <input id="adminPsychologyImageFile" type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminPsychologyImage')">
                                 <div class="admin-help">
                                     Можна вставити емодзі, посилання на фото, шлях assets/photo.jpg або обрати файл з комп'ютера.
-                                    Для швидкого сайту краще фото до 1 МБ.
+                                    Для швидкого сайту краще фото до 2 МБ.
                                 </div>
                             </div>
                             <div class="bpr-field bpr-full">
@@ -4317,8 +4317,8 @@
     function adminLoadImageFile(event, targetId) {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
-        if (file.size > 1400000) {
-            alert('Фото завелике. Будь ласка, оберіть файл до 1 МБ або завантажте фото в assets і вставте шлях.');
+        if (file.size > 2500000) {
+            alert('Фото завелике. Будь ласка, оберіть файл до 2 МБ або завантажте фото в assets і вставте шлях.');
             event.target.value = '';
             return;
         }
@@ -4328,6 +4328,21 @@
             if (target) target.value = reader.result;
         };
         reader.readAsDataURL(file);
+    }
+
+    function adminNormalizeImageValue(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        if (/^outputs\/assets\//.test(raw)) return raw.replace(/^outputs\//, '');
+        if (/^\/outputs\/assets\//.test(raw)) return raw.replace(/^\/outputs\//, '');
+        if (/^\.\/outputs\/assets\//.test(raw)) return raw.replace(/^\.\/outputs\//, '');
+        return raw;
+    }
+
+    function adminLooksLikeImage(value) {
+        const src = adminNormalizeImageValue(value);
+        return /^(https?:\/\/|assets\/|data:image|file:|\.\/assets\/|\/assets\/)/.test(src)
+            || /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(src);
     }
 
     function adminRenderAppointmentServices() {
@@ -4349,9 +4364,9 @@
 
     function adminRenderPsychologyBlock() {
         const imageBox = document.getElementById('psychologyImageMain');
-        const imageValue = siteConfig.psychologyImage || adminDefaultSiteConfig().psychologyImage;
+        const imageValue = adminNormalizeImageValue(siteConfig.psychologyImage || adminDefaultSiteConfig().psychologyImage);
         if (imageBox) {
-            const isImage = /^(https?:\/\/|assets\/|data:image|file:)/.test(imageValue);
+            const isImage = adminLooksLikeImage(imageValue);
             imageBox.innerHTML = isImage
                 ? '<img src="' + bprEscapeText(imageValue) + '" alt="Психологічна допомога">'
                 : bprEscapeText(imageValue);
@@ -4612,7 +4627,7 @@
         document.getElementById('adminBookingTitle').value = siteConfig.bookingTitle || '';
         document.getElementById('adminBookingDescription').value = siteConfig.bookingDescription || '';
         document.getElementById('adminInstagram').value = siteConfig.instagram || '';
-        document.getElementById('adminPsychologyImage').value = siteConfig.psychologyImage || '';
+        document.getElementById('adminPsychologyImage').value = adminNormalizeImageValue(siteConfig.psychologyImage || '');
         document.getElementById('adminPsychologyTitle').value = siteConfig.psychologyTitle || '';
         document.getElementById('adminPsychologyDescription').value = siteConfig.psychologyDescription || '';
         document.getElementById('adminPsychologyFeatures').value = adminArrayToText(siteConfig.psychologyFeatures || []);
@@ -4656,7 +4671,7 @@
         siteConfig.bookingTitle = document.getElementById('adminBookingTitle').value.trim();
         siteConfig.bookingDescription = document.getElementById('adminBookingDescription').value.trim();
         siteConfig.instagram = document.getElementById('adminInstagram').value.trim();
-        siteConfig.psychologyImage = document.getElementById('adminPsychologyImage').value.trim() || adminDefaultSiteConfig().psychologyImage;
+        siteConfig.psychologyImage = adminNormalizeImageValue(document.getElementById('adminPsychologyImage').value) || adminDefaultSiteConfig().psychologyImage;
         siteConfig.psychologyTitle = document.getElementById('adminPsychologyTitle').value.trim();
         siteConfig.psychologyDescription = document.getElementById('adminPsychologyDescription').value.trim();
         siteConfig.psychologyFeatures = adminTextLinesToArray(document.getElementById('adminPsychologyFeatures').value);
