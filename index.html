@@ -2326,26 +2326,20 @@
     <section class="psychology-section">
         <div class="psychology-inner">
             <div class="psychology-visual reveal">
-                <div class="psychology-image-main">
+                <div id="psychologyImageMain" class="psychology-image-main">
                     🌿
                 </div>
                 <div class="psychology-card-float">
-                    <p>Доступно вже зараз</p>
-                    <strong>Онлайн-сесії</strong>
-                    <p style="margin-top:5px; font-size:0.75rem; color: var(--graphite-light);">Конфіденційно · Безпечно</p>
+                    <p id="psychologyFloatTop">Доступно вже зараз</p>
+                    <strong id="psychologyFloatTitle">Онлайн-сесії</strong>
+                    <p id="psychologyFloatBottom" style="margin-top:5px; font-size:0.75rem; color: var(--graphite-light);">Конфіденційно · Безпечно</p>
                 </div>
             </div>
             <div class="psychology-content reveal">
-                <div class="section-tag">Психологічна допомога</div>
-                <h2>Підтримка, яка<br>потрібна вам<br><em>вже сьогодні</em></h2>
-                <p>В умовах війни та постійного стресу психологічна допомога — це не розкіш, а необхідність. Наш медичний психолог надає доказову, ефективну підтримку.</p>
-                <ul class="psychology-list">
-                    <li><div class="list-dot"></div>Робота з тривожними розладами та панічними атаками</li>
-                    <li><div class="list-dot"></div>Гострий стрес та ПТСР (посттравматичний стресовий розлад)</li>
-                    <li><div class="list-dot"></div>Короткотривала терапія (особливо актуально в умовах війни)</li>
-                    <li><div class="list-dot"></div>Підтримка при хронічних захворюваннях</li>
-                    <li><div class="list-dot"></div>Психоедукація та навчання навичкам саморегуляції</li>
-                    <li><div class="list-dot"></div>Онлайн та офлайн формат</li>
+                <div id="psychologyTag" class="section-tag">Психологічна допомога</div>
+                <h2 id="psychologyTitle">Підтримка, яка<br>потрібна вам<br><em>вже сьогодні</em></h2>
+                <p id="psychologyDescription">В умовах війни та постійного стресу психологічна допомога — це не розкіш, а необхідність. Наш медичний психолог надає доказову, ефективну підтримку.</p>
+                <ul id="psychologyList" class="psychology-list">
                 </ul>
                 <a href="#" class="btn-primary" onclick="openModal(); return false;">
                     Записатись на консультацію
@@ -2358,32 +2352,32 @@
     <section class="booking-section" id="booking">
         <div class="booking-inner">
             <div class="booking-info reveal">
-                <div class="section-tag">Запис</div>
-                <h2>Запишіться<br>на прийом</h2>
-                <p>Залиште заявку і ми зв'яжемось з вами протягом 30 хвилин для підтвердження часу та деталей консультації.</p>
+                <div id="bookingTag" class="section-tag">Запис</div>
+                <h2 id="bookingTitle">Запишіться<br>на прийом</h2>
+                <p id="bookingDescription">Залиште заявку і ми зв'яжемось з вами протягом 30 хвилин для підтвердження часу та деталей консультації.</p>
                 <div class="contact-items">
-                    <a href="tel:+380XXXXXXXXX" class="contact-item">
+                    <a id="bookingContactPhone" href="tel:+380XXXXXXXXX" class="contact-item">
                         <div class="contact-icon">📞</div>
                         <div class="contact-text">
                             <small>Телефон</small>
                             <strong>+380 XX XXX XX XX</strong>
                         </div>
                     </a>
-                    <a href="https://instagram.com/inwhitemedical" target="_blank" class="contact-item">
+                    <a id="bookingContactInstagram" href="https://instagram.com/inwhitemedical" target="_blank" class="contact-item">
                         <div class="contact-icon">📸</div>
                         <div class="contact-text">
                             <small>Instagram</small>
                             <strong>@inwhitemedical</strong>
                         </div>
                     </a>
-                    <div class="contact-item">
+                    <div id="bookingContactAddress" class="contact-item">
                         <div class="contact-icon">📍</div>
                         <div class="contact-text">
                             <small>Адреса</small>
                             <strong>м. Чоп, Закарпатська обл.</strong>
                         </div>
                     </div>
-                    <div class="contact-item">
+                    <div id="bookingContactHours" class="contact-item">
                         <div class="contact-icon">🕐</div>
                         <div class="contact-text">
                             <small>Графік роботи</small>
@@ -2449,43 +2443,10 @@
     <!-- TESTIMONIALS -->
     <section class="testimonials">
         <div class="section-header reveal">
-            <div class="section-tag" style="color: var(--gold);">Відгуки</div>
-            <h2 class="section-title">Що кажуть<br>наші пацієнти</h2>
+            <div id="testimonialsTag" class="section-tag" style="color: var(--gold);">Відгуки</div>
+            <h2 id="testimonialsTitle" class="section-title">Що кажуть<br>наші пацієнти</h2>
         </div>
-        <div class="testimonials-grid">
-            <div class="testimonial-card reveal reveal-delay-1">
-                <div class="testimonial-stars">★★★★★</div>
-                <p class="testimonial-text">"Нарешті в Чопі є місце, де до тебе ставляться як до людини. Психолог дуже допоміг після складного періоду. Рекомендую всім."</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">О</div>
-                    <div>
-                        <div class="author-name">Оксана М.</div>
-                        <div class="author-detail">Психологічна консультація</div>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial-card reveal reveal-delay-2">
-                <div class="testimonial-stars">★★★★★</div>
-                <p class="testimonial-text">"Онлайн-сесія виявилась навіть зручнішою — можна з дому, без черг. Дуже вдячна за підтримку та розуміння."</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">М</div>
-                    <div>
-                        <div class="author-name">Марія К.</div>
-                        <div class="author-detail">Онлайн-консультація</div>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial-card reveal reveal-delay-3">
-                <div class="testimonial-stars">★★★★★</div>
-                <p class="testimonial-text">"Сучасний підхід, доказова медицина, увага до деталей. Нарешті не треба їхати до Ужгорода за кожним питанням."</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">В</div>
-                    <div>
-                        <div class="author-name">Василь Г.</div>
-                        <div class="author-detail">Сімейний лікар</div>
-                    </div>
-                </div>
-            </div>
+        <div id="siteTestimonialsGrid" class="testimonials-grid">
         </div>
     </section>
 
@@ -2877,6 +2838,71 @@
                                 <div class="admin-help">
                                     Одна кнопка = один рядок. Формат: емодзі | назва | visible або hidden.
                                     Приклад: 💉 | Вакцинація | hidden
+                                </div>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminBookingTag">Плашка блоку запису</label>
+                                <input id="adminBookingTag">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminPsychologyTag">Плашка блоку психології</label>
+                                <input id="adminPsychologyTag">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminBookingTitle">Заголовок блоку запису</label>
+                                <textarea id="adminBookingTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminBookingDescription">Опис блоку запису</label>
+                                <textarea id="adminBookingDescription"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminInstagram">Instagram</label>
+                                <input id="adminInstagram" placeholder="@inwhitemedical">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyImage">Картинка блоку психології</label>
+                                <input id="adminPsychologyImage" placeholder="🌿, assets/photo.jpg або https://...">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyTitle">Заголовок блоку психології</label>
+                                <textarea id="adminPsychologyTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyDescription">Опис блоку психології</label>
+                                <textarea id="adminPsychologyDescription"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyFeatures">Список у блоці психології</label>
+                                <textarea id="adminPsychologyFeatures" style="min-height: 150px;"></textarea>
+                                <div class="admin-help">Один пункт = один рядок.</div>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminPsychologyFloatTop">Плашка на картинці</label>
+                                <input id="adminPsychologyFloatTop">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminPsychologyFloatTitle">Текст на картинці</label>
+                                <input id="adminPsychologyFloatTitle">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyFloatBottom">Підпис на картинці</label>
+                                <input id="adminPsychologyFloatBottom">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminTestimonialsTag">Плашка відгуків</label>
+                                <input id="adminTestimonialsTag">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminTestimonialsTitle">Заголовок відгуків</label>
+                                <textarea id="adminTestimonialsTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminTestimonials">Відгуки пацієнтів</label>
+                                <textarea id="adminTestimonials" style="min-height: 180px;"></textarea>
+                                <div class="admin-help">
+                                    Один відгук = один рядок. Формат: зірки | текст | ім'я | деталі | visible або hidden.
+                                    Приклад: 5 | Дуже вдячна за підтримку. | Марія К. | Онлайн-консультація | visible
                                 </div>
                             </div>
                             <div class="bpr-field">
@@ -3588,11 +3614,55 @@
             heroLogoImage: 'assets/inwhite-logo.svg',
             heroBackgroundImage: 'assets/clinic-interior.jpg',
             announcementText: '🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно',
+            bookingTag: 'Запис',
+            bookingTitle: 'Запишіться<br>на прийом',
+            bookingDescription: 'Залиште заявку і ми зв\'яжемось з вами протягом 30 хвилин для підтвердження часу та деталей консультації.',
+            instagram: '@inwhitemedical',
             appointmentServices: [
                 { icon: '🧠', name: 'Психологія', visible: true },
                 { icon: '👨‍⚕️', name: 'Сімейний лікар', visible: true },
                 { icon: '🔬', name: 'УЗД', visible: true },
                 { icon: '💉', name: 'Вакцинація', visible: true }
+            ],
+            psychologyTag: 'Психологічна допомога',
+            psychologyTitle: 'Підтримка, яка<br>потрібна вам<br><em>вже сьогодні</em>',
+            psychologyDescription: 'В умовах війни та постійного стресу психологічна допомога — це не розкіш, а необхідність. Наш медичний психолог надає доказову, ефективну підтримку.',
+            psychologyImage: '🌿',
+            psychologyFloatTop: 'Доступно вже зараз',
+            psychologyFloatTitle: 'Онлайн-сесії',
+            psychologyFloatBottom: 'Конфіденційно · Безпечно',
+            psychologyFeatures: [
+                'Робота з тривожними розладами та панічними атаками',
+                'Гострий стрес та ПТСР (посттравматичний стресовий розлад)',
+                'Короткотривала терапія (особливо актуально в умовах війни)',
+                'Підтримка при хронічних захворюваннях',
+                'Психоедукація та навчання навичкам саморегуляції',
+                'Онлайн та офлайн формат'
+            ],
+            testimonialsTag: 'Відгуки',
+            testimonialsTitle: 'Що кажуть<br>наші пацієнти',
+            testimonials: [
+                {
+                    stars: 5,
+                    text: 'Нарешті в Чопі є місце, де до тебе ставляться як до людини. Психолог дуже допоміг після складного періоду. Рекомендую всім.',
+                    name: 'Оксана М.',
+                    detail: 'Психологічна консультація',
+                    visible: true
+                },
+                {
+                    stars: 5,
+                    text: 'Онлайн-сесія виявилась навіть зручнішою — можна з дому, без черг. Дуже вдячна за підтримку та розуміння.',
+                    name: 'Марія К.',
+                    detail: 'Онлайн-консультація',
+                    visible: true
+                },
+                {
+                    stars: 5,
+                    text: 'Сучасний підхід, доказова медицина, увага до деталей. Нарешті не треба їхати до Ужгорода за кожним питанням.',
+                    name: 'Василь Г.',
+                    detail: 'Сімейний лікар',
+                    visible: true
+                }
             ],
             phone: '+380 XX XXX XX XX',
             whatsapp: '380XXXXXXXXX',
@@ -3639,13 +3709,17 @@
 
     function adminNormalizeSiteConfig(config) {
         const defaults = adminDefaultSiteConfig();
+        const source = config || {};
         return {
             ...defaults,
-            ...config,
+            ...source,
             pages: {
                 ...defaults.pages,
-                ...(config && config.pages ? config.pages : {})
-            }
+                ...(source.pages ? source.pages : {})
+            },
+            appointmentServices: Array.isArray(source.appointmentServices) ? source.appointmentServices : defaults.appointmentServices,
+            psychologyFeatures: Array.isArray(source.psychologyFeatures) ? source.psychologyFeatures : defaults.psychologyFeatures,
+            testimonials: Array.isArray(source.testimonials) ? source.testimonials : defaults.testimonials
         };
     }
 
@@ -4149,6 +4223,45 @@
             });
     }
 
+    function adminTextLinesToArray(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean);
+    }
+
+    function adminArrayToText(items) {
+        return (items || []).join('\n');
+    }
+
+    function adminTestimonialsToText(items) {
+        return (items || []).map(item => [
+            item.stars || 5,
+            item.text || '',
+            item.name || '',
+            item.detail || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParseTestimonials(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                const stars = Math.max(1, Math.min(5, parseInt(parts[0], 10) || 5));
+                return {
+                    stars,
+                    text: parts[1] || '',
+                    name: parts[2] || '',
+                    detail: parts[3] || '',
+                    visible: ((parts[4] || 'visible').toLowerCase() !== 'hidden')
+                };
+            });
+    }
+
     function adminRenderAppointmentServices() {
         const selectors = [
             document.getElementById('bookingServiceSelector'),
@@ -4164,6 +4277,106 @@
                 </div>
             `).join('');
         });
+    }
+
+    function adminRenderPsychologyBlock() {
+        const imageBox = document.getElementById('psychologyImageMain');
+        const imageValue = siteConfig.psychologyImage || adminDefaultSiteConfig().psychologyImage;
+        if (imageBox) {
+            const isImage = /^(https?:\/\/|assets\/|data:image|file:)/.test(imageValue);
+            imageBox.innerHTML = isImage
+                ? '<img src="' + bprEscapeText(imageValue) + '" alt="Психологічна допомога">'
+                : bprEscapeText(imageValue);
+        }
+
+        const tag = document.getElementById('psychologyTag');
+        const title = document.getElementById('psychologyTitle');
+        const description = document.getElementById('psychologyDescription');
+        const floatTop = document.getElementById('psychologyFloatTop');
+        const floatTitle = document.getElementById('psychologyFloatTitle');
+        const floatBottom = document.getElementById('psychologyFloatBottom');
+        if (tag) tag.textContent = siteConfig.psychologyTag || '';
+        if (title) title.innerHTML = siteConfig.psychologyTitle || '';
+        if (description) description.textContent = siteConfig.psychologyDescription || '';
+        if (floatTop) floatTop.textContent = siteConfig.psychologyFloatTop || '';
+        if (floatTitle) floatTitle.textContent = siteConfig.psychologyFloatTitle || '';
+        if (floatBottom) floatBottom.textContent = siteConfig.psychologyFloatBottom || '';
+
+        const list = document.getElementById('psychologyList');
+        const features = Array.isArray(siteConfig.psychologyFeatures) && siteConfig.psychologyFeatures.length
+            ? siteConfig.psychologyFeatures
+            : adminDefaultSiteConfig().psychologyFeatures;
+        if (list) {
+            list.innerHTML = features.map(item => `
+                <li><div class="list-dot"></div>${bprEscapeText(item)}</li>
+            `).join('');
+        }
+    }
+
+    function adminRenderBookingBlock() {
+        const cleanPhone = String(siteConfig.phone || '').replace(/[^\d+]/g, '');
+        const instagram = String(siteConfig.instagram || '').trim();
+        const instagramHandle = instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/^@/, '').replace(/\/$/, '');
+        const bookingTag = document.getElementById('bookingTag');
+        const bookingTitle = document.getElementById('bookingTitle');
+        const bookingDescription = document.getElementById('bookingDescription');
+        const bookingPhone = document.getElementById('bookingContactPhone');
+        const bookingInstagram = document.getElementById('bookingContactInstagram');
+        const bookingAddress = document.getElementById('bookingContactAddress');
+        const bookingHours = document.getElementById('bookingContactHours');
+
+        if (bookingTag) bookingTag.textContent = siteConfig.bookingTag || '';
+        if (bookingTitle) bookingTitle.innerHTML = siteConfig.bookingTitle || '';
+        if (bookingDescription) bookingDescription.textContent = siteConfig.bookingDescription || '';
+        if (bookingPhone) {
+            bookingPhone.href = 'tel:' + cleanPhone;
+            const value = bookingPhone.querySelector('strong');
+            if (value) value.textContent = siteConfig.phone || '';
+        }
+        if (bookingInstagram) {
+            bookingInstagram.href = instagramHandle ? 'https://instagram.com/' + instagramHandle : '#';
+            const value = bookingInstagram.querySelector('strong');
+            if (value) value.textContent = instagramHandle ? '@' + instagramHandle : '';
+        }
+        if (bookingAddress) {
+            const value = bookingAddress.querySelector('strong');
+            if (value) value.textContent = siteConfig.address || '';
+        }
+        if (bookingHours) {
+            const value = bookingHours.querySelector('strong');
+            if (value) value.textContent = siteConfig.hours || '';
+        }
+    }
+
+    function adminRenderTestimonials() {
+        const grid = document.getElementById('siteTestimonialsGrid');
+        const tag = document.getElementById('testimonialsTag');
+        const title = document.getElementById('testimonialsTitle');
+        if (tag) tag.textContent = siteConfig.testimonialsTag || '';
+        if (title) title.innerHTML = siteConfig.testimonialsTitle || '';
+        if (!grid) return;
+        const testimonials = (siteConfig.testimonials || [])
+            .filter(item => item.visible !== false && item.text);
+        const visibleTestimonials = testimonials.length ? testimonials : adminDefaultSiteConfig().testimonials;
+        grid.innerHTML = visibleTestimonials.map((item, index) => {
+            const starsCount = Math.max(1, Math.min(5, parseInt(item.stars, 10) || 5));
+            const stars = '★★★★★'.slice(0, starsCount);
+            const name = item.name || 'Пацієнт';
+            const avatar = name.trim().charAt(0).toUpperCase() || 'П';
+            return `
+                <div class="testimonial-card reveal reveal-delay-${(index % 3) + 1}">
+                    <div class="testimonial-stars">${bprEscapeText(stars)}</div>
+                    <p class="testimonial-text">"${bprEscapeText(item.text)}"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">${bprEscapeText(avatar)}</div>
+                        <div>
+                            <div class="author-name">${bprEscapeText(name)}</div>
+                            <div class="author-detail">${bprEscapeText(item.detail || '')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     function adminSaveSiteState() {
@@ -4226,6 +4439,9 @@
         adminRenderTeam();
         adminRenderPrices();
         adminRenderAppointmentServices();
+        adminRenderBookingBlock();
+        adminRenderPsychologyBlock();
+        adminRenderTestimonials();
     }
 
     function adminRenderTeam() {
@@ -4289,6 +4505,21 @@
         document.getElementById('adminHeroLogoImage').value = siteConfig.heroLogoImage || '';
         document.getElementById('adminHeroBackgroundImage').value = siteConfig.heroBackgroundImage || '';
         document.getElementById('adminAppointmentServices').value = adminAppointmentServicesToText(siteConfig.appointmentServices || []);
+        document.getElementById('adminBookingTag').value = siteConfig.bookingTag || '';
+        document.getElementById('adminPsychologyTag').value = siteConfig.psychologyTag || '';
+        document.getElementById('adminBookingTitle').value = siteConfig.bookingTitle || '';
+        document.getElementById('adminBookingDescription').value = siteConfig.bookingDescription || '';
+        document.getElementById('adminInstagram').value = siteConfig.instagram || '';
+        document.getElementById('adminPsychologyImage').value = siteConfig.psychologyImage || '';
+        document.getElementById('adminPsychologyTitle').value = siteConfig.psychologyTitle || '';
+        document.getElementById('adminPsychologyDescription').value = siteConfig.psychologyDescription || '';
+        document.getElementById('adminPsychologyFeatures').value = adminArrayToText(siteConfig.psychologyFeatures || []);
+        document.getElementById('adminPsychologyFloatTop').value = siteConfig.psychologyFloatTop || '';
+        document.getElementById('adminPsychologyFloatTitle').value = siteConfig.psychologyFloatTitle || '';
+        document.getElementById('adminPsychologyFloatBottom').value = siteConfig.psychologyFloatBottom || '';
+        document.getElementById('adminTestimonialsTag').value = siteConfig.testimonialsTag || '';
+        document.getElementById('adminTestimonialsTitle').value = siteConfig.testimonialsTitle || '';
+        document.getElementById('adminTestimonials').value = adminTestimonialsToText(siteConfig.testimonials || []);
         document.getElementById('adminContactPhone').value = siteConfig.phone || '';
         document.getElementById('adminContactWhatsapp').value = siteConfig.whatsapp || '';
         document.getElementById('adminContactEmail').value = siteConfig.email || '';
@@ -4316,6 +4547,21 @@
         siteConfig.heroLogoImage = document.getElementById('adminHeroLogoImage').value.trim() || adminDefaultSiteConfig().heroLogoImage;
         siteConfig.heroBackgroundImage = document.getElementById('adminHeroBackgroundImage').value.trim() || adminDefaultSiteConfig().heroBackgroundImage;
         siteConfig.appointmentServices = adminParseAppointmentServices(document.getElementById('adminAppointmentServices').value);
+        siteConfig.bookingTag = document.getElementById('adminBookingTag').value.trim();
+        siteConfig.psychologyTag = document.getElementById('adminPsychologyTag').value.trim();
+        siteConfig.bookingTitle = document.getElementById('adminBookingTitle').value.trim();
+        siteConfig.bookingDescription = document.getElementById('adminBookingDescription').value.trim();
+        siteConfig.instagram = document.getElementById('adminInstagram').value.trim();
+        siteConfig.psychologyImage = document.getElementById('adminPsychologyImage').value.trim() || adminDefaultSiteConfig().psychologyImage;
+        siteConfig.psychologyTitle = document.getElementById('adminPsychologyTitle').value.trim();
+        siteConfig.psychologyDescription = document.getElementById('adminPsychologyDescription').value.trim();
+        siteConfig.psychologyFeatures = adminTextLinesToArray(document.getElementById('adminPsychologyFeatures').value);
+        siteConfig.psychologyFloatTop = document.getElementById('adminPsychologyFloatTop').value.trim();
+        siteConfig.psychologyFloatTitle = document.getElementById('adminPsychologyFloatTitle').value.trim();
+        siteConfig.psychologyFloatBottom = document.getElementById('adminPsychologyFloatBottom').value.trim();
+        siteConfig.testimonialsTag = document.getElementById('adminTestimonialsTag').value.trim();
+        siteConfig.testimonialsTitle = document.getElementById('adminTestimonialsTitle').value.trim();
+        siteConfig.testimonials = adminParseTestimonials(document.getElementById('adminTestimonials').value);
         siteConfig.phone = document.getElementById('adminContactPhone').value.trim();
         siteConfig.whatsapp = document.getElementById('adminContactWhatsapp').value.trim();
         siteConfig.email = document.getElementById('adminContactEmail').value.trim();
