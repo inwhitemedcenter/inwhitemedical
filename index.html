@@ -3707,13 +3707,27 @@
         return '';
     }
 
-    async function supabaseGetRecoveryAccessToken(statusElement) {
+    async function supabaseErrorMessage(response, fallback) {
+        const text = await response.text().catch(() => '');
+        if (!text) return fallback;
+        try {
+            const data = JSON.parse(text);
+            return data.msg || data.message || data.error_description || data.error || fallback;
+        } catch (error) {
+            return text || fallback;
+        }
+    }
+
+    async function supabaseGetRecoverySession(statusElement) {
         const params = supabaseReadAuthParams();
         if (params.error) {
             throw new Error(params.errorDescription || params.error);
         }
         if (params.accessToken) {
-            return params.accessToken;
+            return {
+                accessToken: params.accessToken,
+                refreshToken: params.refreshToken
+            };
         }
         if (params.tokenHash) {
             if (statusElement) statusElement.textContent = 'Перевіряю recovery-посилання...';
@@ -3730,14 +3744,70 @@
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok || !data.access_token) {
-                throw new Error('Не вдалося підтвердити recovery-посилання.');
+                throw new Error(data.msg || data.message || data.error_description || data.error || 'Не вдалося підтвердити recovery-посилання.');
             }
-            return data.access_token;
+            return {
+                accessToken: data.access_token,
+                refreshToken: data.refresh_token || ''
+            };
         }
         if (params.code) {
             throw new Error('Supabase відкрив PKCE code-link. Для статичного HTML надішліть зміну пароля кнопкою з цього сайту або змініть recovery email template на {{ .ConfirmationURL }}.');
         }
         throw new Error('Recovery-токен не знайдено.');
+    }
+
+    async function supabaseRefreshRecoverySession(refreshToken) {
+        if (!refreshToken) return null;
+        const response = await fetch(supabaseNormalizeConfig(supabaseConfig).url + '/auth/v1/token?grant_type=refresh_token', {
+            method: 'POST',
+            headers: {
+                apikey: supabaseConfig.publishableKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh_token: refreshToken })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.access_token) return null;
+        return {
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token || refreshToken
+        };
+    }
+
+    async function supabaseSetPasswordWithRecovery(password, statusElement) {
+        let session = await supabaseGetRecoverySession(statusElement);
+        let response = await fetch(supabaseNormalizeConfig(supabaseConfig).url + '/auth/v1/user', {
+            method: 'PUT',
+            headers: {
+                apikey: supabaseConfig.publishableKey,
+                Authorization: 'Bearer ' + session.accessToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password })
+        });
+
+        if (!response.ok && session.refreshToken) {
+            const refreshedSession = await supabaseRefreshRecoverySession(session.refreshToken);
+            if (refreshedSession) {
+                session = refreshedSession;
+                response = await fetch(supabaseNormalizeConfig(supabaseConfig).url + '/auth/v1/user', {
+                    method: 'PUT',
+                    headers: {
+                        apikey: supabaseConfig.publishableKey,
+                        Authorization: 'Bearer ' + session.accessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+            }
+        }
+
+        if (!response.ok) {
+            throw new Error(await supabaseErrorMessage(response, 'Supabase відхилив зміну пароля.'));
+        }
+
+        return session;
     }
 
     async function supabaseRequest(path, options, useAdminToken) {
@@ -3862,24 +3932,14 @@
         }
         try {
             supabaseSetStatus('Змінюю пароль...');
-            const recoveryToken = await supabaseGetRecoveryAccessToken(document.getElementById('supabaseStatus'));
-            const response = await fetch(supabaseNormalizeConfig(supabaseConfig).url + '/auth/v1/user', {
-                method: 'PUT',
-                headers: {
-                    apikey: supabaseConfig.publishableKey,
-                    Authorization: 'Bearer ' + recoveryToken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ password })
-            });
-            if (!response.ok) throw new Error(await response.text());
-            supabaseAccessToken = recoveryToken;
+            const session = await supabaseSetPasswordWithRecovery(password, document.getElementById('supabaseStatus'));
+            supabaseAccessToken = session.accessToken;
             sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
             document.getElementById('supabaseAdminPassword').value = '';
             window.history.replaceState({}, document.title, supabaseCurrentPageUrl());
             supabaseSetStatus('Пароль змінено. Ви увійшли в Supabase і можете зберігати сайт у базу.');
         } catch (error) {
-            supabaseSetStatus('Не вдалося змінити пароль. Спробуйте надіслати новий recovery-лінк.');
+            supabaseSetStatus('Не вдалося змінити пароль: ' + (error.message || 'надішліть новий recovery-лінк.'));
         }
     }
 
@@ -3897,18 +3957,8 @@
 
         try {
             if (status) status.textContent = 'Змінюю пароль...';
-            const recoveryToken = await supabaseGetRecoveryAccessToken(status);
-            const response = await fetch(supabaseConfig.url + '/auth/v1/user', {
-                method: 'PUT',
-                headers: {
-                    apikey: supabaseConfig.publishableKey,
-                    Authorization: 'Bearer ' + recoveryToken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ password })
-            });
-            if (!response.ok) throw new Error(await response.text());
-            supabaseAccessToken = recoveryToken;
+            const session = await supabaseSetPasswordWithRecovery(password, status);
+            supabaseAccessToken = session.accessToken;
             sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
             if (passwordInput) passwordInput.value = '';
             window.history.replaceState({}, document.title, supabaseCurrentPageUrl());
@@ -3916,7 +3966,7 @@
             supabaseFillForm();
             setTimeout(supabaseCloseRecoveryModal, 1200);
         } catch (error) {
-            if (status) status.textContent = 'Не вдалося змінити пароль. Надішліть новий recovery-лінк і відкрийте його ще раз.';
+            if (status) status.textContent = 'Не вдалося змінити пароль: ' + (error.message || 'надішліть новий recovery-лінк і відкрийте його ще раз.');
         }
     }
 
