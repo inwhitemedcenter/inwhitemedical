@@ -99,14 +99,16 @@
         .nav-logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             text-decoration: none;
         }
 
         .nav-logo-icon {
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             object-fit: contain;
+            object-position: center;
+            display: block;
         }
 
         .nav-logo-text {
@@ -232,6 +234,7 @@
         }
 
         .hero-brand-logo {
+            display: none;
             width: 82px;
             height: 82px;
             object-fit: contain;
@@ -2237,7 +2240,7 @@
 <!-- NAVIGATION -->
 <nav id="navbar">
     <a href="#" class="nav-logo" onclick="showPage('home')">
-        <img class="nav-logo-icon" src="assets/inwhite-logo.svg" alt="INWHITE MEDICAL логотип">
+        <img class="nav-logo-icon" src="assets/logo.png" alt="INWHITE MEDICAL логотип">
         <span class="nav-logo-text">INWHITE <span>MEDICAL</span></span>
     </a>
     <ul class="nav-links">
@@ -2265,7 +2268,7 @@
         <div class="hero-bg-image"></div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <img class="hero-brand-logo" src="assets/inwhite-logo.svg" alt="INWHITE MEDICAL логотип">
+            <img class="hero-brand-logo" src="assets/logo.png" alt="INWHITE MEDICAL логотип">
             <div class="hero-badge">
                 <div class="hero-badge-dot"></div>
                 Відкриваємось у 2025 · Чоп, Закарпаття
@@ -2762,7 +2765,7 @@
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminHeroLogoImage">Лого/картинка на головній</label>
-                                <input id="adminHeroLogoImage" placeholder="assets/inwhite-logo.svg або https://...">
+                                <input id="adminHeroLogoImage" placeholder="assets/logo.png або https://...">
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminHeroBackgroundImage">Фонова картинка головної</label>
@@ -3590,7 +3593,7 @@
             heroBadge: 'Відкриваємось у 2025 · Чоп, Закарпаття',
             heroTitle: 'Медицина,<br>що <em>турбується</em><br>про вас',
             heroSubtitle: 'Сучасний медичний центр первинної допомоги. Вже зараз — психологічна підтримка онлайн для вас та вашої родини.',
-            heroLogoImage: 'assets/inwhite-logo.svg',
+            heroLogoImage: 'assets/logo.png',
             heroBackgroundImage: 'assets/clinic-interior.jpg',
             announcementText: '🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно',
             servicesTag: 'Наші послуги',
@@ -4649,6 +4652,9 @@
 
         const heroLogo = document.querySelector('.hero-brand-logo');
         if (heroLogo && siteConfig.heroLogoImage) heroLogo.src = siteConfig.heroLogoImage;
+
+        const navLogo = document.querySelector('.nav-logo-icon');
+        if (navLogo && siteConfig.heroLogoImage) navLogo.src = siteConfig.heroLogoImage;
 
         const heroImage = document.querySelector('.hero-bg-image');
         if (heroImage && siteConfig.heroBackgroundImage) {
