@@ -2456,53 +2456,7 @@
             <div class="section-tag">FAQ</div>
             <h2 class="section-title">Часті запитання</h2>
         </div>
-        <div class="faq-inner">
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Як записатись на консультацію?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Ви можете записатись через форму на сайті, зателефонувати нам або написати в Instagram Direct. Ми зв'яжемось з вами протягом 30 хвилин для підтвердження.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Чи доступна психологічна допомога онлайн?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Так! Онлайн-сесії вже доступні. Ви можете отримати консультацію медичного психолога з будь-якого місця України. Сесії проводяться у Zoom або Telegram — конфіденційно та безпечно.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Скільки коштує консультація психолога?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Вартість консультації залежить від типу послуги та тривалості сесії. Зверніться до нас для отримання актуальних цін. Ми також надаємо підтримку ветеранам та їх родинам за спеціальними умовами.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Коли відкриється клініка офіційно?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Офіційне відкриття заплановано на кінець 2025 року. Наразі в приміщенні тривають ремонтні роботи. Слідкуйте за нашим Instagram для отримання актуальних новин!</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Чи можна підписати декларацію із сімейним лікарем?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Так, після офіційного відкриття ви зможете підписати декларацію з нашим сімейним лікарем та отримувати первинну медичну допомогу безкоштовно в рамках програми НСЗУ.</p>
-                </div>
-            </div>
-        </div>
+        <div id="siteFaqList" class="faq-inner"></div>
     </section>
 
 </div>
@@ -2863,6 +2817,11 @@
                             <div class="bpr-field bpr-full">
                                 <label for="adminPsychologyImage">Картинка блоку психології</label>
                                 <input id="adminPsychologyImage" placeholder="🌿, assets/photo.jpg або https://...">
+                                <input id="adminPsychologyImageFile" type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminPsychologyImage')">
+                                <div class="admin-help">
+                                    Можна вставити емодзі, посилання на фото, шлях assets/photo.jpg або обрати файл з комп'ютера.
+                                    Для швидкого сайту краще фото до 1 МБ.
+                                </div>
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminPsychologyTitle">Заголовок блоку психології</label>
@@ -2903,6 +2862,21 @@
                                 <div class="admin-help">
                                     Один відгук = один рядок. Формат: зірки | текст | ім'я | деталі | visible або hidden.
                                     Приклад: 5 | Дуже вдячна за підтримку. | Марія К. | Онлайн-консультація | visible
+                                </div>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminFaq">Часті запитання</label>
+                                <textarea id="adminFaq" style="min-height: 180px;"></textarea>
+                                <div class="admin-help">
+                                    Один пункт = один рядок. Формат: питання | відповідь | visible або hidden.
+                                </div>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminSocialLinks">Соцмережі внизу сайту</label>
+                                <textarea id="adminSocialLinks" style="min-height: 120px;"></textarea>
+                                <div class="admin-help">
+                                    Один значок = один рядок. Формат: емодзі | назва | посилання | visible або hidden.
+                                    Приклад: 📸 | Instagram | https://instagram.com/inwhitemedical | visible
                                 </div>
                             </div>
                             <div class="bpr-field">
@@ -3247,11 +3221,7 @@
         <div class="footer-brand">
             <span class="nav-logo-text">INWHITE MEDICAL</span>
             <p>Сучасний медичний центр первинної допомоги у місті Чоп. Доказова медицина. Психологічна підтримка. Турбота про кожного.</p>
-            <div class="social-links">
-                <a href="https://instagram.com/inwhitemedical" target="_blank" class="social-link">📸</a>
-                <a href="https://facebook.com" target="_blank" class="social-link">👥</a>
-                <a href="https://t.me/" target="_blank" class="social-link">✈️</a>
-            </div>
+            <div id="siteFooterSocialLinks" class="social-links"></div>
         </div>
         <div class="footer-col">
             <h4>Послуги</h4>
@@ -3664,6 +3634,38 @@
                     visible: true
                 }
             ],
+            faqItems: [
+                {
+                    question: 'Як записатись на консультацію?',
+                    answer: 'Ви можете записатись через форму на сайті, зателефонувати нам або написати в Instagram Direct. Ми зв\'яжемось з вами протягом 30 хвилин для підтвердження.',
+                    visible: true
+                },
+                {
+                    question: 'Чи доступна психологічна допомога онлайн?',
+                    answer: 'Так! Онлайн-сесії вже доступні. Ви можете отримати консультацію медичного психолога з будь-якого місця України. Сесії проводяться у Zoom або Telegram — конфіденційно та безпечно.',
+                    visible: true
+                },
+                {
+                    question: 'Скільки коштує консультація психолога?',
+                    answer: 'Вартість консультації залежить від типу послуги та тривалості сесії. Зверніться до нас для отримання актуальних цін. Ми також надаємо підтримку ветеранам та їх родинам за спеціальними умовами.',
+                    visible: true
+                },
+                {
+                    question: 'Коли відкриється клініка офіційно?',
+                    answer: 'Офіційне відкриття заплановано на кінець 2025 року. Наразі в приміщенні тривають ремонтні роботи. Слідкуйте за нашим Instagram для отримання актуальних новин!',
+                    visible: true
+                },
+                {
+                    question: 'Чи можна підписати декларацію із сімейним лікарем?',
+                    answer: 'Так, після офіційного відкриття ви зможете підписати декларацію з нашим сімейним лікарем та отримувати первинну медичну допомогу безкоштовно в рамках програми НСЗУ.',
+                    visible: true
+                }
+            ],
+            socialLinks: [
+                { icon: '📸', label: 'Instagram', url: 'https://instagram.com/inwhitemedical', visible: true },
+                { icon: '👥', label: 'Facebook', url: 'https://facebook.com', visible: true },
+                { icon: '✈️', label: 'Telegram', url: 'https://t.me/', visible: true }
+            ],
             phone: '+380 XX XXX XX XX',
             whatsapp: '380XXXXXXXXX',
             email: 'info@inwhitemedical.ua',
@@ -3719,7 +3721,9 @@
             },
             appointmentServices: Array.isArray(source.appointmentServices) ? source.appointmentServices : defaults.appointmentServices,
             psychologyFeatures: Array.isArray(source.psychologyFeatures) ? source.psychologyFeatures : defaults.psychologyFeatures,
-            testimonials: Array.isArray(source.testimonials) ? source.testimonials : defaults.testimonials
+            testimonials: Array.isArray(source.testimonials) ? source.testimonials : defaults.testimonials,
+            faqItems: Array.isArray(source.faqItems) ? source.faqItems : defaults.faqItems,
+            socialLinks: Array.isArray(source.socialLinks) ? source.socialLinks : defaults.socialLinks
         };
     }
 
@@ -4262,6 +4266,70 @@
             });
     }
 
+    function adminFaqToText(items) {
+        return (items || []).map(item => [
+            item.question || '',
+            item.answer || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParseFaq(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                return {
+                    question: parts[0] || '',
+                    answer: parts[1] || '',
+                    visible: ((parts[2] || 'visible').toLowerCase() !== 'hidden')
+                };
+            });
+    }
+
+    function adminSocialLinksToText(items) {
+        return (items || []).map(item => [
+            item.icon || '•',
+            item.label || '',
+            item.url || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParseSocialLinks(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                return {
+                    icon: parts[0] || '•',
+                    label: parts[1] || '',
+                    url: parts[2] || '#',
+                    visible: ((parts[3] || 'visible').toLowerCase() !== 'hidden')
+                };
+            });
+    }
+
+    function adminLoadImageFile(event, targetId) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (file.size > 1400000) {
+            alert('Фото завелике. Будь ласка, оберіть файл до 1 МБ або завантажте фото в assets і вставте шлях.');
+            event.target.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const target = document.getElementById(targetId);
+            if (target) target.value = reader.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
     function adminRenderAppointmentServices() {
         const selectors = [
             document.getElementById('bookingServiceSelector'),
@@ -4364,7 +4432,7 @@
             const name = item.name || 'Пацієнт';
             const avatar = name.trim().charAt(0).toUpperCase() || 'П';
             return `
-                <div class="testimonial-card reveal reveal-delay-${(index % 3) + 1}">
+                <div class="testimonial-card">
                     <div class="testimonial-stars">${bprEscapeText(stars)}</div>
                     <p class="testimonial-text">"${bprEscapeText(item.text)}"</p>
                     <div class="testimonial-author">
@@ -4377,6 +4445,38 @@
                 </div>
             `;
         }).join('');
+    }
+
+    function adminRenderFaq() {
+        const list = document.getElementById('siteFaqList');
+        if (!list) return;
+        const items = (siteConfig.faqItems || [])
+            .filter(item => item.visible !== false && item.question && item.answer);
+        const visibleItems = items.length ? items : adminDefaultSiteConfig().faqItems;
+        list.innerHTML = visibleItems.map(item => `
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    ${bprEscapeText(item.question)}
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>${bprEscapeText(item.answer)}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function adminRenderSocialLinks() {
+        const list = document.getElementById('siteFooterSocialLinks');
+        if (!list) return;
+        const links = (siteConfig.socialLinks || [])
+            .filter(item => item.visible !== false && item.url);
+        const visibleLinks = links.length ? links : adminDefaultSiteConfig().socialLinks;
+        list.innerHTML = visibleLinks.map(item => `
+            <a href="${bprEscapeText(item.url || '#')}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="${bprEscapeText(item.label || 'Соцмережа')}">
+                ${bprEscapeText(item.icon || '•')}
+            </a>
+        `).join('');
     }
 
     function adminSaveSiteState() {
@@ -4442,6 +4542,8 @@
         adminRenderBookingBlock();
         adminRenderPsychologyBlock();
         adminRenderTestimonials();
+        adminRenderFaq();
+        adminRenderSocialLinks();
     }
 
     function adminRenderTeam() {
@@ -4520,6 +4622,8 @@
         document.getElementById('adminTestimonialsTag').value = siteConfig.testimonialsTag || '';
         document.getElementById('adminTestimonialsTitle').value = siteConfig.testimonialsTitle || '';
         document.getElementById('adminTestimonials').value = adminTestimonialsToText(siteConfig.testimonials || []);
+        document.getElementById('adminFaq').value = adminFaqToText(siteConfig.faqItems || []);
+        document.getElementById('adminSocialLinks').value = adminSocialLinksToText(siteConfig.socialLinks || []);
         document.getElementById('adminContactPhone').value = siteConfig.phone || '';
         document.getElementById('adminContactWhatsapp').value = siteConfig.whatsapp || '';
         document.getElementById('adminContactEmail').value = siteConfig.email || '';
@@ -4562,6 +4666,8 @@
         siteConfig.testimonialsTag = document.getElementById('adminTestimonialsTag').value.trim();
         siteConfig.testimonialsTitle = document.getElementById('adminTestimonialsTitle').value.trim();
         siteConfig.testimonials = adminParseTestimonials(document.getElementById('adminTestimonials').value);
+        siteConfig.faqItems = adminParseFaq(document.getElementById('adminFaq').value);
+        siteConfig.socialLinks = adminParseSocialLinks(document.getElementById('adminSocialLinks').value);
         siteConfig.phone = document.getElementById('adminContactPhone').value.trim();
         siteConfig.whatsapp = document.getElementById('adminContactWhatsapp').value.trim();
         siteConfig.email = document.getElementById('adminContactEmail').value.trim();
