@@ -556,6 +556,7 @@
             width: 60px;
             height: 60px;
             border-radius: 16px;
+            background: rgba(201, 169, 110, 0.15);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2288,42 +2289,17 @@
     </div>
 
     <!-- SERVICES -->
-    <section class="services" id="services">
+    <section class="services" id="services" data-home-section="services">
         <div class="section-header reveal">
-            <div class="section-tag">Наші послуги</div>
-            <h2 class="section-title">Комплексна турбота<br>про ваше здоров'я</h2>
-            <p class="section-subtitle">Від первинної медицини до психологічної підтримки — все в одному місці, поруч з домом</p>
+            <div id="servicesTag" class="section-tag">Наші послуги</div>
+            <h2 id="servicesTitle" class="section-title">Комплексна турбота<br>про ваше здоров'я</h2>
+            <p id="servicesSubtitle" class="section-subtitle">Від первинної медицини до психологічної підтримки — все в одному місці, поруч з домом</p>
         </div>
-        <div class="services-grid">
-            <a href="#" class="service-card reveal reveal-delay-1" onclick="showPage('psychology'); return false;">
-                <div class="service-icon psychology">🧠</div>
-                <h3>Психологічна допомога</h3>
-                <p>Робота з тривогою, стресом, ПТСР. Короткотривала терапія. Онлайн та офлайн сесії з медичним психологом.</p>
-                <span class="service-link">Детальніше →</span>
-            </a>
-            <a href="#" class="service-card reveal reveal-delay-2" onclick="showPage('services'); return false;">
-                <div class="service-icon family">👨‍👩‍👧</div>
-                <h3>Сімейна медицина</h3>
-                <p>Сімейний лікар для дорослих і дітей. Декларації, рецепти, лікарняні. Безкоштовно за програмою НСЗУ.</p>
-                <span class="service-link">Детальніше →</span>
-            </a>
-            <a href="#" class="service-card reveal reveal-delay-3" onclick="showPage('services'); return false;">
-                <div class="service-icon ultrasound">🔬</div>
-                <h3>УЗД-діагностика</h3>
-                <p>Ультразвукова діагностика органів черевної порожнини, щитоподібної залози, судин. Швидко та за записом.</p>
-                <span class="service-link">Детальніше →</span>
-            </a>
-            <a href="#" class="service-card reveal reveal-delay-4" onclick="showPage('services'); return false;">
-                <div class="service-icon vaccination">💉</div>
-                <h3>Вакцинація</h3>
-                <p>Державні та комерційні вакцини. Дотримання холодового ланцюга. Вакцинація для дітей та дорослих.</p>
-                <span class="service-link">Детальніше →</span>
-            </a>
-        </div>
+        <div id="homeServicesGrid" class="services-grid"></div>
     </section>
 
     <!-- PSYCHOLOGY FOCUS -->
-    <section class="psychology-section">
+    <section class="psychology-section" data-home-section="psychology">
         <div class="psychology-inner">
             <div class="psychology-visual reveal">
                 <div id="psychologyImageMain" class="psychology-image-main">
@@ -2529,44 +2505,8 @@
         </div>
     </div>
     <div class="page-content">
-        <div class="services-grid">
-            <div class="service-card">
-                <div class="service-icon psychology">👨‍👩‍👧</div>
-                <h3>Сімейна медицина</h3>
-                <p>Сімейний лікар для дорослих і дітей. Декларації НСЗУ, рецепти програми "Доступні ліки", лікарняні листи.</p>
-                <span class="price-tag">Безкоштовно за НСЗУ</span>
-            </div>
-            <div class="service-card">
-                <div class="service-icon family">🔬</div>
-                <h3>УЗД-діагностика</h3>
-                <p>Черевна порожнина, щитоподібна залоза, судини шиї та нижніх кінцівок. Швидко та за записом.</p>
-                <span class="price-tag">Комерційна послуга</span>
-            </div>
-            <div class="service-card">
-                <div class="service-icon ultrasound">💉</div>
-                <h3>Вакцинація</h3>
-                <p>Державні вакцини за календарем. Комерційні вакцини. Дотримання холодового ланцюга.</p>
-                <span class="price-tag">Держ. / Комерційна</span>
-            </div>
-            <div class="service-card">
-                <div class="service-icon vaccination">🧪</div>
-                <h3>Швидкі тести</h3>
-                <p>COVID-19, грип, ВІЛ, гепатит B/C, глюкоза, CRP, H.Pylori та інші. Результат за 15 хвилин.</p>
-                <span class="price-tag">Комерційна послуга</span>
-            </div>
-            <div class="service-card">
-                <div class="service-icon psychology">📋</div>
-                <h3>Скринінг 40+</h3>
-                <p>Державна програма раннього виявлення захворювань. Компенсація 2000 грн для осіб 40+ років.</p>
-                <span class="price-tag">Держ. програма</span>
-            </div>
-            <div class="service-card">
-                <div class="service-icon family">❤️</div>
-                <h3>ЕКГ</h3>
-                <p>Електрокардіограма з розшифровкою лікаря. Базова серцева діагностика без черг.</p>
-                <span class="price-tag">Комерційна послуга</span>
-            </div>
-        </div>
+        <div id="siteServicesGrid" class="services-grid"></div>
+        <div id="siteServicesEmpty" class="bpr-empty" hidden>Послуги тимчасово не заповнені.</div>
     </div>
 </div>
 
@@ -2777,6 +2717,26 @@
                             <div class="bpr-field bpr-full">
                                 <label for="adminAnnouncementText">Оголошення під головним екраном</label>
                                 <textarea id="adminAnnouncementText"></textarea>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminServicesTag">Плашка секції послуг</label>
+                                <input id="adminServicesTag">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminServicesTitle">Заголовок секції послуг</label>
+                                <textarea id="adminServicesTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminServicesSubtitle">Опис секції послуг</label>
+                                <textarea id="adminServicesSubtitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminServicesList">Послуги</label>
+                                <textarea id="adminServicesList" style="min-height: 210px;"></textarea>
+                                <div class="admin-help">
+                                    Одна послуга = один рядок. Формат: емодзі | назва | опис | мітка | сторінка | visible або hidden.
+                                    Сторінка: psychology, services, prices, booking або повне https-посилання.
+                                </div>
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminHeroLogoImage">Лого/картинка на головній</label>
@@ -3584,6 +3544,59 @@
             heroLogoImage: 'assets/inwhite-logo.svg',
             heroBackgroundImage: 'assets/clinic-interior.jpg',
             announcementText: '🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно',
+            servicesTag: 'Наші послуги',
+            servicesTitle: 'Комплексна турбота<br>про ваше здоров\'я',
+            servicesSubtitle: 'Від первинної медицини до психологічної підтримки — все в одному місці, поруч з домом',
+            serviceCards: [
+                {
+                    icon: '🧠',
+                    title: 'Психологічна допомога',
+                    description: 'Робота з тривогою, стресом, ПТСР. Короткотривала терапія. Онлайн та офлайн сесії з медичним психологом.',
+                    label: 'Детальніше',
+                    target: 'psychology',
+                    visible: true
+                },
+                {
+                    icon: '👨‍👩‍👧',
+                    title: 'Сімейна медицина',
+                    description: 'Сімейний лікар для дорослих і дітей. Декларації НСЗУ, рецепти програми "Доступні ліки", лікарняні листи.',
+                    label: 'Безкоштовно за НСЗУ',
+                    target: 'services',
+                    visible: true
+                },
+                {
+                    icon: '🔬',
+                    title: 'УЗД-діагностика',
+                    description: 'Черевна порожнина, щитоподібна залоза, судини шиї та нижніх кінцівок. Швидко та за записом.',
+                    label: 'Комерційна послуга',
+                    target: 'services',
+                    visible: true
+                },
+                {
+                    icon: '💉',
+                    title: 'Вакцинація',
+                    description: 'Державні вакцини за календарем. Комерційні вакцини. Дотримання холодового ланцюга.',
+                    label: 'Держ. / Комерційна',
+                    target: 'services',
+                    visible: true
+                },
+                {
+                    icon: '🧪',
+                    title: 'Швидкі тести',
+                    description: 'COVID-19, грип, ВІЛ, гепатит B/C, глюкоза, CRP, H.Pylori та інші. Результат за 15 хвилин.',
+                    label: 'Комерційна послуга',
+                    target: 'services',
+                    visible: true
+                },
+                {
+                    icon: '📋',
+                    title: 'Скринінг 40+',
+                    description: 'Державна програма раннього виявлення захворювань. Компенсація 2000 грн для осіб 40+ років.',
+                    label: 'Держ. програма',
+                    target: 'services',
+                    visible: true
+                }
+            ],
             bookingTag: 'Запис',
             bookingTitle: 'Запишіться<br>на прийом',
             bookingDescription: 'Залиште заявку і ми зв\'яжемось з вами протягом 30 хвилин для підтвердження часу та деталей консультації.',
@@ -3720,6 +3733,7 @@
                 ...(source.pages ? source.pages : {})
             },
             appointmentServices: Array.isArray(source.appointmentServices) ? source.appointmentServices : defaults.appointmentServices,
+            serviceCards: Array.isArray(source.serviceCards) ? source.serviceCards : defaults.serviceCards,
             psychologyFeatures: Array.isArray(source.psychologyFeatures) ? source.psychologyFeatures : defaults.psychologyFeatures,
             testimonials: Array.isArray(source.testimonials) ? source.testimonials : defaults.testimonials,
             faqItems: Array.isArray(source.faqItems) ? source.faqItems : defaults.faqItems,
@@ -4227,6 +4241,35 @@
             });
     }
 
+    function adminServiceCardsToText(items) {
+        return (items || []).map(item => [
+            item.icon || '•',
+            item.title || '',
+            item.description || '',
+            item.label || '',
+            item.target || 'services',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParseServiceCards(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                return {
+                    icon: parts[0] || '•',
+                    title: parts[1] || parts[0] || 'Послуга',
+                    description: parts[2] || '',
+                    label: parts[3] || 'Детальніше',
+                    target: parts[4] || 'services',
+                    visible: ((parts[5] || 'visible').toLowerCase() !== 'hidden')
+                };
+            });
+    }
+
     function adminTextLinesToArray(text) {
         return String(text || '')
             .split('\n')
@@ -4360,6 +4403,44 @@
                 </div>
             `).join('');
         });
+    }
+
+    function adminServiceCardAction(target) {
+        const value = String(target || 'services').trim();
+        if (/^https?:\/\//.test(value)) {
+            return 'window.open(\'' + bprEscapeText(value) + '\', \'_blank\', \'noopener,noreferrer\'); return false;';
+        }
+        if (value === 'booking') {
+            return 'openModal(); return false;';
+        }
+        return 'showPage(\'' + bprEscapeText(value || 'services') + '\'); return false;';
+    }
+
+    function adminRenderServiceCards() {
+        const homeGrid = document.getElementById('homeServicesGrid');
+        const pageGrid = document.getElementById('siteServicesGrid');
+        const empty = document.getElementById('siteServicesEmpty');
+        const tag = document.getElementById('servicesTag');
+        const title = document.getElementById('servicesTitle');
+        const subtitle = document.getElementById('servicesSubtitle');
+        if (tag) tag.textContent = siteConfig.servicesTag || '';
+        if (title) title.innerHTML = siteConfig.servicesTitle || '';
+        if (subtitle) subtitle.textContent = siteConfig.servicesSubtitle || '';
+
+        const cards = (siteConfig.serviceCards || [])
+            .filter(item => item.visible !== false && item.title);
+        const html = cards.map((item, index) => `
+            <a href="#" class="service-card reveal visible reveal-delay-${(index % 4) + 1}" onclick="${adminServiceCardAction(item.target)}">
+                <div class="service-icon">${bprEscapeText(item.icon || '•')}</div>
+                <h3>${bprEscapeText(item.title)}</h3>
+                <p>${bprEscapeText(item.description)}</p>
+                <span class="service-link">${bprEscapeText(item.label || 'Детальніше')} →</span>
+            </a>
+        `).join('');
+
+        if (homeGrid) homeGrid.innerHTML = html;
+        if (pageGrid) pageGrid.innerHTML = html;
+        if (empty) empty.hidden = cards.length > 0;
     }
 
     function adminRenderPsychologyBlock() {
@@ -4551,6 +4632,12 @@
             item.style.display = siteConfig.pages[page] === false ? 'none' : '';
         });
 
+        document.querySelectorAll('[data-home-section]').forEach(section => {
+            const page = section.getAttribute('data-home-section');
+            section.hidden = siteConfig.pages[page] === false;
+        });
+
+        adminRenderServiceCards();
         adminRenderTeam();
         adminRenderPrices();
         adminRenderAppointmentServices();
@@ -4619,6 +4706,10 @@
         document.getElementById('adminHeroTitle').value = siteConfig.heroTitle || '';
         document.getElementById('adminHeroSubtitle').value = siteConfig.heroSubtitle || '';
         document.getElementById('adminAnnouncementText').value = siteConfig.announcementText || '';
+        document.getElementById('adminServicesTag').value = siteConfig.servicesTag || '';
+        document.getElementById('adminServicesTitle').value = siteConfig.servicesTitle || '';
+        document.getElementById('adminServicesSubtitle').value = siteConfig.servicesSubtitle || '';
+        document.getElementById('adminServicesList').value = adminServiceCardsToText(siteConfig.serviceCards || []);
         document.getElementById('adminHeroLogoImage').value = siteConfig.heroLogoImage || '';
         document.getElementById('adminHeroBackgroundImage').value = siteConfig.heroBackgroundImage || '';
         document.getElementById('adminAppointmentServices').value = adminAppointmentServicesToText(siteConfig.appointmentServices || []);
@@ -4663,6 +4754,10 @@
         siteConfig.heroTitle = document.getElementById('adminHeroTitle').value.trim();
         siteConfig.heroSubtitle = document.getElementById('adminHeroSubtitle').value.trim();
         siteConfig.announcementText = document.getElementById('adminAnnouncementText').value.trim();
+        siteConfig.servicesTag = document.getElementById('adminServicesTag').value.trim();
+        siteConfig.servicesTitle = document.getElementById('adminServicesTitle').value.trim();
+        siteConfig.servicesSubtitle = document.getElementById('adminServicesSubtitle').value.trim();
+        siteConfig.serviceCards = adminParseServiceCards(document.getElementById('adminServicesList').value);
         siteConfig.heroLogoImage = document.getElementById('adminHeroLogoImage').value.trim() || adminDefaultSiteConfig().heroLogoImage;
         siteConfig.heroBackgroundImage = document.getElementById('adminHeroBackgroundImage').value.trim() || adminDefaultSiteConfig().heroBackgroundImage;
         siteConfig.appointmentServices = adminParseAppointmentServices(document.getElementById('adminAppointmentServices').value);
