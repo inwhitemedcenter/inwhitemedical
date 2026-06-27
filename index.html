@@ -3385,8 +3385,13 @@
     function supabaseOpenRecoveryModal() {
         const modal = document.getElementById('supabaseRecoveryModal');
         const status = document.getElementById('supabaseRecoveryStatus');
-        if (!modal || !supabaseReadRecoveryToken()) return;
-        if (status) status.textContent = 'Введіть новий пароль і натисніть “Зберегти новий пароль”.';
+        if (!modal || !supabaseHasRecoverySignal()) return;
+        const params = supabaseReadAuthParams();
+        if (status) {
+            status.textContent = params.error
+                ? (params.errorDescription || params.error)
+                : 'Введіть новий пароль і натисніть “Зберегти новий пароль”.';
+        }
         modal.hidden = false;
         document.body.style.overflow = 'hidden';
         setTimeout(() => document.getElementById('supabaseRecoveryPassword')?.focus(), 50);
@@ -3677,13 +3682,62 @@
         return window.location.href.split('#')[0].split('?')[0];
     }
 
-    function supabaseReadRecoveryToken() {
+    function supabaseReadAuthParams() {
         const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
         const query = new URLSearchParams(window.location.search);
-        const type = hash.get('type') || query.get('type');
-        const token = hash.get('access_token') || query.get('access_token');
-        if (type === 'recovery' && token) return token;
+        return {
+            type: hash.get('type') || query.get('type') || '',
+            accessToken: hash.get('access_token') || query.get('access_token') || '',
+            refreshToken: hash.get('refresh_token') || query.get('refresh_token') || '',
+            tokenHash: hash.get('token_hash') || query.get('token_hash') || '',
+            code: hash.get('code') || query.get('code') || '',
+            error: hash.get('error') || query.get('error') || '',
+            errorDescription: hash.get('error_description') || query.get('error_description') || ''
+        };
+    }
+
+    function supabaseHasRecoverySignal() {
+        const params = supabaseReadAuthParams();
+        return params.type === 'recovery' || Boolean(params.accessToken || params.tokenHash || params.code || params.error);
+    }
+
+    function supabaseReadRecoveryToken() {
+        const params = supabaseReadAuthParams();
+        if (params.type === 'recovery' && params.accessToken) return params.accessToken;
         return '';
+    }
+
+    async function supabaseGetRecoveryAccessToken(statusElement) {
+        const params = supabaseReadAuthParams();
+        if (params.error) {
+            throw new Error(params.errorDescription || params.error);
+        }
+        if (params.accessToken) {
+            return params.accessToken;
+        }
+        if (params.tokenHash) {
+            if (statusElement) statusElement.textContent = 'Перевіряю recovery-посилання...';
+            const response = await fetch(supabaseNormalizeConfig(supabaseConfig).url + '/auth/v1/verify', {
+                method: 'POST',
+                headers: {
+                    apikey: supabaseConfig.publishableKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    type: 'recovery',
+                    token_hash: params.tokenHash
+                })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.access_token) {
+                throw new Error('Не вдалося підтвердити recovery-посилання.');
+            }
+            return data.access_token;
+        }
+        if (params.code) {
+            throw new Error('Supabase відкрив PKCE code-link. Для статичного HTML надішліть зміну пароля кнопкою з цього сайту або змініть recovery email template на {{ .ConfirmationURL }}.');
+        }
+        throw new Error('Recovery-токен не знайдено.');
     }
 
     async function supabaseRequest(path, options, useAdminToken) {
@@ -3787,15 +3841,13 @@
         }
         try {
             supabaseSetStatus('Надсилаю лист для зміни пароля...');
-            await supabaseRequest('/auth/v1/recover', {
+            await supabaseRequest('/auth/v1/recover?redirect_to=' + encodeURIComponent(supabaseCurrentPageUrl()), {
                 method: 'POST',
                 body: JSON.stringify({
-                    email,
-                    options: { redirectTo: supabaseCurrentPageUrl() },
-                    redirect_to: supabaseCurrentPageUrl()
+                    email
                 })
             }, false);
-            supabaseSetStatus('Лист надіслано. Відкрийте посилання з пошти, поверніться на цю сторінку, введіть новий пароль у поле пароля і натисніть “Змінити пароль”.');
+            supabaseSetStatus('Лист надіслано. Відкрийте посилання з пошти — на сайті має зʼявитися вікно для нового пароля.');
         } catch (error) {
             supabaseSetStatus('Не вдалося надіслати лист. Перевірте email та Redirect URL у Supabase.');
         }
@@ -3803,18 +3855,14 @@
 
     async function supabaseUpdatePassword() {
         supabaseSaveConfig();
-        const recoveryToken = supabaseReadRecoveryToken();
         const password = document.getElementById('supabaseAdminPassword').value;
-        if (!recoveryToken) {
-            supabaseSetStatus('Спочатку відкрийте recovery-посилання з листа на цій сторінці.');
-            return;
-        }
         if (!password || password.length < 6) {
             supabaseSetStatus('Введіть новий пароль мінімум 6 символів.');
             return;
         }
         try {
             supabaseSetStatus('Змінюю пароль...');
+            const recoveryToken = await supabaseGetRecoveryAccessToken(document.getElementById('supabaseStatus'));
             const response = await fetch(supabaseNormalizeConfig(supabaseConfig).url + '/auth/v1/user', {
                 method: 'PUT',
                 headers: {
@@ -3839,14 +3887,9 @@
         event.preventDefault();
         supabaseConfig = supabaseNormalizeConfig(supabaseConfig);
         const status = document.getElementById('supabaseRecoveryStatus');
-        const recoveryToken = supabaseReadRecoveryToken();
         const passwordInput = document.getElementById('supabaseRecoveryPassword');
         const password = passwordInput ? passwordInput.value : '';
 
-        if (!recoveryToken) {
-            if (status) status.textContent = 'Recovery-токен не знайдено. Надішліть новий лист для зміни пароля.';
-            return;
-        }
         if (!password || password.length < 6) {
             if (status) status.textContent = 'Пароль має містити мінімум 6 символів.';
             return;
@@ -3854,6 +3897,7 @@
 
         try {
             if (status) status.textContent = 'Змінюю пароль...';
+            const recoveryToken = await supabaseGetRecoveryAccessToken(status);
             const response = await fetch(supabaseConfig.url + '/auth/v1/user', {
                 method: 'PUT',
                 headers: {
