@@ -1654,6 +1654,24 @@
             margin-bottom: 18px;
         }
 
+        .bpr-event-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: -2px 0 18px;
+            color: var(--graphite-light);
+            font-size: 0.82rem;
+        }
+
+        .bpr-event-detail {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            border-radius: 12px;
+            background: rgba(232, 221, 208, 0.38);
+        }
+
         .bpr-card-footer {
             display: flex;
             justify-content: space-between;
@@ -2994,6 +3012,26 @@
                                 <input id="bprEditPrice" placeholder="1200 грн">
                             </div>
                             <div class="bpr-field">
+                                <label for="bprEditStartDate">Дата початку</label>
+                                <input id="bprEditStartDate" type="date">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditStartTime">Час початку</label>
+                                <input id="bprEditStartTime" type="time">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditDurationHours">Тривалість, годин</label>
+                                <input id="bprEditDurationHours" type="number" min="0" step="0.5" placeholder="4">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="bprEditLocationCity">Місто</label>
+                                <input id="bprEditLocationCity" placeholder="м. Чоп">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="bprEditLocationVenue">Заклад та адреса</label>
+                                <input id="bprEditLocationVenue" placeholder="INWHITE MEDICAL, вул. ...">
+                            </div>
+                            <div class="bpr-field">
                                 <label for="bprEditYear">Рік</label>
                                 <input id="bprEditYear" type="number" min="2020" max="2100" required>
                             </div>
@@ -3110,6 +3148,7 @@
                 </div>
                 <button class="bpr-close" type="button" onclick="bprCloseEventModal()">×</button>
             </div>
+            <div id="bprModalDetails"></div>
             <p id="bprModalDescription" class="bpr-panel-subtitle"></p>
             <div id="bprModalPrice" class="bpr-status bpr-status-warning"></div>
             <div id="bprOfflineRegistrationBox" class="bpr-inline-actions" hidden>
@@ -4852,6 +4891,7 @@
                 mode: 'Онлайн, запис',
                 points: 10,
                 price: '1200 грн',
+                durationHours: 4,
                 year: 2026,
                 providerCode: '2356',
                 trainingNumber: '1029684',
@@ -4859,6 +4899,7 @@
                 certificateDigits: 6,
                 image: bprImageData('Тренінг для лікарів'),
                 paymentUrl: 'https://example.com/payment',
+                hasRecording: true,
                 recordingUrl: 'https://example.com/recording',
                 googleFormUrl: '',
                 shortDescription: 'Практичний тренінг для лікарів щодо розпізнавання гострих стресових реакцій та ПТСР.',
@@ -4874,6 +4915,7 @@
                 mode: 'Онлайн, запис',
                 points: 8,
                 price: '1500 грн',
+                durationHours: 3,
                 year: 2026,
                 providerCode: '2356',
                 trainingNumber: '1029685',
@@ -4881,6 +4923,7 @@
                 certificateDigits: 6,
                 image: bprImageData('Майстер-клас БПР'),
                 paymentUrl: 'https://example.com/payment',
+                hasRecording: true,
                 recordingUrl: 'https://example.com/recording',
                 googleFormUrl: '',
                 shortDescription: 'Майстер-клас з базових УЗД-навичок та інтерпретації типових клінічних випадків.',
@@ -4896,6 +4939,11 @@
                 mode: 'Офлайн, очна участь',
                 points: 10,
                 price: 'уточнюється',
+                startDate: '2026-01-20',
+                startTime: '10:00',
+                durationHours: 6,
+                locationCity: 'м. Чоп',
+                locationVenue: 'INWHITE MEDICAL, адреса уточнюється',
                 year: 2026,
                 providerCode: '2356',
                 trainingNumber: '1029686',
@@ -4903,6 +4951,7 @@
                 certificateDigits: 6,
                 image: bprImageData('Офлайн навчання'),
                 paymentUrl: '',
+                hasRecording: false,
                 recordingUrl: '',
                 googleFormUrl: 'https://forms.gle/ВАШЕ_ПОСИЛАННЯ',
                 shortDescription: 'Очний захід із реєстрацією через Google Forms. Дані учасників збираються у вашій окремій таблиці.',
@@ -4935,6 +4984,32 @@
         return bprParticipants.find(participant => participant.id === participantId);
     }
 
+    function bprFormatEventDate(training) {
+        if (!training.startDate) return '';
+        const parts = String(training.startDate).split('-');
+        if (parts.length !== 3) return training.startDate;
+        const formatted = parts[2] + '.' + parts[1] + '.' + parts[0];
+        return training.startTime ? formatted + ' о ' + training.startTime : formatted;
+    }
+
+    function bprFormatDuration(training) {
+        const hours = Number(training.durationHours);
+        if (!hours) return '';
+        return hours + ' год';
+    }
+
+    function bprRenderEventDetails(training) {
+        const items = [];
+        const date = bprFormatEventDate(training);
+        const duration = bprFormatDuration(training);
+        const location = [training.locationCity, training.locationVenue].filter(Boolean).join(', ');
+        if (date) items.push('📅 ' + date);
+        if (duration) items.push('⏱ ' + duration);
+        if (location) items.push('📍 ' + location);
+        if (!items.length) return '';
+        return '<div class="bpr-event-details">' + items.map(item => '<span class="bpr-event-detail">' + bprEscapeText(item) + '</span>').join('') + '</div>';
+    }
+
     function bprInitTrainingModule() {
         siteConfig = adminNormalizeSiteConfig(bprReadStorage(SITE_CONFIG_STORAGE, adminDefaultSiteConfig()));
         siteTeam = bprReadStorage(SITE_TEAM_STORAGE, adminDefaultTeam());
@@ -4948,12 +5023,16 @@
                 storedTrainings.push(defaultTraining);
             }
         });
-        bprTrainings = storedTrainings.map(training => ({
-            category: 'online',
-            googleFormUrl: '',
-            hasRecording: (training.category || 'online') !== 'offline' || Boolean(training.recordingUrl),
-            ...training
-        }));
+        bprTrainings = storedTrainings.map(training => {
+            const category = training.category || 'online';
+            return {
+                category,
+                googleFormUrl: '',
+                ...training,
+                category,
+                hasRecording: category === 'online' ? training.hasRecording !== false : training.hasRecording === true
+            };
+        });
         bprParticipants = bprReadStorage(BPR_PARTICIPANTS_STORAGE, []);
         adminRenderSite();
         adminFillForms();
@@ -4995,6 +5074,7 @@
                         <span class="bpr-pill bpr-pill-muted">${Number(training.points) || 0} балів БПР</span>
                     </div>
                     <h3>${bprEscapeText(training.title)}</h3>
+                    ${bprRenderEventDetails(training)}
                     <p>${bprEscapeText(training.shortDescription)}</p>
                     <div class="bpr-card-footer">
                         <span>${bprEscapeText(training.price || 'Вартість уточнюється')}</span>
@@ -5019,8 +5099,9 @@
             <span class="bpr-pill bpr-pill-muted">${bprEscapeText(training.mode)}</span>
             <span class="bpr-pill bpr-pill-muted">${Number(training.points) || 0} балів БПР</span>
         `;
+        document.getElementById('bprModalDetails').innerHTML = bprRenderEventDetails(training);
         const isOffline = (training.category || 'online') === 'offline';
-        const hasRecording = training.hasRecording !== false && Boolean(training.recordingUrl);
+        const hasRecording = training.hasRecording === true && Boolean(training.recordingUrl);
         document.getElementById('bprRegisterForm').hidden = isOffline;
         document.getElementById('bprOfflineRegistrationBox').hidden = !isOffline;
         document.getElementById('bprOfflineRegistrationLink').href = training.googleFormUrl || '#';
@@ -5366,6 +5447,11 @@
         document.getElementById('bprEditMode').value = training.mode || '';
         document.getElementById('bprEditPoints').value = training.points || 0;
         document.getElementById('bprEditPrice').value = training.price || '';
+        document.getElementById('bprEditStartDate').value = training.startDate || '';
+        document.getElementById('bprEditStartTime').value = training.startTime || '';
+        document.getElementById('bprEditDurationHours').value = training.durationHours || '';
+        document.getElementById('bprEditLocationCity').value = training.locationCity || '';
+        document.getElementById('bprEditLocationVenue').value = training.locationVenue || '';
         document.getElementById('bprEditYear').value = training.year || new Date().getFullYear();
         document.getElementById('bprEditProvider').value = training.providerCode || '';
         document.getElementById('bprEditTrainingNumber').value = training.trainingNumber || '';
@@ -5373,7 +5459,9 @@
         document.getElementById('bprEditCertificateDigits').value = training.certificateDigits || 6;
         document.getElementById('bprEditImage').value = adminNormalizeImageValue(training.image || '');
         document.getElementById('bprEditPaymentUrl').value = training.paymentUrl || '';
-        const hasRecording = training.hasRecording !== false && Boolean(training.recordingUrl);
+        const hasRecording = (training.category || 'online') === 'online'
+            ? training.hasRecording !== false
+            : training.hasRecording === true;
         const hasRecordingInput = document.getElementById('bprEditHasRecording');
         hasRecordingInput.checked = (training.category || 'online') === 'online' || hasRecording;
         hasRecordingInput.dataset.touched = '';
@@ -5400,6 +5488,11 @@
             mode: bprActiveTrainingCategory === 'offline' ? 'Офлайн, очна участь' : 'Онлайн, запис',
             points: 5,
             price: '',
+            startDate: '',
+            startTime: '',
+            durationHours: '',
+            locationCity: '',
+            locationVenue: '',
             year: new Date().getFullYear(),
             providerCode: '2356',
             trainingNumber: String(Date.now()).slice(-7),
@@ -5445,6 +5538,11 @@
             mode: document.getElementById('bprEditMode').value.trim(),
             points: Number(document.getElementById('bprEditPoints').value) || 0,
             price: document.getElementById('bprEditPrice').value.trim(),
+            startDate: document.getElementById('bprEditStartDate').value,
+            startTime: document.getElementById('bprEditStartTime').value,
+            durationHours: document.getElementById('bprEditDurationHours').value,
+            locationCity: document.getElementById('bprEditLocationCity').value.trim(),
+            locationVenue: document.getElementById('bprEditLocationVenue').value.trim(),
             year: Number(document.getElementById('bprEditYear').value) || new Date().getFullYear(),
             providerCode: document.getElementById('bprEditProvider').value.trim(),
             trainingNumber: document.getElementById('bprEditTrainingNumber').value.trim(),
