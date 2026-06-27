@@ -12,6 +12,10 @@
             box-sizing: border-box;
         }
 
+        [hidden] {
+            display: none !important;
+        }
+
         :root {
             --white: #FAFAF8;
             --beige: #E8DDD0;
@@ -3260,7 +3264,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <span>© 2025 INWHITE MEDICAL. Всі права захищені.</span>
+        <span>© 2026 INWHITE MEDICAL. Всі права захищені.</span>
         <span>Розроблено з ❤️ для громади Чопа</span>
     </div>
 </footer>
@@ -5106,7 +5110,9 @@
         document.getElementById('bprOfflineRegistrationBox').hidden = !isOffline;
         document.getElementById('bprOfflineRegistrationLink').href = training.googleFormUrl || '#';
         const offlineRecordingLink = document.getElementById('bprOfflineRecordingLink');
-        offlineRecordingLink.hidden = !isOffline || !hasRecording;
+        const showOfflineRecording = isOffline && hasRecording;
+        offlineRecordingLink.hidden = !showOfflineRecording;
+        offlineRecordingLink.style.display = showOfflineRecording ? '' : 'none';
         offlineRecordingLink.href = hasRecording ? training.recordingUrl : '#';
         if (!isOffline) document.getElementById('bprRegisterForm').reset();
         document.getElementById('bprEventModal').hidden = false;
