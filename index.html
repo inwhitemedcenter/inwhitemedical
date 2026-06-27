@@ -3777,9 +3777,13 @@
     function adminNormalizeSiteConfig(config) {
         const defaults = adminDefaultSiteConfig();
         const source = config || {};
+        const normalizedHeroLogo = !source.heroLogoImage || /inwhite-logo\.svg$/i.test(String(source.heroLogoImage))
+            ? defaults.heroLogoImage
+            : source.heroLogoImage;
         return {
             ...defaults,
             ...source,
+            heroLogoImage: normalizedHeroLogo,
             pages: {
                 ...defaults.pages,
                 ...(source.pages ? source.pages : {})
