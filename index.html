@@ -3919,7 +3919,7 @@
             }, false);
             supabaseSetStatus('Лист надіслано. Відкрийте посилання з пошти — на сайті має зʼявитися вікно для нового пароля.');
         } catch (error) {
-            supabaseSetStatus('Не вдалося надіслати лист. Перевірте email та Redirect URL у Supabase.');
+            supabaseSetStatus('Не вдалося надіслати лист: ' + (error.message || 'перевірте email, Redirect URL або ліміти Supabase.'));
         }
     }
 
