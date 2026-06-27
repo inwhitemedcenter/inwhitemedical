@@ -2976,7 +2976,7 @@
                             </div>
                             <div class="bpr-field">
                                 <label for="bprEditCategory">Категорія навчання</label>
-                                <select id="bprEditCategory" required>
+                                <select id="bprEditCategory" required onchange="document.getElementById('bprEditHasRecording').checked = this.value === 'online'; document.getElementById('bprEditHasRecording').dataset.touched = ''; bprUpdateTrainingFormVisibility()">
                                     <option value="online">Онлайн навчання</option>
                                     <option value="offline">Офлайн навчання</option>
                                 </select>
@@ -3015,13 +3015,18 @@
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="bprEditImage">Посилання на картинку</label>
-                                <input id="bprEditImage" placeholder="https://...">
+                                <input id="bprEditImage" placeholder="assets/pocus.png або https://...">
+                                <p class="bpr-note">Для файлів із GitHub використовуйте assets/назва-файлу.png. Якщо випадково написати assest або outputs/assets, сайт виправить шлях під час збереження.</p>
                             </div>
                             <div class="bpr-field">
                                 <label for="bprEditPaymentUrl">Посилання на оплату</label>
                                 <input id="bprEditPaymentUrl" placeholder="https://...">
                             </div>
-                            <div class="bpr-field">
+                            <label class="bpr-field bpr-checkbox">
+                                <input id="bprEditHasRecording" type="checkbox" onchange="this.dataset.touched = 'true'; bprUpdateTrainingFormVisibility()">
+                                Є посилання на запис
+                            </label>
+                            <div id="bprRecordingUrlField" class="bpr-field">
                                 <label for="bprEditRecordingUrl">Посилання на запис</label>
                                 <input id="bprEditRecordingUrl" placeholder="https://...">
                             </div>
@@ -3109,6 +3114,7 @@
             <div id="bprModalPrice" class="bpr-status bpr-status-warning"></div>
             <div id="bprOfflineRegistrationBox" class="bpr-inline-actions" hidden>
                 <a id="bprOfflineRegistrationLink" class="bpr-btn bpr-btn-primary" href="#" target="_blank" rel="noopener noreferrer">Зареєструватись на офлайн-захід</a>
+                <a id="bprOfflineRecordingLink" class="bpr-btn bpr-btn-secondary" href="#" target="_blank" rel="noopener noreferrer" hidden>Переглянути запис</a>
             </div>
 
             <form id="bprRegisterForm" onsubmit="bprSubmitRegistration(event)">
@@ -4376,6 +4382,9 @@
     function adminNormalizeImageValue(value) {
         const raw = String(value || '').trim();
         if (!raw) return '';
+        if (/^assest\//.test(raw)) return raw.replace(/^assest\//, 'assets/');
+        if (/^\/assest\//.test(raw)) return raw.replace(/^\/assest\//, 'assets/');
+        if (/^\.\/assest\//.test(raw)) return raw.replace(/^\.\/assest\//, 'assets/');
         if (/^outputs\/assets\//.test(raw)) return raw.replace(/^outputs\//, '');
         if (/^\/outputs\/assets\//.test(raw)) return raw.replace(/^\/outputs\//, '');
         if (/^\.\/outputs\/assets\//.test(raw)) return raw.replace(/^\.\/outputs\//, '');
@@ -4942,6 +4951,7 @@
         bprTrainings = storedTrainings.map(training => ({
             category: 'online',
             googleFormUrl: '',
+            hasRecording: (training.category || 'online') !== 'offline' || Boolean(training.recordingUrl),
             ...training
         }));
         bprParticipants = bprReadStorage(BPR_PARTICIPANTS_STORAGE, []);
@@ -4977,7 +4987,7 @@
             : 'Наразі немає офлайн навчальних заходів.';
         grid.innerHTML = visibleTrainings.map(training => `
             <article class="bpr-card" onclick="bprOpenEventModal('${bprEscapeText(training.id)}')">
-                <img src="${bprEscapeText(training.image || bprImageData('Навчальний захід'))}" alt="${bprEscapeText(training.title)}">
+                <img src="${bprEscapeText(adminNormalizeImageValue(training.image) || bprImageData('Навчальний захід'))}" alt="${bprEscapeText(training.title)}">
                 <div class="bpr-card-body">
                     <div class="bpr-card-meta">
                         <span class="bpr-pill">${bprEscapeText(training.type)}</span>
@@ -5000,7 +5010,7 @@
         if (!training) return;
 
         bprCurrentTrainingId = trainingId;
-        document.getElementById('bprModalImage').src = training.image || bprImageData('Навчальний захід');
+        document.getElementById('bprModalImage').src = adminNormalizeImageValue(training.image) || bprImageData('Навчальний захід');
         document.getElementById('bprModalTitle').textContent = training.title;
         document.getElementById('bprModalDescription').textContent = training.fullDescription;
         document.getElementById('bprModalPrice').textContent = 'Вартість: ' + (training.price || 'уточнюється');
@@ -5010,9 +5020,13 @@
             <span class="bpr-pill bpr-pill-muted">${Number(training.points) || 0} балів БПР</span>
         `;
         const isOffline = (training.category || 'online') === 'offline';
+        const hasRecording = training.hasRecording !== false && Boolean(training.recordingUrl);
         document.getElementById('bprRegisterForm').hidden = isOffline;
         document.getElementById('bprOfflineRegistrationBox').hidden = !isOffline;
         document.getElementById('bprOfflineRegistrationLink').href = training.googleFormUrl || '#';
+        const offlineRecordingLink = document.getElementById('bprOfflineRecordingLink');
+        offlineRecordingLink.hidden = !isOffline || !hasRecording;
+        offlineRecordingLink.href = hasRecording ? training.recordingUrl : '#';
         if (!isOffline) document.getElementById('bprRegisterForm').reset();
         document.getElementById('bprEventModal').hidden = false;
         document.body.style.overflow = 'hidden';
@@ -5326,6 +5340,23 @@
         `).join('');
     }
 
+    function bprUpdateTrainingFormVisibility() {
+        const category = document.getElementById('bprEditCategory')?.value || 'online';
+        const hasRecordingInput = document.getElementById('bprEditHasRecording');
+        const recordingField = document.getElementById('bprRecordingUrlField');
+        const recordingInput = document.getElementById('bprEditRecordingUrl');
+        if (!hasRecordingInput || !recordingField || !recordingInput) return;
+
+        if (category === 'online' && !hasRecordingInput.dataset.touched) {
+            hasRecordingInput.checked = true;
+        }
+
+        const showRecording = category === 'online' || hasRecordingInput.checked;
+        recordingField.hidden = !showRecording;
+        recordingInput.required = category === 'online';
+        if (!showRecording) recordingInput.value = '';
+    }
+
     function bprFillTrainingForm(training) {
         if (!training) return;
         document.getElementById('bprEditId').value = training.id;
@@ -5340,14 +5371,19 @@
         document.getElementById('bprEditTrainingNumber').value = training.trainingNumber || '';
         document.getElementById('bprEditCertificateNext').value = training.certificateNext || 1;
         document.getElementById('bprEditCertificateDigits').value = training.certificateDigits || 6;
-        document.getElementById('bprEditImage').value = training.image || '';
+        document.getElementById('bprEditImage').value = adminNormalizeImageValue(training.image || '');
         document.getElementById('bprEditPaymentUrl').value = training.paymentUrl || '';
+        const hasRecording = training.hasRecording !== false && Boolean(training.recordingUrl);
+        const hasRecordingInput = document.getElementById('bprEditHasRecording');
+        hasRecordingInput.checked = (training.category || 'online') === 'online' || hasRecording;
+        hasRecordingInput.dataset.touched = '';
         document.getElementById('bprEditRecordingUrl').value = training.recordingUrl || '';
         document.getElementById('bprEditGoogleFormUrl').value = training.googleFormUrl || '';
         document.getElementById('bprEditShort').value = training.shortDescription || '';
         document.getElementById('bprEditFull').value = training.fullDescription || '';
         document.getElementById('bprEditQuiz').value = training.quizText || bprDefaultQuizText();
         document.getElementById('bprEditVisible').checked = Boolean(training.visible);
+        bprUpdateTrainingFormVisibility();
         bprRenderDeveloperTrainingList();
     }
 
@@ -5371,6 +5407,7 @@
             certificateDigits: 6,
             image: bprImageData('Новий захід'),
             paymentUrl: '',
+            hasRecording: bprActiveTrainingCategory !== 'offline',
             recordingUrl: '',
             googleFormUrl: '',
             shortDescription: 'Короткий опис навчального заходу.',
@@ -5399,6 +5436,7 @@
         }
 
         const id = document.getElementById('bprEditId').value || ('bpr-training-' + Date.now());
+        const hasRecording = category === 'online' || document.getElementById('bprEditHasRecording').checked;
         const training = {
             id,
             title: document.getElementById('bprEditTitle').value.trim(),
@@ -5412,9 +5450,10 @@
             trainingNumber: document.getElementById('bprEditTrainingNumber').value.trim(),
             certificateNext: Number(document.getElementById('bprEditCertificateNext').value) || 1,
             certificateDigits: Number(document.getElementById('bprEditCertificateDigits').value) || 6,
-            image: document.getElementById('bprEditImage').value.trim() || bprImageData('Навчальний захід'),
+            image: adminNormalizeImageValue(document.getElementById('bprEditImage').value) || bprImageData('Навчальний захід'),
             paymentUrl: document.getElementById('bprEditPaymentUrl').value.trim(),
-            recordingUrl: document.getElementById('bprEditRecordingUrl').value.trim(),
+            hasRecording,
+            recordingUrl: hasRecording ? document.getElementById('bprEditRecordingUrl').value.trim() : '',
             googleFormUrl: document.getElementById('bprEditGoogleFormUrl').value.trim(),
             shortDescription: document.getElementById('bprEditShort').value.trim(),
             fullDescription: document.getElementById('bprEditFull').value.trim(),
