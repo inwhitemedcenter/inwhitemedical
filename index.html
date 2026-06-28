@@ -4762,15 +4762,33 @@
     function adminLoadImageFile(event, targetId) {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
-        if (file.size > 2500000) {
-            alert('Фото завелике. Будь ласка, оберіть файл до 2 МБ або завантажте фото в assets і вставте шлях.');
+        if (!file.type || !file.type.startsWith('image/')) {
+            alert('Оберіть файл зображення.');
             event.target.value = '';
             return;
         }
         const reader = new FileReader();
         reader.onload = () => {
-            const target = document.getElementById(targetId);
-            if (target) target.value = reader.result;
+            const image = new Image();
+            image.onload = () => {
+                const maxSide = 1200;
+                const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+                const width = Math.max(1, Math.round(image.width * scale));
+                const height = Math.max(1, Math.round(image.height * scale));
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0, width, height);
+                const target = document.getElementById(targetId);
+                if (target) target.value = canvas.toDataURL('image/jpeg', 0.82);
+                event.target.value = '';
+            };
+            image.onerror = () => {
+                alert('Не вдалося прочитати фото. Спробуйте інший файл або вставте шлях assets/photo.jpg.');
+                event.target.value = '';
+            };
+            image.src = reader.result;
         };
         reader.readAsDataURL(file);
     }
