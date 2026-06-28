@@ -4995,7 +4995,10 @@
                 const context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0, width, height);
                 const target = document.getElementById(targetId);
-                if (target) target.value = canvas.toDataURL('image/jpeg', 0.82);
+                if (target) {
+                    target.value = canvas.toDataURL('image/jpeg', 0.82);
+                    adminPreviewHeroImageField(targetId);
+                }
                 event.target.value = '';
             };
             image.onerror = () => {
@@ -5005,6 +5008,24 @@
             image.src = reader.result;
         };
         reader.readAsDataURL(file);
+    }
+
+    function adminPreviewHeroImageField(targetId) {
+        const pageByInput = {
+            adminHeroPsychologyImage: 'psychology',
+            adminHeroServicesImage: 'services',
+            adminHeroPricesImage: 'prices',
+            adminHeroTeamImage: 'team',
+            adminHeroAboutImage: 'about',
+            adminHeroTrainingImage: 'training'
+        };
+        const page = pageByInput[targetId];
+        if (!page) return;
+        siteConfig.pageHeroImages = {
+            ...(siteConfig.pageHeroImages || {}),
+            [page]: adminNormalizeImageValue(document.getElementById(targetId).value)
+        };
+        adminRenderPageHeroes();
     }
 
     function adminNormalizeImageValue(value) {
@@ -5612,15 +5633,7 @@
         siteConfig.testimonials = adminParseTestimonials(document.getElementById('adminTestimonials').value);
         siteConfig.faqItems = adminParseFaq(document.getElementById('adminFaq').value);
         siteConfig.socialLinks = adminParseSocialLinks(document.getElementById('adminSocialLinks').value);
-        siteConfig.pageHeroImages = {
-            ...adminParsePageHeroImages(document.getElementById('adminPageHeroImages').value),
-            psychology: adminNormalizeImageValue(document.getElementById('adminHeroPsychologyImage').value),
-            services: adminNormalizeImageValue(document.getElementById('adminHeroServicesImage').value),
-            prices: adminNormalizeImageValue(document.getElementById('adminHeroPricesImage').value),
-            team: adminNormalizeImageValue(document.getElementById('adminHeroTeamImage').value),
-            about: adminNormalizeImageValue(document.getElementById('adminHeroAboutImage').value),
-            training: adminNormalizeImageValue(document.getElementById('adminHeroTrainingImage').value)
-        };
+        adminSaveHeroImageFields();
         siteConfig.aboutTag = document.getElementById('adminAboutTag').value.trim();
         siteConfig.aboutTitle = document.getElementById('adminAboutTitle').value.trim();
         siteConfig.aboutMissionTitle = document.getElementById('adminAboutMissionTitle').value.trim();
@@ -5637,11 +5650,25 @@
         alert('Налаштування сайту збережено.');
     }
 
+    function adminSaveHeroImageFields() {
+        siteConfig.pageHeroImages = {
+            ...adminParsePageHeroImages(document.getElementById('adminPageHeroImages').value),
+            psychology: adminNormalizeImageValue(document.getElementById('adminHeroPsychologyImage').value),
+            services: adminNormalizeImageValue(document.getElementById('adminHeroServicesImage').value),
+            prices: adminNormalizeImageValue(document.getElementById('adminHeroPricesImage').value),
+            team: adminNormalizeImageValue(document.getElementById('adminHeroTeamImage').value),
+            about: adminNormalizeImageValue(document.getElementById('adminHeroAboutImage').value),
+            training: adminNormalizeImageValue(document.getElementById('adminHeroTrainingImage').value)
+        };
+    }
+
     function adminSaveTeam(event) {
         event.preventDefault();
+        adminSaveHeroImageFields();
         siteTeam = adminCollectTeamEditor();
         document.getElementById('adminTeamEditor').value = adminTeamToText(siteTeam);
         adminSaveSiteState();
+        adminRenderPageHeroes();
         adminRenderTeam();
         adminRenderTeamEditor();
         adminRenderAppointmentServices();
