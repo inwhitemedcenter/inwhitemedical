@@ -3299,6 +3299,9 @@
                 <div class="admin-section" data-admin-panel="training">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Навчальні заходи</h3>
                     <p class="bpr-panel-subtitle">Онлайн-заходи мають запис, тест і сертифікат. Офлайн-заходи ведуть на ваше посилання Google Forms.</p>
+                    <div class="bpr-inline-actions" style="margin-bottom: 18px;">
+                        <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminSaveTrainingHeroImage()">Зберегти фон навчання</button>
+                    </div>
 
                 <div class="bpr-dev-layout">
                     <div>
@@ -5675,6 +5678,13 @@
         alert('Команду збережено.');
     }
 
+    function adminSaveTrainingHeroImage() {
+        adminSaveHeroImageFields();
+        adminSaveSiteState();
+        adminRenderPageHeroes();
+        alert('Фон сторінки навчання збережено.');
+    }
+
     function adminSavePrices(event) {
         event.preventDefault();
         sitePrices = adminParseRows(document.getElementById('adminPricesEditor').value, ['category', 'name', 'description', 'price', 'visible']);
@@ -6357,6 +6367,7 @@
 
     function bprSaveTraining(event) {
         event.preventDefault();
+        adminSaveHeroImageFields();
         const quizText = document.getElementById('bprEditQuiz').value.trim();
         const category = document.getElementById('bprEditCategory').value;
         if (category === 'online' && !bprValidateQuizText(quizText)) {
@@ -6402,6 +6413,8 @@
             bprTrainings.push(training);
         }
         bprSaveState();
+        adminSaveSiteState();
+        adminRenderPageHeroes();
         bprActiveTrainingCategory = training.category || 'online';
         bprSetTrainingCategory(bprActiveTrainingCategory);
         bprRenderTrainingCards();
