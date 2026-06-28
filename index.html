@@ -1457,10 +1457,55 @@
         .page {
             display: none;
             min-height: 100vh;
+            opacity: 0;
+            transform: translateX(0);
         }
 
         .page.active {
             display: block;
+            opacity: 1;
+            animation: pageSoftEnter 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .page.enter-from-right.active {
+            animation-name: pageEnterFromRight;
+        }
+
+        .page.enter-from-left.active {
+            animation-name: pageEnterFromLeft;
+        }
+
+        @keyframes pageSoftEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pageEnterFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(38px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pageEnterFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-38px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .page-hero {
@@ -2395,6 +2440,30 @@
             transform: translateY(0);
         }
 
+        a,
+        button,
+        input,
+        select,
+        textarea,
+        .service-card,
+        .team-card,
+        .price-row,
+        .faq-item,
+        .contact-item {
+            transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
         .reveal-delay-1 { transition-delay: 0.1s; }
         .reveal-delay-2 { transition-delay: 0.2s; }
         .reveal-delay-3 { transition-delay: 0.3s; }
@@ -2435,8 +2504,8 @@
         <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Послуги</a></li>
         <li data-nav-page="prices"><a href="#" onclick="showPage('prices'); return false;">Прайс</a></li>
         <li data-nav-page="team"><a href="#" onclick="showPage('team'); return false;">Команда</a></li>
-        <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
         <li data-nav-page="training"><a href="#" onclick="showPage('training'); return false;">Навчання</a></li>
+        <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
         <li><a href="#" onclick="bprOpenDeveloperPanel(); return false;">Адмін</a></li>
         <li><a href="#" class="nav-cta" onclick="openModal(); return false;">Записатись</a></li>
     </ul>
@@ -3491,10 +3560,10 @@
         <div class="footer-col">
             <h4>Клініка</h4>
             <ul>
-                <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
                 <li data-nav-page="team"><a href="#" onclick="showPage('team'); return false;">Команда</a></li>
                 <li data-nav-page="prices"><a href="#" onclick="showPage('prices'); return false;">Прайс</a></li>
                 <li data-nav-page="training"><a href="#" onclick="showPage('training'); return false;">Навчання</a></li>
+                <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
                 <li data-nav-page="home"><a href="#" onclick="showPage('home'); return false;">Новини</a></li>
                 <li><a href="#" onclick="openModal(); return false;">Записатись</a></li>
             </ul>
@@ -3603,17 +3672,27 @@
         }
     });
 
+    const SITE_PAGE_ORDER = ['home', 'psychology', 'services', 'prices', 'team', 'training', 'about'];
+    let currentPageName = 'home';
+
     // ===== PAGE NAVIGATION =====
     function showPage(pageName) {
         if (typeof siteConfig !== 'undefined' && siteConfig.pages && siteConfig.pages[pageName] === false && !bprDeveloperUnlocked) {
             pageName = 'home';
         }
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const previousIndex = SITE_PAGE_ORDER.indexOf(currentPageName);
+        const nextIndex = SITE_PAGE_ORDER.indexOf(pageName);
+        const directionClass = previousIndex >= 0 && nextIndex >= 0 && nextIndex < previousIndex
+            ? 'enter-from-left'
+            : 'enter-from-right';
+        document.querySelectorAll('.page').forEach(p => {
+            p.classList.remove('active', 'enter-from-left', 'enter-from-right');
+        });
         // Show target page
         const targetPage = document.getElementById('page-' + pageName);
         if (!targetPage) return;
-        targetPage.classList.add('active');
+        targetPage.classList.add(directionClass, 'active');
+        currentPageName = pageName;
         const developerPanel = document.getElementById('bprDevPanel');
         if (developerPanel && (pageName !== 'training' || !bprOpeningDeveloperPanel)) {
             developerPanel.hidden = true;
