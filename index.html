@@ -370,6 +370,29 @@
             transform: translateY(-3px);
         }
 
+        .btn-declaration {
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 12px 34px rgba(201, 169, 110, 0.34);
+            animation: declarationPulse 2.8s ease-in-out infinite;
+        }
+
+        .btn-declaration:hover {
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 16px 44px rgba(201, 169, 110, 0.46);
+        }
+
+        @keyframes declarationPulse {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-2px) scale(1.025);
+            }
+        }
+
         .hero-stats {
             position: absolute;
             bottom: 60px;
@@ -826,6 +849,20 @@
             margin-bottom: 20px;
         }
 
+        .form-group,
+        .form-row {
+            transition: opacity 0.28s ease, transform 0.28s ease, max-height 0.28s ease, margin 0.28s ease;
+        }
+
+        .form-field-hidden {
+            opacity: 0;
+            transform: translateY(-8px);
+            max-height: 0 !important;
+            margin-bottom: 0 !important;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
         .form-group label {
             display: block;
             font-size: 0.78rem;
@@ -886,11 +923,13 @@
             color: var(--graphite);
             transition: all 0.3s ease;
             user-select: none;
+            transform: translateY(0);
         }
 
         .service-option:hover {
             border-color: var(--gold);
             color: var(--gold);
+            transform: translateY(-2px);
         }
 
         .service-option.selected {
@@ -898,6 +937,14 @@
             border-color: var(--gold);
             color: var(--gold);
             font-weight: 500;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(201, 169, 110, 0.16);
+        }
+
+        .service-option[data-service-name*="Декларація"],
+        .service-option[data-service-name*="декларація"] {
+            border-color: rgba(201, 169, 110, 0.55);
+            background: rgba(201, 169, 110, 0.08);
         }
 
         .form-submit {
@@ -2421,7 +2468,7 @@
                 <a href="#" class="btn-primary" onclick="openModal(); return false;">
                     ✦ Записатись онлайн
                 </a>
-                <a href="#" class="btn-secondary" onclick="openDeclarationModal(); return false;">
+                <a href="#" class="btn-secondary btn-declaration" onclick="openDeclarationModal(); return false;">
                     Задекларуватись
                 </a>
                 <a href="#" class="btn-secondary" onclick="showPage('psychology'); return false;">
@@ -2567,7 +2614,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group appointment-format-field">
                         <label>Формат (для психології)</label>
                         <select data-appointment-format>
                             <option>Онлайн-сесія</option>
@@ -3494,7 +3541,7 @@
                     <input data-appointment-phone type="tel" placeholder="+380..." required>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group appointment-format-field">
                 <label>Формат</label>
                 <select data-appointment-format>
                     <option>Онлайн-сесія</option>
@@ -3660,9 +3707,16 @@
         if (!form) return;
         const isDeclaration = isDeclarationForm(form);
         form.querySelectorAll('.declaration-doctor-field').forEach(field => {
-            field.hidden = !isDeclaration;
+            field.hidden = false;
+            field.classList.toggle('form-field-hidden', !isDeclaration);
             const select = field.querySelector('select');
             if (select) select.required = isDeclaration;
+        });
+        form.querySelectorAll('.appointment-format-field').forEach(field => {
+            field.classList.toggle('form-field-hidden', isDeclaration);
+            field.querySelectorAll('select, input, textarea').forEach(input => {
+                input.disabled = isDeclaration;
+            });
         });
     }
 
@@ -3682,7 +3736,7 @@
             phone: getValue('[data-appointment-phone]'),
             date: getValue('[data-appointment-date]'),
             time: getValue('[data-appointment-time]'),
-            format: getValue('[data-appointment-format]'),
+            format: isDeclarationForm(form) ? '' : getValue('[data-appointment-format]'),
             comment: getValue('[data-appointment-comment]')
         };
 
@@ -4907,8 +4961,9 @@
         const doctors = adminDeclarationDoctors();
         document.querySelectorAll('[data-appointment-doctor]').forEach(select => {
             const current = selectedDoctor || select.value || '';
+            const anyDoctorOption = '<option value="Будь який лікар">Будь який лікар</option>';
             select.innerHTML = doctors.length
-                ? doctors.map(item => '<option value="' + bprEscapeText(item.name) + '">' + bprEscapeText(item.name) + '</option>').join('')
+                ? anyDoctorOption + doctors.map(item => '<option value="' + bprEscapeText(item.name) + '">' + bprEscapeText(item.name) + '</option>').join('')
                 : '<option value="">Лікаря для декларації ще не обрано</option>';
             if (current && doctors.some(item => item.name === current)) select.value = current;
         });
