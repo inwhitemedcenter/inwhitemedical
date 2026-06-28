@@ -2704,11 +2704,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Ім'я та прізвище</label>
-                            <input data-appointment-name type="text" placeholder="Ваше ім'я" required>
+                            <input data-appointment-name type="text" placeholder="Ваше ім'я" autocomplete="name" required>
                         </div>
                         <div class="form-group">
                             <label>Телефон</label>
-                            <input data-appointment-phone type="tel" placeholder="+380 XX XXX XX XX" required>
+                            <input data-appointment-phone type="tel" inputmode="numeric" autocomplete="tel" placeholder="380XXXXXXXXX" minlength="12" maxlength="12" required>
                         </div>
                     </div>
                     <div class="form-row">
@@ -2729,10 +2729,7 @@
                     </div>
                     <div class="form-group appointment-format-field">
                         <label>Формат (для психології)</label>
-                        <select data-appointment-format>
-                            <option>Онлайн-сесія</option>
-                            <option>Офлайн (в клініці)</option>
-                        </select>
+                        <select data-appointment-format></select>
                     </div>
                     <div class="form-group">
                         <label>Коментар (необов'язково)</label>
@@ -3108,6 +3105,13 @@
                                 <div class="admin-help">
                                     Одна кнопка = один рядок. Формат: емодзі | назва | visible або hidden.
                                     Приклад: 💉 | Вакцинація | hidden
+                                </div>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminAppointmentFormats">Формати консультації</label>
+                                <textarea id="adminAppointmentFormats" style="min-height: 110px;"></textarea>
+                                <div class="admin-help">
+                                    Один формат = один рядок. Наприклад: Онлайн-сесія або Офлайн в клініці.
                                 </div>
                             </div>
                             <div class="bpr-field">
@@ -3728,19 +3732,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Ім'я</label>
-                    <input data-appointment-name type="text" placeholder="Ваше ім'я" required>
+                    <input data-appointment-name type="text" placeholder="Ваше ім'я" autocomplete="name" required>
                 </div>
                 <div class="form-group">
                     <label>Телефон</label>
-                    <input data-appointment-phone type="tel" placeholder="+380..." required>
+                    <input data-appointment-phone type="tel" inputmode="numeric" autocomplete="tel" placeholder="380XXXXXXXXX" minlength="12" maxlength="12" required>
                 </div>
             </div>
             <div class="form-group appointment-format-field">
                 <label>Формат</label>
-                <select data-appointment-format>
-                    <option>Онлайн-сесія</option>
-                    <option>Офлайн (в клініці)</option>
-                </select>
+                <select data-appointment-format></select>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -3941,6 +3942,56 @@
         });
     }
 
+    function sanitizeAppointmentName(value) {
+        return String(value || '')
+            .replace(/[^A-Za-zА-Яа-яІіЇїЄєҐґ'’ʼ` -]/g, '')
+            .replace(/\s{2,}/g, ' ')
+            .trimStart();
+    }
+
+    function normalizeAppointmentPhone(value) {
+        let digits = String(value || '').replace(/\D/g, '');
+        if (digits.startsWith('0')) digits = '38' + digits;
+        if (digits.startsWith('80')) digits = '3' + digits;
+        if (digits && !digits.startsWith('380')) {
+            digits = '380' + digits.replace(/^380?/, '').replace(/^0+/, '');
+        }
+        return digits.slice(0, 12);
+    }
+
+    function initAppointmentFieldGuards() {
+        document.querySelectorAll('[data-appointment-name]').forEach(input => {
+            if (input.dataset.guarded === 'true') return;
+            input.dataset.guarded = 'true';
+            input.addEventListener('input', () => {
+                const cleaned = sanitizeAppointmentName(input.value);
+                if (input.value !== cleaned) input.value = cleaned;
+            });
+        });
+        document.querySelectorAll('[data-appointment-phone]').forEach(input => {
+            if (input.dataset.guarded === 'true') return;
+            input.dataset.guarded = 'true';
+            input.addEventListener('input', () => {
+                const cleaned = normalizeAppointmentPhone(input.value);
+                if (input.value !== cleaned) input.value = cleaned;
+            });
+            input.addEventListener('focus', () => {
+                if (!input.value) input.value = '380';
+            });
+        });
+    }
+
+    function adminRenderAppointmentFormats() {
+        const formats = Array.isArray(siteConfig.appointmentFormats) && siteConfig.appointmentFormats.length
+            ? siteConfig.appointmentFormats
+            : adminDefaultSiteConfig().appointmentFormats;
+        document.querySelectorAll('[data-appointment-format]').forEach(select => {
+            const current = select.value;
+            select.innerHTML = formats.map(format => '<option value="' + bprEscapeText(format) + '">' + bprEscapeText(format) + '</option>').join('');
+            if (current && formats.includes(current)) select.value = current;
+        });
+    }
+
     // ===== FORM SUBMIT =====
     function setAppointmentFormStatus(form, message, type = '') {
         const status = form ? form.querySelector('[data-form-status]') : null;
@@ -4003,8 +4054,8 @@
         const appointment = {
             service: selectedService ? selectedService.textContent.trim() : '',
             doctor: isDeclarationForm(form) ? getValue('[data-appointment-doctor]') : '',
-            fullName: getValue('[data-appointment-name]'),
-            phone: getValue('[data-appointment-phone]'),
+            fullName: sanitizeAppointmentName(getValue('[data-appointment-name]')).trim(),
+            phone: normalizeAppointmentPhone(getValue('[data-appointment-phone]')),
             date: getValue('[data-appointment-date]'),
             time: getValue('[data-appointment-time]'),
             format: isDeclarationForm(form) ? '' : getValue('[data-appointment-format]'),
@@ -4012,6 +4063,14 @@
         };
         if (!appointment.service) {
             setAppointmentFormStatus(form, 'Оберіть послугу перед відправкою.', 'error');
+            return;
+        }
+        if (!appointment.fullName) {
+            setAppointmentFormStatus(form, 'Вкажіть імʼя літерами.', 'error');
+            return;
+        }
+        if (!/^380\d{9}$/.test(appointment.phone)) {
+            setAppointmentFormStatus(form, 'Телефон має містити 12 цифр і починатися з 380.', 'error');
             return;
         }
 
@@ -4256,6 +4315,9 @@
                 { icon: '🔬', name: 'УЗД', visible: true },
                 { icon: '💉', name: 'Вакцинація', visible: true }
             ],
+            appointmentFormats: [
+                'Онлайн-сесія'
+            ],
             psychologyTag: 'Психологічна допомога',
             psychologyTitle: 'Підтримка, яка<br>потрібна вам<br><em>вже сьогодні</em>',
             psychologyDescription: 'В умовах війни та постійного стресу психологічна допомога — це не розкіш, а необхідність. Наш медичний психолог надає доказову, ефективну підтримку.',
@@ -4431,6 +4493,7 @@
                 ...(source.pages ? source.pages : {})
             },
             appointmentServices: Array.isArray(source.appointmentServices) ? source.appointmentServices : defaults.appointmentServices,
+            appointmentFormats: Array.isArray(source.appointmentFormats) ? source.appointmentFormats : defaults.appointmentFormats,
             serviceCards: Array.isArray(source.serviceCards) ? source.serviceCards : defaults.serviceCards,
             psychologyFeatures: Array.isArray(source.psychologyFeatures) ? source.psychologyFeatures : defaults.psychologyFeatures,
             psychologyServiceItems: Array.isArray(source.psychologyServiceItems) ? source.psychologyServiceItems : defaults.psychologyServiceItems,
@@ -4967,6 +5030,17 @@
             });
     }
 
+    function adminAppointmentFormatsToText(items) {
+        return (items || []).join('\n');
+    }
+
+    function adminParseAppointmentFormats(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean);
+    }
+
     function adminServiceCardsToText(items) {
         return (items || []).map(item => [
             item.icon || '•',
@@ -5166,6 +5240,7 @@
                 'adminInstagram',
                 'adminInstagramLabel',
                 'adminAppointmentServices',
+                'adminAppointmentFormats',
                 'adminSocialLinks',
                 'adminContactPhone',
                 'adminContactWhatsapp',
@@ -5750,6 +5825,8 @@
         adminRenderTeam();
         adminRenderPrices();
         adminRenderAppointmentServices();
+        adminRenderAppointmentFormats();
+        initAppointmentFieldGuards();
         adminRenderBookingBlock();
         adminRenderPsychologyBlock();
         adminRenderTestimonials();
@@ -5912,6 +5989,7 @@
         document.getElementById('adminHeroAboutImage').value = adminNormalizeImageValue(heroImages.about || '');
         document.getElementById('adminHeroTrainingImage').value = adminNormalizeImageValue(heroImages.training || '');
         document.getElementById('adminAppointmentServices').value = adminAppointmentServicesToText(siteConfig.appointmentServices || []);
+        document.getElementById('adminAppointmentFormats').value = adminAppointmentFormatsToText(siteConfig.appointmentFormats || []);
         document.getElementById('adminBookingTag').value = siteConfig.bookingTag || '';
         document.getElementById('adminPsychologyTag').value = siteConfig.psychologyTag || '';
         document.getElementById('adminBookingTitle').value = siteConfig.bookingTitle || '';
@@ -5985,6 +6063,7 @@
         siteConfig.heroLogoImage = document.getElementById('adminHeroLogoImage').value.trim() || adminDefaultSiteConfig().heroLogoImage;
         siteConfig.heroBackgroundImage = document.getElementById('adminHeroBackgroundImage').value.trim() || adminDefaultSiteConfig().heroBackgroundImage;
         siteConfig.appointmentServices = adminParseAppointmentServices(document.getElementById('adminAppointmentServices').value);
+        siteConfig.appointmentFormats = adminParseAppointmentFormats(document.getElementById('adminAppointmentFormats').value);
         siteConfig.bookingTag = document.getElementById('adminBookingTag').value.trim();
         siteConfig.psychologyTag = document.getElementById('adminPsychologyTag').value.trim();
         siteConfig.bookingTitle = document.getElementById('adminBookingTitle').value.trim();
