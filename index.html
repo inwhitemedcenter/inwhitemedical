@@ -2179,6 +2179,47 @@
             margin: 14px 0 18px;
         }
 
+        .admin-team-list {
+            display: grid;
+            gap: 18px;
+        }
+
+        .admin-team-card {
+            border: 1px solid var(--beige);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.72);
+            padding: 18px;
+        }
+
+        .admin-team-card-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .admin-team-card-title {
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .admin-team-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .admin-team-grid .bpr-full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 760px) {
+            .admin-team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .price-list {
             display: grid;
             gap: 16px;
@@ -2681,15 +2722,12 @@
         <div class="bpr-shell">
             <div class="bpr-topbar">
                 <div>
-                    <div class="bpr-eyebrow">Провайдер БПР</div>
+                    <div class="bpr-eyebrow">Провайдер БПР 2817</div>
                     <h1 class="bpr-title">Навчання лікарів</h1>
                     <p class="bpr-lead">
                         Оберіть онлайн-курс із записом та сертифікатом або офлайн-захід із реєстрацією
                         через форму. Усі картки та посилання змінюються в адмін-панелі.
                     </p>
-                </div>
-                <div class="bpr-actions">
-                    <button class="bpr-btn bpr-btn-secondary" type="button" onclick="bprOpenDeveloperPanel()">Адмін-панель</button>
                 </div>
             </div>
 
@@ -3088,7 +3126,11 @@
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Команда</h3>
                     <p class="bpr-panel-subtitle">Додавайте, приховуйте або змінюйте фахівців без редагування коду.</p>
                     <form onsubmit="adminSaveTeam(event)">
-                        <div class="bpr-field">
+                        <div id="adminTeamCards" class="admin-team-list"></div>
+                        <div class="bpr-inline-actions" style="margin-top: 18px;">
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddTeamMember()">Додати фахівця</button>
+                        </div>
+                        <div class="bpr-field" hidden>
                             <label for="adminTeamEditor">Фахівці</label>
                             <textarea id="adminTeamEditor" style="min-height: 210px;"></textarea>
                             <div class="admin-help">
@@ -5117,6 +5159,75 @@
         }).join('');
     }
 
+    function adminRenderTeamEditor() {
+        const list = document.getElementById('adminTeamCards');
+        if (!list) return;
+        list.innerHTML = (siteTeam || []).map((item, index) => `
+            <div class="admin-team-card" data-team-index="${index}">
+                <div class="admin-team-card-header">
+                    <div class="admin-team-card-title">Фахівець ${index + 1}</div>
+                    <button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveTeamMember(${index})">Прибрати</button>
+                </div>
+                <div class="admin-team-grid">
+                    <label class="bpr-field bpr-full">
+                        <span>Фото або емодзі</span>
+                        <input id="adminTeamPhoto_${index}" data-team-field="photo" value="${bprEscapeText(adminNormalizeImageValue(item.photo || ''))}" placeholder="assets/doctor.jpg або https://...">
+                        <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminTeamPhoto_${index}')">
+                    </label>
+                    <label class="bpr-field">
+                        <span>ПІБ / назва</span>
+                        <input data-team-field="name" value="${bprEscapeText(item.name || '')}" placeholder="Медичний психолог">
+                    </label>
+                    <label class="bpr-field">
+                        <span>Посада</span>
+                        <input data-team-field="role" value="${bprEscapeText(item.role || '')}" placeholder="Лікар загальної практики">
+                    </label>
+                    <label class="bpr-field bpr-full">
+                        <span>Опис</span>
+                        <textarea data-team-field="description" style="min-height: 110px;">${bprEscapeText(item.description || '')}</textarea>
+                    </label>
+                    <label class="bpr-field bpr-checkbox bpr-full">
+                        <input data-team-field="visible" type="checkbox" ${item.visible === false ? '' : 'checked'}>
+                        Показувати на сайті
+                    </label>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function adminCollectTeamEditor() {
+        const cards = document.querySelectorAll('#adminTeamCards .admin-team-card');
+        if (!cards.length) return adminParseRows(document.getElementById('adminTeamEditor').value, ['photo', 'name', 'role', 'description', 'visible']);
+        return Array.from(cards).map(card => {
+            const field = name => card.querySelector('[data-team-field="' + name + '"]');
+            return {
+                photo: adminNormalizeImageValue(field('photo') ? field('photo').value : ''),
+                name: field('name') ? field('name').value.trim() : '',
+                role: field('role') ? field('role').value.trim() : '',
+                description: field('description') ? field('description').value.trim() : '',
+                visible: field('visible') ? field('visible').checked : true
+            };
+        }).filter(item => item.name || item.role || item.description || item.photo);
+    }
+
+    function adminAddTeamMember() {
+        siteTeam = adminCollectTeamEditor();
+        siteTeam.push({
+            photo: '',
+            name: 'Новий фахівець',
+            role: '',
+            description: '',
+            visible: true
+        });
+        adminRenderTeamEditor();
+    }
+
+    function adminRemoveTeamMember(index) {
+        siteTeam = adminCollectTeamEditor();
+        siteTeam.splice(index, 1);
+        adminRenderTeamEditor();
+    }
+
     function adminRenderPrices() {
         const list = document.getElementById('sitePriceList');
         const empty = document.getElementById('sitePriceEmpty');
@@ -5193,6 +5304,7 @@
         document.getElementById('adminContactAddress').value = siteConfig.address || '';
         document.getElementById('adminContactHours').value = siteConfig.hours || '';
         document.getElementById('adminTeamEditor').value = adminTeamToText(siteTeam);
+        adminRenderTeamEditor();
         document.getElementById('adminPricesEditor').value = adminPricesToText(sitePrices);
     }
 
@@ -5262,9 +5374,11 @@
 
     function adminSaveTeam(event) {
         event.preventDefault();
-        siteTeam = adminParseRows(document.getElementById('adminTeamEditor').value, ['photo', 'name', 'role', 'description', 'visible']);
+        siteTeam = adminCollectTeamEditor();
+        document.getElementById('adminTeamEditor').value = adminTeamToText(siteTeam);
         adminSaveSiteState();
         adminRenderTeam();
+        adminRenderTeamEditor();
         alert('Команду збережено.');
     }
 
