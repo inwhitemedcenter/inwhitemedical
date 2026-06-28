@@ -1412,6 +1412,42 @@
             align-items: center;
             padding: 0 60px;
             margin-top: 80px;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0);
+            transition: background 0.3s ease;
+        }
+
+        .page-hero.has-image::before {
+            background: linear-gradient(90deg, rgba(250, 248, 244, 0.9), rgba(250, 248, 244, 0.45));
+        }
+
+        .page-hero > div {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page.active .page-hero > div {
+            animation: pageHeroIntro 0.9s ease both;
+        }
+
+        @keyframes pageHeroIntro {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .page-hero h1 {
@@ -2081,6 +2117,57 @@
             margin-top: 0;
         }
 
+        .admin-sticky-actions {
+            position: sticky;
+            top: 78px;
+            z-index: 25;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(250, 248, 244, 0.96);
+            border: 1px solid var(--beige);
+            border-radius: 18px;
+            padding: 12px;
+            margin-bottom: 18px;
+            backdrop-filter: blur(12px);
+        }
+
+        .admin-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .admin-tab {
+            border: 1px solid var(--beige);
+            border-radius: 999px;
+            background: white;
+            color: var(--graphite);
+            padding: 10px 14px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .admin-tab.active {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: white;
+        }
+
+        #bprDevPanel [data-admin-panel] {
+            display: none;
+        }
+
+        #bprDevPanel [data-admin-panel].active {
+            display: block;
+        }
+
         .admin-help {
             background: rgba(232, 221, 208, 0.35);
             border: 1px solid rgba(212, 196, 176, 0.7);
@@ -2464,7 +2551,7 @@
 
 <!-- ==================== PSYCHOLOGY PAGE ==================== -->
 <div id="page-psychology" class="page">
-    <div class="page-hero">
+    <div class="page-hero" data-page-hero="psychology">
         <div>
             <div class="section-tag">Психологічна допомога</div>
             <h1>Ваш психологічний<br>добробут — наш пріоритет</h1>
@@ -2523,7 +2610,7 @@
 
 <!-- ==================== SERVICES PAGE ==================== -->
 <div id="page-services" class="page">
-    <div class="page-hero">
+    <div class="page-hero" data-page-hero="services">
         <div>
             <div class="section-tag">Послуги клініки</div>
             <h1>Всі послуги<br>INWHITE MEDICAL</h1>
@@ -2537,7 +2624,7 @@
 
 <!-- ==================== TEAM PAGE ==================== -->
 <div id="page-team" class="page">
-    <div class="page-hero">
+    <div class="page-hero" data-page-hero="team">
         <div>
             <div class="section-tag">Наша команда</div>
             <h1>Фахівці, яким<br>можна довіряти</h1>
@@ -2550,7 +2637,7 @@
 
 <!-- ==================== PRICES PAGE ==================== -->
 <div id="page-prices" class="page">
-    <div class="page-hero">
+    <div class="page-hero" data-page-hero="prices">
         <div>
             <div class="section-tag">Прайс</div>
             <h1>Вартість<br>послуг</h1>
@@ -2568,46 +2655,21 @@
 
 <!-- ==================== ABOUT PAGE ==================== -->
 <div id="page-about" class="page">
-    <div class="page-hero">
+    <div class="page-hero" data-page-hero="about">
         <div>
-            <div class="section-tag">Про клініку</div>
-            <h1>INWHITE MEDICAL —<br>медицина що формує довіру</h1>
+            <div id="aboutPageTag" class="section-tag">Про клініку</div>
+            <h1 id="aboutPageTitle">INWHITE MEDICAL —<br>медицина що формує довіру</h1>
         </div>
     </div>
     <div class="page-content">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start;">
             <div>
-                <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--dark); margin-bottom: 20px;">Наша місія</h2>
-                <p style="color: var(--graphite-light); line-height: 1.8; margin-bottom: 20px;">
-                    INWHITE MEDICAL — сучасний медичний центр первинної медичної допомоги у місті Чоп, Закарпатська область. Ми прагнемо забезпечити мешканців громади якісною, доступною та доказовою медициною поруч з домом.
-                </p>
-                <p style="color: var(--graphite-light); line-height: 1.8; margin-bottom: 20px;">
-                    Наша мета — створити місце, де кожен пацієнт відчуває повагу, турботу та отримує допомогу на рівні сучасних медичних стандартів.
-                </p>
-                <p style="color: var(--graphite-light); line-height: 1.8;">
-                    Ми — команда однодумців, яка вірить: якісна медицина має бути доступна кожному, незалежно від розміру міста.
-                </p>
+                <h2 id="aboutMissionTitle" style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--dark); margin-bottom: 20px;">Наша місія</h2>
+                <div id="aboutMissionText"></div>
             </div>
             <div>
-                <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--dark); margin-bottom: 20px;">Наші цінності</h2>
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
-                        <strong style="color: var(--gold);">🎯 Доказовість</strong>
-                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">Лише перевірені методи лікування та діагностики</p>
-                    </div>
-                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
-                        <strong style="color: var(--gold);">❤️ Людяність</strong>
-                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">До кожного пацієнта — з повагою та увагою</p>
-                    </div>
-                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
-                        <strong style="color: var(--gold);">🌍 Доступність</strong>
-                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">Якісна медицина без потреби їхати до обласного центру</p>
-                    </div>
-                    <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
-                        <strong style="color: var(--gold);">🔒 Конфіденційність</strong>
-                        <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">Повна приватність та захист даних пацієнтів</p>
-                    </div>
-                </div>
+                <h2 id="aboutValuesTitle" style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--dark); margin-bottom: 20px;">Наші цінності</h2>
+                <div id="aboutValuesList" style="display: flex; flex-direction: column; gap: 15px;"></div>
             </div>
         </div>
     </div>
@@ -2715,7 +2777,18 @@
                     </div>
                 </div>
 
-                <div class="admin-section">
+                <div class="admin-sticky-actions">
+                    <button class="bpr-btn bpr-btn-primary" type="button" onclick="supabaseSaveSiteState()">Зберегти сайт у базу</button>
+                    <div class="admin-tabs" aria-label="Розділи адмін-панелі">
+                        <button class="admin-tab active" type="button" data-admin-tab="site" onclick="adminShowPanel('site')">Сайт</button>
+                        <button class="admin-tab" type="button" data-admin-tab="database" onclick="adminShowPanel('database')">База</button>
+                        <button class="admin-tab" type="button" data-admin-tab="team" onclick="adminShowPanel('team')">Команда</button>
+                        <button class="admin-tab" type="button" data-admin-tab="prices" onclick="adminShowPanel('prices')">Прайс</button>
+                        <button class="admin-tab" type="button" data-admin-tab="training" onclick="adminShowPanel('training')">Навчання</button>
+                    </div>
+                </div>
+
+                <div class="admin-section active" data-admin-panel="site">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Сторінки та головний екран</h3>
                     <p class="bpr-panel-subtitle">Керуйте видимістю сторінок і базовими текстами головного екрана.</p>
                     <form id="siteAdminForm" onsubmit="adminSaveSiteSettings(event)">
@@ -2864,6 +2937,42 @@
                                     Приклад: 📸 | Instagram | https://instagram.com/inwhitemedical | visible
                                 </div>
                             </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPageHeroImages">Верхні картинки сторінок</label>
+                                <textarea id="adminPageHeroImages" style="min-height: 130px;"></textarea>
+                                <div class="admin-help">
+                                    Один рядок = одна сторінка. Формат: сторінка | assets/photo.jpg або https://...
+                                    Сторінки: psychology, services, team, prices, about, training.
+                                </div>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminAboutTag">Плашка “Про нас”</label>
+                                <input id="adminAboutTag">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminAboutValuesTitle">Заголовок цінностей</label>
+                                <input id="adminAboutValuesTitle">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminAboutTitle">Заголовок сторінки “Про нас”</label>
+                                <textarea id="adminAboutTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminAboutMissionTitle">Заголовок місії</label>
+                                <input id="adminAboutMissionTitle">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminAboutMissionText">Текст місії</label>
+                                <textarea id="adminAboutMissionText" style="min-height: 170px;"></textarea>
+                                <div class="admin-help">Новий абзац = новий рядок.</div>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminAboutValues">Цінності</label>
+                                <textarea id="adminAboutValues" style="min-height: 150px;"></textarea>
+                                <div class="admin-help">
+                                    Один пункт = один рядок. Формат: емодзі/назва | опис | visible або hidden.
+                                </div>
+                            </div>
                             <div class="bpr-field">
                                 <label for="adminContactPhone">Телефон</label>
                                 <input id="adminContactPhone" placeholder="+380 XX XXX XX XX">
@@ -2891,7 +3000,7 @@
                     </form>
                 </div>
 
-                <div class="admin-section">
+                <div class="admin-section" data-admin-panel="database">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Supabase база даних</h3>
                     <p class="bpr-panel-subtitle">
                         Зберігайте зміни сайту в базі даних, щоб вони були видимі всім користувачам.
@@ -2942,7 +3051,7 @@
                     </form>
                 </div>
 
-                <div class="admin-section">
+                <div class="admin-section" data-admin-panel="team">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Команда</h3>
                     <p class="bpr-panel-subtitle">Додавайте, приховуйте або змінюйте фахівців без редагування коду.</p>
                     <form onsubmit="adminSaveTeam(event)">
@@ -2951,7 +3060,7 @@
                             <textarea id="adminTeamEditor" style="min-height: 210px;"></textarea>
                             <div class="admin-help">
                                 Один фахівець = один рядок. Формат: фото або емодзі | ПІБ | посада | опис | visible або hidden.
-                                Для фото можна вставити посилання або шлях, наприклад assets/doctor.jpg.
+                                Для фото вставте URL або шлях, наприклад assets/doctor.jpg. Щоб прибрати фахівця з сайту, напишіть hidden.
                             </div>
                         </div>
                         <div class="bpr-inline-actions">
@@ -2960,7 +3069,7 @@
                     </form>
                 </div>
 
-                <div class="admin-section">
+                <div class="admin-section" data-admin-panel="prices">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Прайс для пацієнтів</h3>
                     <p class="bpr-panel-subtitle">Ці позиції показуються на сторінці “Прайс”.</p>
                     <form onsubmit="adminSavePrices(event)">
@@ -2978,7 +3087,7 @@
                     </form>
                 </div>
 
-                <div class="admin-section">
+                <div class="admin-section" data-admin-panel="training">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Навчальні заходи</h3>
                     <p class="bpr-panel-subtitle">Онлайн-заходи мають запис, тест і сертифікат. Офлайн-заходи ведуть на ваше посилання Google Forms.</p>
 
@@ -3108,7 +3217,7 @@
                 </div>
                 </div>
 
-                <div class="bpr-panel" style="margin-top: 28px;">
+                <div class="bpr-panel" data-admin-panel="training" style="margin-top: 28px;">
                     <div class="bpr-topbar" style="margin-bottom: 18px;">
                         <div>
                             <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Таблиця учасників</h3>
@@ -3237,13 +3346,7 @@
         </div>
         <div class="footer-col">
             <h4>Послуги</h4>
-            <ul>
-                <li data-nav-page="psychology"><a href="#" onclick="showPage('psychology'); return false;">Психологічна допомога</a></li>
-                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Сімейна медицина</a></li>
-                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">УЗД-діагностика</a></li>
-                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Вакцинація</a></li>
-                <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Скринінг 40+</a></li>
-            </ul>
+            <ul id="siteFooterServices"></ul>
         </div>
         <div class="footer-col">
             <h4>Клініка</h4>
@@ -3367,6 +3470,16 @@
         const targetPage = document.getElementById('page-' + pageName);
         if (!targetPage) return;
         targetPage.classList.add('active');
+        const developerPanel = document.getElementById('bprDevPanel');
+        if (developerPanel && (pageName !== 'training' || !bprOpeningDeveloperPanel)) {
+            developerPanel.hidden = true;
+        }
+        const heroContent = targetPage.querySelector('.page-hero > div');
+        if (heroContent) {
+            heroContent.style.animation = 'none';
+            heroContent.offsetHeight;
+            heroContent.style.animation = '';
+        }
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
         // Re-trigger animations
@@ -3578,6 +3691,7 @@
     let bprCurrentParticipantId = null;
     let bprDeveloperUnlocked = false;
     let bprActiveTrainingCategory = 'online';
+    let bprOpeningDeveloperPanel = false;
 
     function adminDefaultSiteConfig() {
         return {
@@ -3731,6 +3845,29 @@
                 { icon: '👥', label: 'Facebook', url: 'https://facebook.com', visible: true },
                 { icon: '✈️', label: 'Telegram', url: 'https://t.me/', visible: true }
             ],
+            pageHeroImages: {
+                psychology: '',
+                services: '',
+                team: '',
+                prices: '',
+                about: '',
+                training: ''
+            },
+            aboutTag: 'Про клініку',
+            aboutTitle: 'INWHITE MEDICAL —<br>медицина що формує довіру',
+            aboutMissionTitle: 'Наша місія',
+            aboutMissionText: [
+                'INWHITE MEDICAL — сучасний медичний центр первинної медичної допомоги у місті Чоп, Закарпатська область. Ми прагнемо забезпечити мешканців громади якісною, доступною та доказовою медициною поруч з домом.',
+                'Наша мета — створити місце, де кожен пацієнт відчуває повагу, турботу та отримує допомогу на рівні сучасних медичних стандартів.',
+                'Ми — команда однодумців, яка вірить: якісна медицина має бути доступна кожному, незалежно від розміру міста.'
+            ],
+            aboutValuesTitle: 'Наші цінності',
+            aboutValues: [
+                { title: '🎯 Доказовість', description: 'Лише перевірені методи лікування та діагностики', visible: true },
+                { title: '❤️ Людяність', description: 'До кожного пацієнта — з повагою та увагою', visible: true },
+                { title: '🌍 Доступність', description: 'Якісна медицина без потреби їхати до обласного центру', visible: true },
+                { title: '🔒 Конфіденційність', description: 'Повна приватність та захист даних пацієнтів', visible: true }
+            ],
             phone: '+380 XX XXX XX XX',
             whatsapp: '380XXXXXXXXX',
             email: 'info@inwhitemedical.ua',
@@ -3793,7 +3930,13 @@
             psychologyFeatures: Array.isArray(source.psychologyFeatures) ? source.psychologyFeatures : defaults.psychologyFeatures,
             testimonials: Array.isArray(source.testimonials) ? source.testimonials : defaults.testimonials,
             faqItems: Array.isArray(source.faqItems) ? source.faqItems : defaults.faqItems,
-            socialLinks: Array.isArray(source.socialLinks) ? source.socialLinks : defaults.socialLinks
+            socialLinks: Array.isArray(source.socialLinks) ? source.socialLinks : defaults.socialLinks,
+            pageHeroImages: {
+                ...defaults.pageHeroImages,
+                ...(source.pageHeroImages ? source.pageHeroImages : {})
+            },
+            aboutMissionText: Array.isArray(source.aboutMissionText) ? source.aboutMissionText : defaults.aboutMissionText,
+            aboutValues: Array.isArray(source.aboutValues) ? source.aboutValues : defaults.aboutValues
         };
     }
 
@@ -4413,6 +4556,49 @@
             });
     }
 
+    function adminPageHeroImagesToText(items) {
+        const pageLabels = ['psychology', 'services', 'team', 'prices', 'about', 'training'];
+        const source = items || {};
+        return pageLabels.map(page => [
+            page,
+            adminNormalizeImageValue(source[page] || '')
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParsePageHeroImages(text) {
+        const output = {};
+        String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .forEach(row => {
+                const parts = row.split('|').map(part => part.trim());
+                if (parts[0]) output[parts[0]] = adminNormalizeImageValue(parts[1] || '');
+            });
+        return output;
+    }
+
+    function adminAboutValuesToText(items) {
+        return (items || []).map(item => [
+            item.title || '',
+            item.description || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParseAboutValues(text) {
+        return adminParseRows(text, ['title', 'description', 'visible']);
+    }
+
+    function adminShowPanel(panelName) {
+        document.querySelectorAll('#bprDevPanel [data-admin-panel]').forEach(panel => {
+            panel.classList.toggle('active', panel.getAttribute('data-admin-panel') === panelName);
+        });
+        document.querySelectorAll('#bprDevPanel [data-admin-tab]').forEach(tab => {
+            tab.classList.toggle('active', tab.getAttribute('data-admin-tab') === panelName);
+        });
+    }
+
     function adminLoadImageFile(event, targetId) {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
@@ -4500,6 +4686,74 @@
         if (homeGrid) homeGrid.innerHTML = html;
         if (pageGrid) pageGrid.innerHTML = html;
         if (empty) empty.hidden = cards.length > 0;
+    }
+
+    function adminRenderFooterServices() {
+        const list = document.getElementById('siteFooterServices');
+        if (!list) return;
+        const cards = (siteConfig.serviceCards || [])
+            .filter(item => item.visible !== false && item.title);
+        list.innerHTML = cards.map(item => {
+            const target = String(item.target || 'services').trim();
+            if (/^https?:\/\//.test(target)) {
+                return '<li><a href="' + bprEscapeText(target) + '" target="_blank" rel="noopener noreferrer">' + bprEscapeText(item.title) + '</a></li>';
+            }
+            if (target === 'booking') {
+                return '<li><a href="#" onclick="openModal(); return false;">' + bprEscapeText(item.title) + '</a></li>';
+            }
+            return "<li data-nav-page=\"" + bprEscapeText(target || 'services') + "\"><a href=\"#\" onclick=\"showPage('" + bprEscapeText(target || 'services') + "'); return false;\">" + bprEscapeText(item.title) + "</a></li>";
+        }).join('');
+    }
+
+    function adminRenderPageHeroes() {
+        const images = siteConfig.pageHeroImages || {};
+        document.querySelectorAll('[data-page-hero]').forEach(hero => {
+            const page = hero.getAttribute('data-page-hero');
+            const image = adminNormalizeImageValue(images[page] || '');
+            if (image) {
+                hero.style.backgroundImage = 'url("' + String(image).replace(/"/g, '\\"') + '")';
+                hero.classList.add('has-image');
+            } else {
+                hero.style.backgroundImage = '';
+                hero.classList.remove('has-image');
+            }
+        });
+        const trainingSection = document.querySelector('#page-training .bpr-section');
+        const trainingImage = adminNormalizeImageValue(images.training || '');
+        if (trainingSection && trainingImage) {
+            trainingSection.style.backgroundImage = 'linear-gradient(rgba(250, 248, 244, 0.9), rgba(250, 248, 244, 0.92)), url("' + String(trainingImage).replace(/"/g, '\\"') + '")';
+            trainingSection.style.backgroundSize = 'cover';
+            trainingSection.style.backgroundPosition = 'center top';
+        } else if (trainingSection) {
+            trainingSection.style.backgroundImage = '';
+        }
+    }
+
+    function adminRenderAboutPage() {
+        const tag = document.getElementById('aboutPageTag');
+        const title = document.getElementById('aboutPageTitle');
+        const missionTitle = document.getElementById('aboutMissionTitle');
+        const missionText = document.getElementById('aboutMissionText');
+        const valuesTitle = document.getElementById('aboutValuesTitle');
+        const valuesList = document.getElementById('aboutValuesList');
+        if (tag) tag.textContent = siteConfig.aboutTag || '';
+        if (title) title.innerHTML = siteConfig.aboutTitle || '';
+        if (missionTitle) missionTitle.textContent = siteConfig.aboutMissionTitle || '';
+        if (missionText) {
+            missionText.innerHTML = (siteConfig.aboutMissionText || []).map(paragraph => `
+                <p style="color: var(--graphite-light); line-height: 1.8; margin-bottom: 20px;">${bprEscapeText(paragraph)}</p>
+            `).join('');
+        }
+        if (valuesTitle) valuesTitle.textContent = siteConfig.aboutValuesTitle || '';
+        if (valuesList) {
+            const values = (siteConfig.aboutValues || []).filter(item => item.visible !== false && item.title);
+            valuesList.innerHTML = values.map(item => `
+                <div style="padding: 20px; background: white; border-radius: 16px; border: 1px solid var(--beige);">
+                    <strong style="color: var(--gold);">${bprEscapeText(item.title)}</strong>
+                    <p style="font-size: 0.85rem; color: var(--graphite-light); margin-top: 8px; line-height: 1.6;">${bprEscapeText(item.description || '')}</p>
+                </div>
+            `).join('');
+        }
     }
 
     function adminRenderPsychologyBlock() {
@@ -4700,6 +4954,9 @@
         });
 
         adminRenderServiceCards();
+        adminRenderFooterServices();
+        adminRenderPageHeroes();
+        adminRenderAboutPage();
         adminRenderTeam();
         adminRenderPrices();
         adminRenderAppointmentServices();
@@ -4720,8 +4977,8 @@
         }
 
         grid.innerHTML = visibleTeam.map(item => {
-            const photo = item.photo || '👨‍⚕️';
-            const isImage = /^(https?:\/\/|assets\/|data:image|file:)/.test(photo);
+            const photo = adminNormalizeImageValue(item.photo || '👨‍⚕️');
+            const isImage = adminLooksLikeImage(photo);
             const photoHtml = isImage ? '<img src="' + bprEscapeText(photo) + '" alt="' + bprEscapeText(item.name) + '">' : bprEscapeText(photo);
             return `
                 <div class="team-card">
@@ -4792,6 +5049,13 @@
         document.getElementById('adminTestimonials').value = adminTestimonialsToText(siteConfig.testimonials || []);
         document.getElementById('adminFaq').value = adminFaqToText(siteConfig.faqItems || []);
         document.getElementById('adminSocialLinks').value = adminSocialLinksToText(siteConfig.socialLinks || []);
+        document.getElementById('adminPageHeroImages').value = adminPageHeroImagesToText(siteConfig.pageHeroImages || {});
+        document.getElementById('adminAboutTag').value = siteConfig.aboutTag || '';
+        document.getElementById('adminAboutTitle').value = siteConfig.aboutTitle || '';
+        document.getElementById('adminAboutMissionTitle').value = siteConfig.aboutMissionTitle || '';
+        document.getElementById('adminAboutMissionText').value = adminArrayToText(siteConfig.aboutMissionText || []);
+        document.getElementById('adminAboutValuesTitle').value = siteConfig.aboutValuesTitle || '';
+        document.getElementById('adminAboutValues').value = adminAboutValuesToText(siteConfig.aboutValues || []);
         document.getElementById('adminContactPhone').value = siteConfig.phone || '';
         document.getElementById('adminContactWhatsapp').value = siteConfig.whatsapp || '';
         document.getElementById('adminContactEmail').value = siteConfig.email || '';
@@ -4840,6 +5104,13 @@
         siteConfig.testimonials = adminParseTestimonials(document.getElementById('adminTestimonials').value);
         siteConfig.faqItems = adminParseFaq(document.getElementById('adminFaq').value);
         siteConfig.socialLinks = adminParseSocialLinks(document.getElementById('adminSocialLinks').value);
+        siteConfig.pageHeroImages = adminParsePageHeroImages(document.getElementById('adminPageHeroImages').value);
+        siteConfig.aboutTag = document.getElementById('adminAboutTag').value.trim();
+        siteConfig.aboutTitle = document.getElementById('adminAboutTitle').value.trim();
+        siteConfig.aboutMissionTitle = document.getElementById('adminAboutMissionTitle').value.trim();
+        siteConfig.aboutMissionText = adminTextLinesToArray(document.getElementById('adminAboutMissionText').value);
+        siteConfig.aboutValuesTitle = document.getElementById('adminAboutValuesTitle').value.trim();
+        siteConfig.aboutValues = adminParseAboutValues(document.getElementById('adminAboutValues').value);
         siteConfig.phone = document.getElementById('adminContactPhone').value.trim();
         siteConfig.whatsapp = document.getElementById('adminContactWhatsapp').value.trim();
         siteConfig.email = document.getElementById('adminContactEmail').value.trim();
@@ -5403,8 +5674,11 @@
     }
 
     function bprShowDeveloperPanel() {
+        bprOpeningDeveloperPanel = true;
         showPage('training');
+        bprOpeningDeveloperPanel = false;
         document.getElementById('bprDevPanel').hidden = false;
+        adminShowPanel('site');
         adminFillForms();
         bprRenderDeveloperTrainingList();
         bprRenderParticipants();
