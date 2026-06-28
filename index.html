@@ -2780,17 +2780,20 @@
                 <div class="admin-sticky-actions">
                     <button class="bpr-btn bpr-btn-primary" type="button" onclick="supabaseSaveSiteState()">Зберегти сайт у базу</button>
                     <div class="admin-tabs" aria-label="Розділи адмін-панелі">
-                        <button class="admin-tab active" type="button" data-admin-tab="site" onclick="adminShowPanel('site')">Сайт</button>
+                        <button class="admin-tab active" type="button" data-admin-tab="home" onclick="adminShowPanel('home')">Головна</button>
+                        <button class="admin-tab" type="button" data-admin-tab="psychology" onclick="adminShowPanel('psychology')">Психологія</button>
+                        <button class="admin-tab" type="button" data-admin-tab="services" onclick="adminShowPanel('services')">Послуги</button>
                         <button class="admin-tab" type="button" data-admin-tab="database" onclick="adminShowPanel('database')">База</button>
                         <button class="admin-tab" type="button" data-admin-tab="team" onclick="adminShowPanel('team')">Команда</button>
                         <button class="admin-tab" type="button" data-admin-tab="prices" onclick="adminShowPanel('prices')">Прайс</button>
+                        <button class="admin-tab" type="button" data-admin-tab="about" onclick="adminShowPanel('about')">Про нас</button>
                         <button class="admin-tab" type="button" data-admin-tab="training" onclick="adminShowPanel('training')">Навчання</button>
                     </div>
                 </div>
 
-                <div class="admin-section active" data-admin-panel="site">
-                    <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Сторінки та головний екран</h3>
-                    <p class="bpr-panel-subtitle">Керуйте видимістю сторінок і базовими текстами головного екрана.</p>
+                <div class="admin-section">
+                    <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Редагування сайту</h3>
+                    <p class="bpr-panel-subtitle">Оберіть вкладку вище — відкриються тільки поля відповідного розділу.</p>
                     <form id="siteAdminForm" onsubmit="adminSaveSiteSettings(event)">
                         <div class="bpr-form-grid">
                             <label class="bpr-field bpr-checkbox"><input id="adminPageHome" type="checkbox"> Головна</label>
@@ -2843,6 +2846,36 @@
                             <div class="bpr-field bpr-full">
                                 <label for="adminHeroBackgroundImage">Фонова картинка головної</label>
                                 <input id="adminHeroBackgroundImage" placeholder="assets/clinic-interior.jpg або https://...">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroPsychologyImage">Верхня картинка сторінки “Психологія”</label>
+                                <input id="adminHeroPsychologyImage" placeholder="assets/Psi_interier.png або https://...">
+                                <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminHeroPsychologyImage')">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroServicesImage">Верхня картинка сторінки “Послуги”</label>
+                                <input id="adminHeroServicesImage" placeholder="assets/clinic-interior.jpg або https://...">
+                                <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminHeroServicesImage')">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroPricesImage">Верхня картинка сторінки “Прайс”</label>
+                                <input id="adminHeroPricesImage" placeholder="assets/clinic-interior.jpg або https://...">
+                                <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminHeroPricesImage')">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroTeamImage">Верхня картинка сторінки “Команда”</label>
+                                <input id="adminHeroTeamImage" placeholder="assets/team.jpg або https://...">
+                                <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminHeroTeamImage')">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroAboutImage">Верхня картинка сторінки “Про нас”</label>
+                                <input id="adminHeroAboutImage" placeholder="assets/clinic-interior.jpg або https://...">
+                                <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminHeroAboutImage')">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminHeroTrainingImage">Верхня картинка сторінки “Навчання”</label>
+                                <input id="adminHeroTrainingImage" placeholder="assets/pocus.png або https://...">
+                                <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminHeroTrainingImage')">
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminAppointmentServices">Кнопки послуг у записі</label>
@@ -2937,7 +2970,7 @@
                                     Приклад: 📸 | Instagram | https://instagram.com/inwhitemedical | visible
                                 </div>
                             </div>
-                            <div class="bpr-field bpr-full">
+                            <div class="bpr-field bpr-full" hidden>
                                 <label for="adminPageHeroImages">Верхні картинки сторінок</label>
                                 <textarea id="adminPageHeroImages" style="min-height: 130px;"></textarea>
                                 <div class="admin-help">
@@ -4590,7 +4623,92 @@
         return adminParseRows(text, ['title', 'description', 'visible']);
     }
 
+    function adminSetupPanelFields() {
+        const form = document.getElementById('siteAdminForm');
+        if (!form || form.dataset.panelsReady === 'true') return;
+        form.querySelectorAll('.bpr-field').forEach(field => {
+            field.setAttribute('data-admin-panel', 'home');
+        });
+        const panelMap = {
+            home: [
+                'adminPageHome',
+                'adminHeroBadge',
+                'adminHeroTitle',
+                'adminHeroSubtitle',
+                'adminAnnouncementText',
+                'adminHeroLogoImage',
+                'adminHeroBackgroundImage',
+                'adminBookingTag',
+                'adminBookingTitle',
+                'adminBookingDescription',
+                'adminInstagram',
+                'adminAppointmentServices',
+                'adminSocialLinks',
+                'adminContactPhone',
+                'adminContactWhatsapp',
+                'adminContactEmail',
+                'adminContactHours',
+                'adminContactAddress'
+            ],
+            psychology: [
+                'adminPagePsychology',
+                'adminHeroPsychologyImage',
+                'adminPsychologyTag',
+                'adminPsychologyImage',
+                'adminPsychologyTitle',
+                'adminPsychologyDescription',
+                'adminPsychologyFeatures',
+                'adminPsychologyFloatTop',
+                'adminPsychologyFloatTitle',
+                'adminPsychologyFloatBottom',
+                'adminTestimonialsTag',
+                'adminTestimonialsTitle',
+                'adminTestimonials',
+                'adminFaq'
+            ],
+            services: [
+                'adminPageServices',
+                'adminHeroServicesImage',
+                'adminServicesTag',
+                'adminServicesTitle',
+                'adminServicesSubtitle',
+                'adminServicesList'
+            ],
+            prices: [
+                'adminPagePrices',
+                'adminHeroPricesImage'
+            ],
+            team: [
+                'adminPageTeam',
+                'adminHeroTeamImage'
+            ],
+            about: [
+                'adminPageAbout',
+                'adminHeroAboutImage',
+                'adminAboutTag',
+                'adminAboutValuesTitle',
+                'adminAboutTitle',
+                'adminAboutMissionTitle',
+                'adminAboutMissionText',
+                'adminAboutValues'
+            ],
+            training: [
+                'adminPageTraining',
+                'adminHeroTrainingImage'
+            ]
+        };
+        Object.entries(panelMap).forEach(([panelName, ids]) => {
+            ids.forEach(id => {
+                const element = document.getElementById(id);
+                const field = element ? element.closest('.bpr-field') : null;
+                if (field) field.setAttribute('data-admin-panel', panelName);
+            });
+        });
+        form.dataset.panelsReady = 'true';
+    }
+
     function adminShowPanel(panelName) {
+        adminSetupPanelFields();
         document.querySelectorAll('#bprDevPanel [data-admin-panel]').forEach(panel => {
             panel.classList.toggle('active', panel.getAttribute('data-admin-panel') === panelName);
         });
@@ -4618,6 +4736,12 @@
     function adminNormalizeImageValue(value) {
         const raw = String(value || '').trim();
         if (!raw) return '';
+        if (/^essets\//.test(raw)) return raw.replace(/^essets\//, 'assets/');
+        if (/^\/essets\//.test(raw)) return raw.replace(/^\/essets\//, 'assets/');
+        if (/^\.\/essets\//.test(raw)) return raw.replace(/^\.\/essets\//, 'assets/');
+        if (/^asset\//.test(raw)) return raw.replace(/^asset\//, 'assets/');
+        if (/^\/asset\//.test(raw)) return raw.replace(/^\/asset\//, 'assets/');
+        if (/^\.\/asset\//.test(raw)) return raw.replace(/^\.\/asset\//, 'assets/');
         if (/^assest\//.test(raw)) return raw.replace(/^assest\//, 'assets/');
         if (/^\/assest\//.test(raw)) return raw.replace(/^\/assest\//, 'assets/');
         if (/^\.\/assest\//.test(raw)) return raw.replace(/^\.\/assest\//, 'assets/');
@@ -5031,6 +5155,13 @@
         document.getElementById('adminServicesList').value = adminServiceCardsToText(siteConfig.serviceCards || []);
         document.getElementById('adminHeroLogoImage').value = siteConfig.heroLogoImage || '';
         document.getElementById('adminHeroBackgroundImage').value = siteConfig.heroBackgroundImage || '';
+        const heroImages = siteConfig.pageHeroImages || {};
+        document.getElementById('adminHeroPsychologyImage').value = adminNormalizeImageValue(heroImages.psychology || '');
+        document.getElementById('adminHeroServicesImage').value = adminNormalizeImageValue(heroImages.services || '');
+        document.getElementById('adminHeroPricesImage').value = adminNormalizeImageValue(heroImages.prices || '');
+        document.getElementById('adminHeroTeamImage').value = adminNormalizeImageValue(heroImages.team || '');
+        document.getElementById('adminHeroAboutImage').value = adminNormalizeImageValue(heroImages.about || '');
+        document.getElementById('adminHeroTrainingImage').value = adminNormalizeImageValue(heroImages.training || '');
         document.getElementById('adminAppointmentServices').value = adminAppointmentServicesToText(siteConfig.appointmentServices || []);
         document.getElementById('adminBookingTag').value = siteConfig.bookingTag || '';
         document.getElementById('adminPsychologyTag').value = siteConfig.psychologyTag || '';
@@ -5104,7 +5235,15 @@
         siteConfig.testimonials = adminParseTestimonials(document.getElementById('adminTestimonials').value);
         siteConfig.faqItems = adminParseFaq(document.getElementById('adminFaq').value);
         siteConfig.socialLinks = adminParseSocialLinks(document.getElementById('adminSocialLinks').value);
-        siteConfig.pageHeroImages = adminParsePageHeroImages(document.getElementById('adminPageHeroImages').value);
+        siteConfig.pageHeroImages = {
+            ...adminParsePageHeroImages(document.getElementById('adminPageHeroImages').value),
+            psychology: adminNormalizeImageValue(document.getElementById('adminHeroPsychologyImage').value),
+            services: adminNormalizeImageValue(document.getElementById('adminHeroServicesImage').value),
+            prices: adminNormalizeImageValue(document.getElementById('adminHeroPricesImage').value),
+            team: adminNormalizeImageValue(document.getElementById('adminHeroTeamImage').value),
+            about: adminNormalizeImageValue(document.getElementById('adminHeroAboutImage').value),
+            training: adminNormalizeImageValue(document.getElementById('adminHeroTrainingImage').value)
+        };
         siteConfig.aboutTag = document.getElementById('adminAboutTag').value.trim();
         siteConfig.aboutTitle = document.getElementById('adminAboutTitle').value.trim();
         siteConfig.aboutMissionTitle = document.getElementById('adminAboutMissionTitle').value.trim();
@@ -5678,7 +5817,7 @@
         showPage('training');
         bprOpeningDeveloperPanel = false;
         document.getElementById('bprDevPanel').hidden = false;
-        adminShowPanel('site');
+        adminShowPanel('home');
         adminFillForms();
         bprRenderDeveloperTrainingList();
         bprRenderParticipants();
