@@ -991,11 +991,33 @@
             box-shadow: 0 12px 30px rgba(201, 169, 110, 0.45);
         }
 
+        .form-submit:disabled {
+            cursor: wait;
+            opacity: 0.72;
+            transform: none;
+        }
+
         .form-note {
             text-align: center;
             font-size: 0.75rem;
             color: var(--graphite-light);
             margin-top: 15px;
+        }
+
+        .form-status {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--graphite-light);
+            margin-top: 10px;
+            min-height: 1.2em;
+        }
+
+        .form-status.error {
+            color: #9C3B34;
+        }
+
+        .form-status.success {
+            color: #5F7B56;
         }
 
         /* ===== TEAM SECTION ===== */
@@ -2720,6 +2742,7 @@
                         Записатись на прийом ✦
                     </button>
                     <p class="form-note">🔒 Ваші дані конфіденційні та захищені</p>
+                    <p class="form-status" data-form-status></p>
                 </form>
             </div>
         </div>
@@ -3719,11 +3742,28 @@
                     <option>Офлайн (в клініці)</option>
                 </select>
             </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Бажана дата</label>
+                    <input data-appointment-date type="date">
+                </div>
+                <div class="form-group">
+                    <label>Зручний час</label>
+                    <select data-appointment-time>
+                        <option>08:00 – 10:00</option>
+                        <option>10:00 – 12:00</option>
+                        <option>12:00 – 14:00</option>
+                        <option>14:00 – 16:00</option>
+                        <option>16:00 – 18:00</option>
+                    </select>
+                </div>
+            </div>
             <div class="form-group">
                 <label>Побажання</label>
                 <textarea data-appointment-comment placeholder="Ваш запит..." style="min-height: 80px;"></textarea>
             </div>
             <button type="submit" class="form-submit">Записатись ✦</button>
+            <p class="form-status" data-form-status></p>
             <p class="form-note">🔒 Конфіденційно · Відповідь протягом 30 хв</p>
         </form>
     </div>
@@ -3902,9 +3942,59 @@
     }
 
     // ===== FORM SUBMIT =====
+    function setAppointmentFormStatus(form, message, type = '') {
+        const status = form ? form.querySelector('[data-form-status]') : null;
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.remove('error', 'success');
+        if (type) status.classList.add(type);
+    }
+
+    function setAppointmentFormBusy(form, busy) {
+        if (!form) return;
+        form.dataset.submitting = busy ? 'true' : '';
+        const button = form.querySelector('.form-submit');
+        if (!button) return;
+        if (!button.dataset.defaultText) button.dataset.defaultText = button.textContent.trim();
+        button.disabled = busy;
+        button.textContent = busy ? 'Надсилаємо...' : button.dataset.defaultText;
+    }
+
+    async function appointmentErrorMessage(response, fallback) {
+        if (!response) return fallback;
+        try {
+            const text = await response.text();
+            if (!text) return fallback;
+            try {
+                const data = JSON.parse(text);
+                if (data && data.errors && data.errors[0] && data.errors[0].message) return data.errors[0].message;
+                if (data && data.error) return data.error;
+            } catch (error) {
+                return text.slice(0, 180);
+            }
+        } catch (error) {
+            return fallback;
+        }
+        return fallback;
+    }
+
+    function saveAppointmentSubmitLog(entry) {
+        try {
+            const current = JSON.parse(localStorage.getItem(APPOINTMENT_LOG_STORAGE) || '[]');
+            current.unshift({
+                ...entry,
+                savedAt: new Date().toISOString()
+            });
+            localStorage.setItem(APPOINTMENT_LOG_STORAGE, JSON.stringify(current.slice(0, 25)));
+        } catch (error) {
+            // Local diagnostics should never block the user-facing form.
+        }
+    }
+
     async function submitForm(e) {
         e.preventDefault();
         const form = e.target;
+        if (form.dataset.submitting === 'true') return;
         const selectedService = form.querySelector('.service-option.selected');
         const getValue = selector => {
             const element = form.querySelector(selector);
@@ -3920,10 +4010,20 @@
             format: isDeclarationForm(form) ? '' : getValue('[data-appointment-format]'),
             comment: getValue('[data-appointment-comment]')
         };
+        if (!appointment.service) {
+            setAppointmentFormStatus(form, 'Оберіть послугу перед відправкою.', 'error');
+            return;
+        }
+
+        setAppointmentFormBusy(form, true);
+        setAppointmentFormStatus(form, 'Надсилаємо заявку...', '');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 18000);
 
         try {
             const response = await fetch(FORMSPREE_APPOINTMENT_ENDPOINT, {
                 method: 'POST',
+                signal: controller.signal,
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json'
@@ -3939,16 +4039,27 @@
                     time: appointment.time,
                     format: appointment.format,
                     comment: appointment.comment,
-                    page: window.location.href
+                    page: window.location.href,
+                    sourceForm: form.id || 'modalAppointmentForm',
+                    submittedAt: new Date().toISOString()
                 })
             });
-            if (!response.ok) throw new Error('Formspree error');
+            if (!response.ok) throw new Error(await appointmentErrorMessage(response, 'Formspree не прийняв заявку.'));
+            saveAppointmentSubmitLog({ status: 'success', appointment });
             form.reset();
             adminRenderAppointmentServices();
             closeModal();
             showNotification();
         } catch (error) {
-            alert('Не вдалося надіслати заявку. Спробуйте ще раз або зателефонуйте нам.');
+            const message = error && error.name === 'AbortError'
+                ? 'Відправка тривала занадто довго. Перевірте інтернет і спробуйте ще раз.'
+                : (error && error.message ? error.message : 'Не вдалося надіслати заявку.');
+            saveAppointmentSubmitLog({ status: 'error', appointment, error: message });
+            setAppointmentFormStatus(form, message + ' Якщо повториться, зателефонуйте нам.', 'error');
+            alert(message + ' Спробуйте ще раз або зателефонуйте нам.');
+        } finally {
+            clearTimeout(timeoutId);
+            setAppointmentFormBusy(form, false);
         }
     }
 
@@ -4042,6 +4153,7 @@
     const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Uf83B_3OPvSOKgDjbIlGHw_YOcqOKTW';
     const FORMSPREE_CERTIFICATE_ENDPOINT = 'https://formspree.io/f/xaqgodol';
     const FORMSPREE_APPOINTMENT_ENDPOINT = 'https://formspree.io/f/xaqgodol';
+    const APPOINTMENT_LOG_STORAGE = 'inwhite_appointment_submit_log_v1';
     const BPR_TRAININGS_STORAGE = 'inwhite_bpr_trainings_v1';
     const BPR_PARTICIPANTS_STORAGE = 'inwhite_bpr_participants_v1';
     const BPR_DEVELOPER_PASSWORD = 'developer2026';
