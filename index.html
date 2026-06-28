@@ -2997,7 +2997,7 @@
                             <label class="bpr-field bpr-checkbox"><input id="adminPageTeam" type="checkbox"> Команда</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageAbout" type="checkbox"> Про нас</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageTraining" type="checkbox"> Навчання</label>
-                            <div class="bpr-field bpr-full">
+                            <div class="bpr-field bpr-full" data-admin-panel="about">
                                 <label for="adminHeroBadge">Плашка на головній</label>
                                 <input id="adminHeroBadge">
                             </div>
@@ -3246,6 +3246,12 @@
                             <div class="bpr-field">
                                 <label for="adminAboutPageTag">Плашка сторінки “Про нас”</label>
                                 <input id="adminAboutPageTag">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <button id="adminSaveAboutButton" class="bpr-btn bpr-btn-secondary" type="button" onclick="adminSaveAboutSection()">Зберегти “Про нас”</button>
+                                <div class="admin-help">
+                                    Зберігає верхню картинку, заголовки, місію та цінності саме для розділу “Про нас”.
+                                </div>
                             </div>
                             <div class="bpr-field">
                                 <label for="adminAboutValuesTitle">Заголовок цінностей</label>
@@ -5103,6 +5109,7 @@
                 'adminHeroAboutImage',
                 'adminAboutTag',
                 'adminAboutPageTag',
+                'adminSaveAboutButton',
                 'adminAboutValuesTitle',
                 'adminAboutTitle',
                 'adminAboutMissionTitle',
@@ -5190,6 +5197,7 @@
             [page]: adminNormalizeImageValue(document.getElementById(targetId).value)
         };
         adminRenderPageHeroes();
+        adminSaveSiteState();
     }
 
     function adminNormalizeImageValue(value) {
@@ -5942,6 +5950,20 @@
         adminSaveSiteState();
         adminRenderPageHeroes();
         alert('Фон сторінки навчання збережено.');
+    }
+
+    function adminSaveAboutSection() {
+        adminSaveHeroImageFields();
+        siteConfig.aboutTag = (document.getElementById('adminAboutPageTag').value || document.getElementById('adminAboutTag').value).trim();
+        siteConfig.aboutTitle = document.getElementById('adminAboutTitle').value.trim();
+        siteConfig.aboutMissionTitle = document.getElementById('adminAboutMissionTitle').value.trim();
+        siteConfig.aboutMissionText = adminTextLinesToArray(document.getElementById('adminAboutMissionText').value);
+        siteConfig.aboutValuesTitle = document.getElementById('adminAboutValuesTitle').value.trim();
+        siteConfig.aboutValues = adminParseAboutValues(document.getElementById('adminAboutValues').value);
+        adminSaveSiteState();
+        adminRenderPageHeroes();
+        adminRenderAboutPage();
+        alert('Розділ “Про нас” збережено.');
     }
 
     function adminSavePrices(event) {
