@@ -978,6 +978,17 @@
             padding: 25px 30px;
         }
 
+        .team-actions {
+            margin-top: 18px;
+        }
+
+        .team-actions .btn-primary {
+            width: 100%;
+            justify-content: center;
+            padding: 14px 18px;
+            font-size: 0.82rem;
+        }
+
         .team-name {
             font-family: 'Cormorant Garamond', serif;
             font-size: 1.4rem;
@@ -2410,6 +2421,9 @@
                 <a href="#" class="btn-primary" onclick="openModal(); return false;">
                     ✦ Записатись онлайн
                 </a>
+                <a href="#" class="btn-secondary" onclick="openDeclarationModal(); return false;">
+                    Задекларуватись
+                </a>
                 <a href="#" class="btn-secondary" onclick="showPage('psychology'); return false;">
                     Психологічна допомога →
                 </a>
@@ -2523,24 +2537,28 @@
                         <label>Оберіть послугу</label>
                         <div id="bookingServiceSelector" class="service-selector"></div>
                     </div>
+                    <div class="form-group declaration-doctor-field" hidden>
+                        <label>Оберіть лікаря для декларації</label>
+                        <select data-appointment-doctor></select>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Ім'я та прізвище</label>
-                            <input type="text" placeholder="Ваше ім'я" required>
+                            <input data-appointment-name type="text" placeholder="Ваше ім'я" required>
                         </div>
                         <div class="form-group">
                             <label>Телефон</label>
-                            <input type="tel" placeholder="+380 XX XXX XX XX" required>
+                            <input data-appointment-phone type="tel" placeholder="+380 XX XXX XX XX" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Бажана дата</label>
-                            <input type="date" required>
+                            <input data-appointment-date type="date" required>
                         </div>
                         <div class="form-group">
                             <label>Зручний час</label>
-                            <select>
+                            <select data-appointment-time>
                                 <option>08:00 – 10:00</option>
                                 <option>10:00 – 12:00</option>
                                 <option>12:00 – 14:00</option>
@@ -2551,14 +2569,14 @@
                     </div>
                     <div class="form-group">
                         <label>Формат (для психології)</label>
-                        <select>
+                        <select data-appointment-format>
                             <option>Онлайн-сесія</option>
                             <option>Офлайн (в клініці)</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Коментар (необов'язково)</label>
-                        <textarea placeholder="Опишіть ваш запит або побажання..."></textarea>
+                        <textarea data-appointment-comment placeholder="Опишіть ваш запит або побажання..."></textarea>
                     </div>
                     <button type="submit" class="form-submit">
                         Записатись на прийом ✦
@@ -3462,26 +3480,30 @@
                 <label>Послуга</label>
                 <div id="modalServiceSelector" class="service-selector"></div>
             </div>
+            <div class="form-group declaration-doctor-field" hidden>
+                <label>Оберіть лікаря для декларації</label>
+                <select data-appointment-doctor></select>
+            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Ім'я</label>
-                    <input type="text" placeholder="Ваше ім'я" required>
+                    <input data-appointment-name type="text" placeholder="Ваше ім'я" required>
                 </div>
                 <div class="form-group">
                     <label>Телефон</label>
-                    <input type="tel" placeholder="+380..." required>
+                    <input data-appointment-phone type="tel" placeholder="+380..." required>
                 </div>
             </div>
             <div class="form-group">
                 <label>Формат</label>
-                <select>
+                <select data-appointment-format>
                     <option>Онлайн-сесія</option>
                     <option>Офлайн (в клініці)</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Побажання</label>
-                <textarea placeholder="Ваш запит..." style="min-height: 80px;"></textarea>
+                <textarea data-appointment-comment placeholder="Ваш запит..." style="min-height: 80px;"></textarea>
             </div>
             <button type="submit" class="form-submit">Записатись ✦</button>
             <p class="form-note">🔒 Конфіденційно · Відповідь протягом 30 хв</p>
@@ -3565,6 +3587,16 @@
     function openModal() {
         document.getElementById('modalOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
+        updateDeclarationFields(document.querySelector('#modalOverlay form'));
+    }
+
+    function openDeclarationModal(doctorName = '') {
+        openModal();
+        selectAppointmentService('Декларація', document.getElementById('modalServiceSelector'));
+        adminRenderDeclarationDoctors(doctorName);
+        const doctorSelect = document.querySelector('#modalOverlay [data-appointment-doctor]');
+        if (doctorSelect && doctorName) doctorSelect.value = doctorName;
+        updateDeclarationFields(document.querySelector('#modalOverlay form'));
     }
 
     function closeModal() {
@@ -3608,6 +3640,30 @@
     function selectService(el) {
         el.closest('.service-selector').querySelectorAll('.service-option').forEach(o => o.classList.remove('selected'));
         el.classList.add('selected');
+        updateDeclarationFields(el.closest('form'));
+    }
+
+    function selectAppointmentService(serviceName, selector) {
+        if (!selector) return;
+        const options = Array.from(selector.querySelectorAll('.service-option'));
+        const target = options.find(option => option.textContent.toLowerCase().includes(serviceName.toLowerCase()));
+        if (target) selectService(target);
+    }
+
+    function isDeclarationForm(form) {
+        const selectedService = form ? form.querySelector('.service-option.selected') : null;
+        const value = selectedService ? selectedService.textContent.toLowerCase() : '';
+        return value.includes('декларац');
+    }
+
+    function updateDeclarationFields(form) {
+        if (!form) return;
+        const isDeclaration = isDeclarationForm(form);
+        form.querySelectorAll('.declaration-doctor-field').forEach(field => {
+            field.hidden = !isDeclaration;
+            const select = field.querySelector('select');
+            if (select) select.required = isDeclaration;
+        });
     }
 
     // ===== FORM SUBMIT =====
@@ -3615,21 +3671,20 @@
         e.preventDefault();
         const form = e.target;
         const selectedService = form.querySelector('.service-option.selected');
-        const fields = form.querySelectorAll('input, select, textarea');
+        const getValue = selector => {
+            const element = form.querySelector(selector);
+            return element ? element.value.trim() : '';
+        };
         const appointment = {
             service: selectedService ? selectedService.textContent.trim() : '',
-            fullName: fields[0] ? fields[0].value.trim() : '',
-            phone: fields[1] ? fields[1].value.trim() : '',
-            date: fields[2] && fields[2].type === 'date' ? fields[2].value : '',
-            time: fields[3] && fields[3].tagName === 'SELECT' ? fields[3].value : '',
-            format: '',
-            comment: ''
+            doctor: isDeclarationForm(form) ? getValue('[data-appointment-doctor]') : '',
+            fullName: getValue('[data-appointment-name]'),
+            phone: getValue('[data-appointment-phone]'),
+            date: getValue('[data-appointment-date]'),
+            time: getValue('[data-appointment-time]'),
+            format: getValue('[data-appointment-format]'),
+            comment: getValue('[data-appointment-comment]')
         };
-
-        const selects = Array.from(form.querySelectorAll('select'));
-        const textareas = Array.from(form.querySelectorAll('textarea'));
-        appointment.format = selects.length ? selects[selects.length - 1].value : '';
-        appointment.comment = textareas.length ? textareas[textareas.length - 1].value.trim() : '';
 
         try {
             const response = await fetch(FORMSPREE_APPOINTMENT_ENDPOINT, {
@@ -3642,6 +3697,7 @@
                     _subject: 'Новий запис на прийом INWHITE MEDICAL',
                     type: 'appointment',
                     service: appointment.service,
+                    doctor: appointment.doctor,
                     fullName: appointment.fullName,
                     phone: appointment.phone,
                     date: appointment.date,
@@ -3844,6 +3900,7 @@
             instagram: '@inwhitemedical',
             appointmentServices: [
                 { icon: '🧠', name: 'Психологія', visible: true },
+                { icon: '📝', name: 'Декларація', visible: true },
                 { icon: '👨‍⚕️', name: 'Сімейний лікар', visible: true },
                 { icon: '🔬', name: 'УЗД', visible: true },
                 { icon: '💉', name: 'Вакцинація', visible: true }
@@ -3958,21 +4015,24 @@
                 name: 'Медичний психолог',
                 role: 'Засновник · Медичний психолог',
                 description: 'Спеціаліст з медичної психології. Досвід у психосоціальних втручаннях, ПТСР, тривожних розладах. Засновник INWHITE MEDICAL.',
-                visible: true
+                visible: true,
+                allowDeclaration: false
             },
             {
                 photo: '👩‍⚕️',
                 name: 'Сімейний лікар',
                 role: 'Лікар загальної практики',
                 description: '8 років досвіду у сімейній медицині. Педіатричний та терапевтичний напрямок. Доказова медицина.',
-                visible: true
+                visible: true,
+                allowDeclaration: true
             },
             {
                 photo: '🔬',
                 name: 'Лікар УЗД',
                 role: 'Ультразвукова діагностика',
                 description: 'Фахівець з ультразвукової діагностики. Внутрішні органи, щитоподібна залоза, судинна система.',
-                visible: true
+                visible: true,
+                allowDeclaration: false
             }
         ];
     }
@@ -4472,12 +4532,33 @@
             });
     }
 
+    function adminNormalizeTeam(items) {
+        const source = Array.isArray(items) ? items : adminDefaultTeam();
+        return source.map(item => {
+            const declarationHint = /сімей|загальної практики/i.test(String((item.name || '') + ' ' + (item.role || '')));
+            const declarationValue = String(item.allowDeclaration || '').toLowerCase();
+            return {
+                photo: item.photo || '',
+                name: item.name || '',
+                role: item.role || '',
+                description: item.description || '',
+                visible: item.visible !== false,
+                allowDeclaration: item.allowDeclaration === true
+                    || declarationValue === 'declaration'
+                    || declarationValue === 'true'
+                    || declarationValue === 'yes'
+                    || (typeof item.allowDeclaration === 'undefined' && declarationHint)
+            };
+        });
+    }
+
     function adminTeamToText(items) {
         return items.map(item => [
             item.photo || '👨‍⚕️',
             item.name || '',
             item.role || '',
             item.description || '',
+            item.allowDeclaration === true ? 'declaration' : 'no-declaration',
             item.visible === false ? 'hidden' : 'visible'
         ].join(' | ')).join('\n');
     }
@@ -4817,6 +4898,22 @@
             || /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(src);
     }
 
+    function adminDeclarationDoctors() {
+        return adminNormalizeTeam(siteTeam)
+            .filter(item => item.visible !== false && item.allowDeclaration === true && item.name);
+    }
+
+    function adminRenderDeclarationDoctors(selectedDoctor = '') {
+        const doctors = adminDeclarationDoctors();
+        document.querySelectorAll('[data-appointment-doctor]').forEach(select => {
+            const current = selectedDoctor || select.value || '';
+            select.innerHTML = doctors.length
+                ? doctors.map(item => '<option value="' + bprEscapeText(item.name) + '">' + bprEscapeText(item.name) + '</option>').join('')
+                : '<option value="">Лікаря для декларації ще не обрано</option>';
+            if (current && doctors.some(item => item.name === current)) select.value = current;
+        });
+    }
+
     function adminRenderAppointmentServices() {
         const selectors = [
             document.getElementById('bookingServiceSelector'),
@@ -4827,10 +4924,15 @@
         const visibleServices = services.length ? services : adminDefaultSiteConfig().appointmentServices;
         selectors.forEach(selector => {
             selector.innerHTML = visibleServices.map((service, index) => `
-                <div class="service-option ${index === 0 ? 'selected' : ''}" onclick="selectService(this)">
+                <div class="service-option ${index === 0 ? 'selected' : ''}" data-service-name="${bprEscapeText(service.name || '')}" onclick="selectService(this)">
                     ${bprEscapeText(service.icon || '')} ${bprEscapeText(service.name || '')}
                 </div>
             `).join('');
+        });
+        adminRenderDeclarationDoctors();
+        document.querySelectorAll('.service-selector').forEach(selector => {
+            const selected = selector.querySelector('.service-option.selected') || selector.querySelector('.service-option');
+            if (selected) updateDeclarationFields(selected.closest('form'));
         });
     }
 
@@ -5080,6 +5182,7 @@
 
     function adminRenderSite() {
         siteConfig = adminNormalizeSiteConfig(siteConfig);
+        siteTeam = adminNormalizeTeam(siteTeam);
 
         const heroBadge = document.querySelector('.hero-badge');
         if (heroBadge) {
@@ -5164,6 +5267,9 @@
             const photo = adminNormalizeImageValue(item.photo || '👨‍⚕️');
             const isImage = adminLooksLikeImage(photo);
             const photoHtml = isImage ? '<img src="' + bprEscapeText(photo) + '" alt="' + bprEscapeText(item.name) + '">' : bprEscapeText(photo);
+            const declarationButton = item.allowDeclaration === true
+                ? '<div class="team-actions"><a href="#" class="btn-primary" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="openDeclarationModal(this.dataset.doctor); return false;">Задекларуватись</a></div>'
+                : '';
             return `
                 <div class="team-card">
                     <div class="team-photo">${photoHtml}</div>
@@ -5171,6 +5277,7 @@
                         <div class="team-name">${bprEscapeText(item.name)}</div>
                         <div class="team-role">${bprEscapeText(item.role)}</div>
                         <p class="team-desc">${bprEscapeText(item.description)}</p>
+                        ${declarationButton}
                     </div>
                 </div>
             `;
@@ -5208,6 +5315,10 @@
                         <input data-team-field="visible" type="checkbox" ${item.visible === false ? '' : 'checked'}>
                         Показувати на сайті
                     </label>
+                    <label class="bpr-field bpr-checkbox bpr-full">
+                        <input data-team-field="allowDeclaration" type="checkbox" ${item.allowDeclaration === true ? 'checked' : ''}>
+                        Може підписувати декларації
+                    </label>
                 </div>
             </div>
         `).join('');
@@ -5215,7 +5326,7 @@
 
     function adminCollectTeamEditor() {
         const cards = document.querySelectorAll('#adminTeamCards .admin-team-card');
-        if (!cards.length) return adminParseRows(document.getElementById('adminTeamEditor').value, ['photo', 'name', 'role', 'description', 'visible']);
+        if (!cards.length) return adminNormalizeTeam(adminParseRows(document.getElementById('adminTeamEditor').value, ['photo', 'name', 'role', 'description', 'allowDeclaration', 'visible']));
         return Array.from(cards).map(card => {
             const field = name => card.querySelector('[data-team-field="' + name + '"]');
             return {
@@ -5223,7 +5334,8 @@
                 name: field('name') ? field('name').value.trim() : '',
                 role: field('role') ? field('role').value.trim() : '',
                 description: field('description') ? field('description').value.trim() : '',
-                visible: field('visible') ? field('visible').checked : true
+                visible: field('visible') ? field('visible').checked : true,
+                allowDeclaration: field('allowDeclaration') ? field('allowDeclaration').checked : false
             };
         }).filter(item => item.name || item.role || item.description || item.photo);
     }
@@ -5235,7 +5347,8 @@
             name: 'Новий фахівець',
             role: '',
             description: '',
-            visible: true
+            visible: true,
+            allowDeclaration: false
         });
         adminRenderTeamEditor();
     }
@@ -5397,6 +5510,7 @@
         adminSaveSiteState();
         adminRenderTeam();
         adminRenderTeamEditor();
+        adminRenderAppointmentServices();
         alert('Команду збережено.');
     }
 
