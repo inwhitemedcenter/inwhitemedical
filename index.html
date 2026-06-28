@@ -375,7 +375,16 @@
             color: white;
             border-color: transparent;
             box-shadow: 0 12px 34px rgba(201, 169, 110, 0.34);
-            animation: declarationPulse 2.8s ease-in-out infinite;
+            animation: declarationHeartbeat 1.85s ease-in-out infinite;
+            isolation: isolate;
+        }
+
+        .btn-declaration::after {
+            content: '♥';
+            font-size: 1rem;
+            line-height: 1;
+            transform-origin: center;
+            animation: declarationHeartBeat 1.85s ease-in-out infinite;
         }
 
         .btn-declaration:hover {
@@ -384,13 +393,26 @@
             box-shadow: 0 16px 44px rgba(201, 169, 110, 0.46);
         }
 
-        @keyframes declarationPulse {
-            0%, 100% {
+        @keyframes declarationHeartbeat {
+            0%, 42%, 100% {
                 transform: translateY(0) scale(1);
             }
-            50% {
+            14% {
+                transform: translateY(-1px) scale(1.045);
+            }
+            24% {
+                transform: translateY(0) scale(0.99);
+            }
+            32% {
                 transform: translateY(-2px) scale(1.025);
             }
+        }
+
+        @keyframes declarationHeartBeat {
+            0%, 42%, 100% { transform: scale(1); opacity: 0.9; }
+            14% { transform: scale(1.28); opacity: 1; }
+            24% { transform: scale(0.96); opacity: 0.86; }
+            32% { transform: scale(1.14); opacity: 1; }
         }
 
         .hero-stats {
@@ -2538,7 +2560,7 @@
                     ✦ Записатись онлайн
                 </a>
                 <a href="#" class="btn-secondary btn-declaration" onclick="openDeclarationModal(); return false;">
-                    Задекларуватись
+                    <span data-declaration-label>Задекларуватись</span>
                 </a>
                 <a href="#" class="btn-secondary" onclick="showPage('psychology'); return false;">
                     Психологічна допомога →
@@ -2728,16 +2750,16 @@
 <div id="page-psychology" class="page">
     <div class="page-hero" data-page-hero="psychology">
         <div>
-            <div class="section-tag">Психологічна допомога</div>
-            <h1>Ваш психологічний<br>добробут — наш пріоритет</h1>
+            <div id="psychologyPageTag" class="section-tag">Психологічна допомога</div>
+            <h1 id="psychologyPageTitle">Ваш психологічний<br>добробут — наш пріоритет</h1>
         </div>
     </div>
     <div class="page-content">
-        <p style="font-size: 1.1rem; color: var(--graphite-light); line-height: 1.8; max-width: 700px; margin-bottom: 50px;">
+        <p id="psychologyPageIntro" style="font-size: 1.1rem; color: var(--graphite-light); line-height: 1.8; max-width: 700px; margin-bottom: 50px;">
             В умовах сьогодення психологічна підтримка — це не слабкість, а мудрість. 
             Наша команда надає доказову, ефективну допомогу з повагою до кожного клієнта.
         </p>
-        <div class="psych-services-grid">
+        <div id="psychologyServicesGrid" class="psych-services-grid">
             <div class="psych-service-item">
                 <div style="font-size: 2rem; margin-bottom: 15px;">😰</div>
                 <h3>Тривожні розлади</h3>
@@ -2787,8 +2809,8 @@
 <div id="page-services" class="page">
     <div class="page-hero" data-page-hero="services">
         <div>
-            <div class="section-tag">Послуги клініки</div>
-            <h1>Всі послуги<br>INWHITE MEDICAL</h1>
+            <div id="servicesPageTag" class="section-tag">Послуги клініки</div>
+            <h1 id="servicesPageTitle">Всі послуги<br>INWHITE MEDICAL</h1>
         </div>
     </div>
     <div class="page-content">
@@ -2801,8 +2823,8 @@
 <div id="page-team" class="page">
     <div class="page-hero" data-page-hero="team">
         <div>
-            <div class="section-tag">Наша команда</div>
-            <h1>Фахівці, яким<br>можна довіряти</h1>
+            <div id="teamPageTag" class="section-tag">Наша команда</div>
+            <h1 id="teamPageTitle">Фахівці, яким<br>можна довіряти</h1>
         </div>
     </div>
     <div class="page-content">
@@ -2814,12 +2836,12 @@
 <div id="page-prices" class="page">
     <div class="page-hero" data-page-hero="prices">
         <div>
-            <div class="section-tag">Прайс</div>
-            <h1>Вартість<br>послуг</h1>
+            <div id="pricesPageTag" class="section-tag">Прайс</div>
+            <h1 id="pricesPageTitle">Вартість<br>послуг</h1>
         </div>
     </div>
     <div class="page-content">
-        <p style="font-size: 1.1rem; color: var(--graphite-light); line-height: 1.8; max-width: 760px; margin-bottom: 34px;">
+        <p id="pricesPageIntro" style="font-size: 1.1rem; color: var(--graphite-light); line-height: 1.8; max-width: 760px; margin-bottom: 34px;">
             Актуальні ціни на послуги клініки. Остаточна вартість може залежати від обсягу консультації,
             матеріалів або індивідуального плану обстеження.
         </p>
@@ -2856,9 +2878,9 @@
         <div class="bpr-shell">
             <div class="bpr-topbar">
                 <div>
-                    <div class="bpr-eyebrow">Провайдер БПР 2817</div>
-                    <h1 class="bpr-title">Навчання лікарів</h1>
-                    <p class="bpr-lead">
+                    <div id="trainingPageTag" class="bpr-eyebrow">Провайдер БПР 2817</div>
+                    <h1 id="trainingPageTitle" class="bpr-title">Навчання лікарів</h1>
+                    <p id="trainingPageDescription" class="bpr-lead">
                         Оберіть онлайн-курс із записом та сертифікатом або офлайн-захід із реєстрацією
                         через форму. Усі картки та посилання змінюються в адмін-панелі.
                     </p>
@@ -2987,6 +3009,14 @@
                                 <label for="adminHeroSubtitle">Опис головної сторінки</label>
                                 <textarea id="adminHeroSubtitle"></textarea>
                             </div>
+                            <div class="bpr-field">
+                                <label for="adminDeclarationButtonLabel">Назва кнопки декларації</label>
+                                <input id="adminDeclarationButtonLabel" placeholder="Задекларуватись">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminInstagramLabel">Назва кнопки Instagram</label>
+                                <input id="adminInstagramLabel" placeholder="Instagram">
+                            </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminAnnouncementText">Оголошення під головним екраном</label>
                                 <textarea id="adminAnnouncementText"></textarea>
@@ -3065,6 +3095,18 @@
                                 <label for="adminPsychologyTag">Плашка блоку психології</label>
                                 <input id="adminPsychologyTag">
                             </div>
+                            <div class="bpr-field">
+                                <label for="adminPsychologyPageTag">Плашка сторінки “Психологія”</label>
+                                <input id="adminPsychologyPageTag">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyPageTitle">Заголовок сторінки “Психологія”</label>
+                                <textarea id="adminPsychologyPageTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyPageIntro">Опис сторінки “Психологія”</label>
+                                <textarea id="adminPsychologyPageIntro"></textarea>
+                            </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminBookingTitle">Заголовок блоку запису</label>
                                 <textarea id="adminBookingTitle"></textarea>
@@ -3098,6 +3140,13 @@
                                 <label for="adminPsychologyFeatures">Список у блоці психології</label>
                                 <textarea id="adminPsychologyFeatures" style="min-height: 150px;"></textarea>
                                 <div class="admin-help">Один пункт = один рядок.</div>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPsychologyServiceItems">Картки сторінки “Психологія”</label>
+                                <textarea id="adminPsychologyServiceItems" style="min-height: 180px;"></textarea>
+                                <div class="admin-help">
+                                    Один пункт = один рядок. Формат: ярлик/емодзі | назва | опис | підпис | visible або hidden.
+                                </div>
                             </div>
                             <div class="bpr-field">
                                 <label for="adminPsychologyFloatTop">Плашка на картинці</label>
@@ -3138,8 +3187,8 @@
                                 <label for="adminSocialLinks">Соцмережі внизу сайту</label>
                                 <textarea id="adminSocialLinks" style="min-height: 120px;"></textarea>
                                 <div class="admin-help">
-                                    Один значок = один рядок. Формат: емодзі | назва | посилання | visible або hidden.
-                                    Приклад: 📸 | Instagram | https://instagram.com/inwhitemedical | visible
+                                    Один значок = один рядок. Формат: ярлик/емодзі | назва кнопки | приховане посилання | visible або hidden.
+                                    На сайті показується тільки ярлик кнопки, саме посилання не виводиться текстом.
                                 </div>
                             </div>
                             <div class="bpr-field bpr-full" hidden>
@@ -3153,6 +3202,50 @@
                             <div class="bpr-field">
                                 <label for="adminAboutTag">Плашка “Про нас”</label>
                                 <input id="adminAboutTag">
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminServicesPageTag">Плашка сторінки “Послуги”</label>
+                                <input id="adminServicesPageTag">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminServicesPageTitle">Заголовок сторінки “Послуги”</label>
+                                <textarea id="adminServicesPageTitle"></textarea>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminTeamPageTag">Плашка сторінки “Команда”</label>
+                                <input id="adminTeamPageTag">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminTeamPageTitle">Заголовок сторінки “Команда”</label>
+                                <textarea id="adminTeamPageTitle"></textarea>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminPricesPageTag">Плашка сторінки “Прайс”</label>
+                                <input id="adminPricesPageTag">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPricesPageTitle">Заголовок сторінки “Прайс”</label>
+                                <textarea id="adminPricesPageTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminPricesPageIntro">Опис сторінки “Прайс”</label>
+                                <textarea id="adminPricesPageIntro"></textarea>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminTrainingPageTag">Плашка сторінки “Навчання”</label>
+                                <input id="adminTrainingPageTag">
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminTrainingPageTitle">Заголовок сторінки “Навчання”</label>
+                                <textarea id="adminTrainingPageTitle"></textarea>
+                            </div>
+                            <div class="bpr-field bpr-full">
+                                <label for="adminTrainingPageDescription">Опис сторінки “Навчання”</label>
+                                <textarea id="adminTrainingPageDescription"></textarea>
+                            </div>
+                            <div class="bpr-field">
+                                <label for="adminAboutPageTag">Плашка сторінки “Про нас”</label>
+                                <input id="adminAboutPageTag">
                             </div>
                             <div class="bpr-field">
                                 <label for="adminAboutValuesTitle">Заголовок цінностей</label>
@@ -3976,10 +4069,13 @@
             heroSubtitle: 'Сучасний медичний центр первинної допомоги. Вже зараз — психологічна підтримка онлайн для вас та вашої родини.',
             heroLogoImage: 'assets/logo.png',
             heroBackgroundImage: 'assets/clinic-interior.jpg',
+            declarationButtonLabel: 'Задекларуватись',
             announcementText: '🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно',
             servicesTag: 'Наші послуги',
             servicesTitle: 'Комплексна турбота<br>про ваше здоров\'я',
             servicesSubtitle: 'Від первинної медицини до психологічної підтримки — все в одному місці, поруч з домом',
+            servicesPageTag: 'Послуги клініки',
+            servicesPageTitle: 'Всі послуги<br>INWHITE MEDICAL',
             serviceCards: [
                 {
                     icon: '🧠',
@@ -4034,6 +4130,7 @@
             bookingTitle: 'Запишіться<br>на прийом',
             bookingDescription: 'Залиште заявку і ми зв\'яжемось з вами протягом 30 хвилин для підтвердження часу та деталей консультації.',
             instagram: '@inwhitemedical',
+            instagramLabel: 'Instagram',
             appointmentServices: [
                 { icon: '🧠', name: 'Психологія', visible: true },
                 { icon: '📝', name: 'Декларація', visible: true },
@@ -4044,6 +4141,9 @@
             psychologyTag: 'Психологічна допомога',
             psychologyTitle: 'Підтримка, яка<br>потрібна вам<br><em>вже сьогодні</em>',
             psychologyDescription: 'В умовах війни та постійного стресу психологічна допомога — це не розкіш, а необхідність. Наш медичний психолог надає доказову, ефективну підтримку.',
+            psychologyPageTag: 'Психологічна допомога',
+            psychologyPageTitle: 'Ваш психологічний<br>добробут — наш пріоритет',
+            psychologyPageIntro: 'В умовах сьогодення психологічна підтримка — це не слабкість, а мудрість. Наша команда надає доказову, ефективну допомогу з повагою до кожного клієнта.',
             psychologyImage: '🌿',
             psychologyFloatTop: 'Доступно вже зараз',
             psychologyFloatTitle: 'Онлайн-сесії',
@@ -4055,6 +4155,14 @@
                 'Підтримка при хронічних захворюваннях',
                 'Психоедукація та навчання навичкам саморегуляції',
                 'Онлайн та офлайн формат'
+            ],
+            psychologyServiceItems: [
+                { icon: '😰', title: 'Тривожні розлади', description: 'Робота з генералізованою тривогою, панічними атаками, фобіями. Когнітивно-поведінкові методи.', label: 'Онлайн / Офлайн', visible: true },
+                { icon: '🛡️', title: 'ПТСР та гострий стрес', description: 'Спеціалізована допомога для людей, які пережили травматичні події. Безпечний простір для відновлення.', label: 'Індивідуально', visible: true },
+                { icon: '💊', title: 'Підтримка при хронічних хворобах', description: 'Психологічна адаптація до діагнозу, робота з прийняттям та якістю життя при хронічних станах.', label: 'Комплексно', visible: true },
+                { icon: '📚', title: 'Психоедукація', description: 'Навчання навичкам саморегуляції, управління стресом, розуміння власних реакцій та емоцій.', label: 'Групи / Індивідуально', visible: true },
+                { icon: '⚡', title: 'Короткотривала терапія', description: 'Ефективні методи для швидкого результату. Особливо актуально в умовах воєнного часу.', label: '4-12 сесій', visible: true },
+                { icon: '💻', title: 'Онлайн-консультації', description: 'Зручний формат з будь-якого місця. Zoom, Telegram. Конфіденційно та безпечно.', label: 'Доступно зараз ✓', visible: true }
             ],
             testimonialsTag: 'Відгуки',
             testimonialsTitle: 'Що кажуть<br>наші пацієнти',
@@ -4121,6 +4229,14 @@
                 about: '',
                 training: ''
             },
+            teamPageTag: 'Наша команда',
+            teamPageTitle: 'Фахівці, яким<br>можна довіряти',
+            pricesPageTag: 'Прайс',
+            pricesPageTitle: 'Вартість<br>послуг',
+            pricesPageIntro: 'Актуальні ціни на послуги клініки. Остаточна вартість може залежати від обсягу консультації, матеріалів або індивідуального плану обстеження.',
+            trainingPageTag: 'Провайдер БПР 2817',
+            trainingPageTitle: 'Навчання лікарів',
+            trainingPageDescription: 'Оберіть онлайн-курс із записом та сертифікатом або офлайн-захід із реєстрацією через форму. Усі картки та посилання змінюються в адмін-панелі.',
             aboutTag: 'Про клініку',
             aboutTitle: 'INWHITE MEDICAL —<br>медицина що формує довіру',
             aboutMissionTitle: 'Наша місія',
@@ -4199,6 +4315,7 @@
             appointmentServices: Array.isArray(source.appointmentServices) ? source.appointmentServices : defaults.appointmentServices,
             serviceCards: Array.isArray(source.serviceCards) ? source.serviceCards : defaults.serviceCards,
             psychologyFeatures: Array.isArray(source.psychologyFeatures) ? source.psychologyFeatures : defaults.psychologyFeatures,
+            psychologyServiceItems: Array.isArray(source.psychologyServiceItems) ? source.psychologyServiceItems : defaults.psychologyServiceItems,
             testimonials: Array.isArray(source.testimonials) ? source.testimonials : defaults.testimonials,
             faqItems: Array.isArray(source.faqItems) ? source.faqItems : defaults.faqItems,
             socialLinks: Array.isArray(source.socialLinks) ? source.socialLinks : defaults.socialLinks,
@@ -4761,6 +4878,33 @@
             });
     }
 
+    function adminPsychologyItemsToText(items) {
+        return (items || []).map(item => [
+            item.icon || '•',
+            item.title || '',
+            item.description || '',
+            item.label || '',
+            item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    }
+
+    function adminParsePsychologyItems(text) {
+        return String(text || '')
+            .split('\n')
+            .map(row => row.trim())
+            .filter(Boolean)
+            .map(row => {
+                const parts = row.split('|').map(part => part.trim());
+                return {
+                    icon: parts[0] || '•',
+                    title: parts[1] || parts[0] || 'Пункт',
+                    description: parts[2] || '',
+                    label: parts[3] || '',
+                    visible: ((parts[4] || 'visible').toLowerCase() !== 'hidden')
+                };
+            });
+    }
+
     function adminTextLinesToArray(text) {
         return String(text || '')
             .split('\n')
@@ -4894,6 +5038,7 @@
                 'adminHeroBadge',
                 'adminHeroTitle',
                 'adminHeroSubtitle',
+                'adminDeclarationButtonLabel',
                 'adminAnnouncementText',
                 'adminHeroLogoImage',
                 'adminHeroBackgroundImage',
@@ -4901,6 +5046,7 @@
                 'adminBookingTitle',
                 'adminBookingDescription',
                 'adminInstagram',
+                'adminInstagramLabel',
                 'adminAppointmentServices',
                 'adminSocialLinks',
                 'adminContactPhone',
@@ -4913,10 +5059,14 @@
                 'adminPagePsychology',
                 'adminHeroPsychologyImage',
                 'adminPsychologyTag',
+                'adminPsychologyPageTag',
+                'adminPsychologyPageTitle',
+                'adminPsychologyPageIntro',
                 'adminPsychologyImage',
                 'adminPsychologyTitle',
                 'adminPsychologyDescription',
                 'adminPsychologyFeatures',
+                'adminPsychologyServiceItems',
                 'adminPsychologyFloatTop',
                 'adminPsychologyFloatTitle',
                 'adminPsychologyFloatBottom',
@@ -4928,6 +5078,8 @@
             services: [
                 'adminPageServices',
                 'adminHeroServicesImage',
+                'adminServicesPageTag',
+                'adminServicesPageTitle',
                 'adminServicesTag',
                 'adminServicesTitle',
                 'adminServicesSubtitle',
@@ -4935,16 +5087,22 @@
             ],
             prices: [
                 'adminPagePrices',
-                'adminHeroPricesImage'
+                'adminHeroPricesImage',
+                'adminPricesPageTag',
+                'adminPricesPageTitle',
+                'adminPricesPageIntro'
             ],
             team: [
                 'adminPageTeam',
-                'adminHeroTeamImage'
+                'adminHeroTeamImage',
+                'adminTeamPageTag',
+                'adminTeamPageTitle'
             ],
             about: [
                 'adminPageAbout',
                 'adminHeroAboutImage',
                 'adminAboutTag',
+                'adminAboutPageTag',
                 'adminAboutValuesTitle',
                 'adminAboutTitle',
                 'adminAboutMissionTitle',
@@ -4953,7 +5111,10 @@
             ],
             training: [
                 'adminPageTraining',
-                'adminHeroTrainingImage'
+                'adminHeroTrainingImage',
+                'adminTrainingPageTag',
+                'adminTrainingPageTitle',
+                'adminTrainingPageDescription'
             ]
         };
         Object.entries(panelMap).forEach(([panelName, ids]) => {
@@ -5232,12 +5393,73 @@
                 <li><div class="list-dot"></div>${bprEscapeText(item)}</li>
             `).join('');
         }
+
+        const psychologyGrid = document.getElementById('psychologyServicesGrid');
+        if (psychologyGrid) {
+            const items = (siteConfig.psychologyServiceItems || [])
+                .filter(item => item.visible !== false && item.title);
+            const visibleItems = items.length ? items : adminDefaultSiteConfig().psychologyServiceItems;
+            psychologyGrid.innerHTML = visibleItems.map(item => `
+                <div class="psych-service-item">
+                    <div style="font-size: 2rem; margin-bottom: 15px;">${bprEscapeText(item.icon || '•')}</div>
+                    <h3>${bprEscapeText(item.title)}</h3>
+                    <p>${bprEscapeText(item.description || '')}</p>
+                    <span class="price-tag">${bprEscapeText(item.label || '')}</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    function adminRenderPageTexts() {
+        const textTargets = [
+            ['psychologyPageTag', siteConfig.psychologyPageTag, 'text'],
+            ['psychologyPageTitle', siteConfig.psychologyPageTitle, 'html'],
+            ['psychologyPageIntro', siteConfig.psychologyPageIntro, 'text'],
+            ['servicesPageTag', siteConfig.servicesPageTag, 'text'],
+            ['servicesPageTitle', siteConfig.servicesPageTitle, 'html'],
+            ['teamPageTag', siteConfig.teamPageTag, 'text'],
+            ['teamPageTitle', siteConfig.teamPageTitle, 'html'],
+            ['pricesPageTag', siteConfig.pricesPageTag, 'text'],
+            ['pricesPageTitle', siteConfig.pricesPageTitle, 'html'],
+            ['pricesPageIntro', siteConfig.pricesPageIntro, 'text'],
+            ['trainingPageTag', siteConfig.trainingPageTag, 'text'],
+            ['trainingPageTitle', siteConfig.trainingPageTitle, 'html'],
+            ['trainingPageDescription', siteConfig.trainingPageDescription, 'text']
+        ];
+        textTargets.forEach(([id, value, mode]) => {
+            const element = document.getElementById(id);
+            if (!element) return;
+            if (mode === 'html') element.innerHTML = value || '';
+            else element.textContent = value || '';
+        });
+        const label = siteConfig.declarationButtonLabel || adminDefaultSiteConfig().declarationButtonLabel;
+        document.querySelectorAll('[data-declaration-label]').forEach(element => {
+            element.textContent = label;
+        });
+    }
+
+    function adminFindSocialLink(keyword) {
+        const normalizedKeyword = String(keyword || '').toLowerCase();
+        return (siteConfig.socialLinks || []).find(item => {
+            const label = String(item.label || '').toLowerCase();
+            const url = String(item.url || '').toLowerCase();
+            return item.visible !== false && (label.includes(normalizedKeyword) || url.includes(normalizedKeyword));
+        }) || null;
+    }
+
+    function adminNormalizeInstagramUrl(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '#';
+        if (/^https?:\/\//i.test(raw)) return raw;
+        const handle = raw.replace(/^@/, '').replace(/^instagram\.com\//i, '').replace(/^www\.instagram\.com\//i, '').split(/[/?#]/)[0];
+        return handle ? 'https://instagram.com/' + handle : '#';
     }
 
     function adminRenderBookingBlock() {
         const cleanPhone = String(siteConfig.phone || '').replace(/[^\d+]/g, '');
-        const instagram = String(siteConfig.instagram || '').trim();
-        const instagramHandle = instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/^@/, '').replace(/\/$/, '');
+        const instagramLink = adminFindSocialLink('instagram');
+        const instagramLabel = siteConfig.instagramLabel || (instagramLink ? instagramLink.label : '') || 'Instagram';
+        const instagramUrl = adminNormalizeInstagramUrl(siteConfig.instagram || (instagramLink ? instagramLink.url : ''));
         const bookingTag = document.getElementById('bookingTag');
         const bookingTitle = document.getElementById('bookingTitle');
         const bookingDescription = document.getElementById('bookingDescription');
@@ -5255,9 +5477,11 @@
             if (value) value.textContent = siteConfig.phone || '';
         }
         if (bookingInstagram) {
-            bookingInstagram.href = instagramHandle ? 'https://instagram.com/' + instagramHandle : '#';
+            bookingInstagram.href = instagramUrl;
+            const label = bookingInstagram.querySelector('small');
             const value = bookingInstagram.querySelector('strong');
-            if (value) value.textContent = instagramHandle ? '@' + instagramHandle : '';
+            if (label) label.textContent = instagramLabel;
+            if (value) value.textContent = instagramLabel;
         }
         if (bookingAddress) {
             const value = bookingAddress.querySelector('strong');
@@ -5401,6 +5625,7 @@
         adminRenderServiceCards();
         adminRenderFooterServices();
         adminRenderPageHeroes();
+        adminRenderPageTexts();
         adminRenderAboutPage();
         adminRenderTeam();
         adminRenderPrices();
@@ -5425,8 +5650,9 @@
             const photo = adminNormalizeImageValue(item.photo || '👨‍⚕️');
             const isImage = adminLooksLikeImage(photo);
             const photoHtml = isImage ? '<img src="' + bprEscapeText(photo) + '" alt="' + bprEscapeText(item.name) + '">' : bprEscapeText(photo);
+            const declarationLabel = siteConfig.declarationButtonLabel || adminDefaultSiteConfig().declarationButtonLabel;
             const declarationButton = item.allowDeclaration === true
-                ? '<div class="team-actions"><a href="#" class="btn-primary" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="openDeclarationModal(this.dataset.doctor); return false;">Задекларуватись</a></div>'
+                ? '<div class="team-actions"><a href="#" class="btn-primary btn-declaration" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="openDeclarationModal(this.dataset.doctor); return false;"><span data-declaration-label>' + bprEscapeText(declarationLabel) + '</span></a></div>'
                 : '';
             return `
                 <div class="team-card">
@@ -5548,10 +5774,13 @@
         document.getElementById('adminHeroBadge').value = siteConfig.heroBadge || '';
         document.getElementById('adminHeroTitle').value = siteConfig.heroTitle || '';
         document.getElementById('adminHeroSubtitle').value = siteConfig.heroSubtitle || '';
+        document.getElementById('adminDeclarationButtonLabel').value = siteConfig.declarationButtonLabel || '';
         document.getElementById('adminAnnouncementText').value = siteConfig.announcementText || '';
         document.getElementById('adminServicesTag').value = siteConfig.servicesTag || '';
         document.getElementById('adminServicesTitle').value = siteConfig.servicesTitle || '';
         document.getElementById('adminServicesSubtitle').value = siteConfig.servicesSubtitle || '';
+        document.getElementById('adminServicesPageTag').value = siteConfig.servicesPageTag || '';
+        document.getElementById('adminServicesPageTitle').value = siteConfig.servicesPageTitle || '';
         document.getElementById('adminServicesList').value = adminServiceCardsToText(siteConfig.serviceCards || []);
         document.getElementById('adminHeroLogoImage').value = siteConfig.heroLogoImage || '';
         document.getElementById('adminHeroBackgroundImage').value = siteConfig.heroBackgroundImage || '';
@@ -5568,10 +5797,15 @@
         document.getElementById('adminBookingTitle').value = siteConfig.bookingTitle || '';
         document.getElementById('adminBookingDescription').value = siteConfig.bookingDescription || '';
         document.getElementById('adminInstagram').value = siteConfig.instagram || '';
+        document.getElementById('adminInstagramLabel').value = siteConfig.instagramLabel || '';
+        document.getElementById('adminPsychologyPageTag').value = siteConfig.psychologyPageTag || '';
+        document.getElementById('adminPsychologyPageTitle').value = siteConfig.psychologyPageTitle || '';
+        document.getElementById('adminPsychologyPageIntro').value = siteConfig.psychologyPageIntro || '';
         document.getElementById('adminPsychologyImage').value = adminNormalizeImageValue(siteConfig.psychologyImage || '');
         document.getElementById('adminPsychologyTitle').value = siteConfig.psychologyTitle || '';
         document.getElementById('adminPsychologyDescription').value = siteConfig.psychologyDescription || '';
         document.getElementById('adminPsychologyFeatures').value = adminArrayToText(siteConfig.psychologyFeatures || []);
+        document.getElementById('adminPsychologyServiceItems').value = adminPsychologyItemsToText(siteConfig.psychologyServiceItems || []);
         document.getElementById('adminPsychologyFloatTop').value = siteConfig.psychologyFloatTop || '';
         document.getElementById('adminPsychologyFloatTitle').value = siteConfig.psychologyFloatTitle || '';
         document.getElementById('adminPsychologyFloatBottom').value = siteConfig.psychologyFloatBottom || '';
@@ -5582,6 +5816,7 @@
         document.getElementById('adminSocialLinks').value = adminSocialLinksToText(siteConfig.socialLinks || []);
         document.getElementById('adminPageHeroImages').value = adminPageHeroImagesToText(siteConfig.pageHeroImages || {});
         document.getElementById('adminAboutTag').value = siteConfig.aboutTag || '';
+        document.getElementById('adminAboutPageTag').value = siteConfig.aboutTag || '';
         document.getElementById('adminAboutTitle').value = siteConfig.aboutTitle || '';
         document.getElementById('adminAboutMissionTitle').value = siteConfig.aboutMissionTitle || '';
         document.getElementById('adminAboutMissionText').value = adminArrayToText(siteConfig.aboutMissionText || []);
@@ -5594,7 +5829,15 @@
         document.getElementById('adminContactHours').value = siteConfig.hours || '';
         document.getElementById('adminTeamEditor').value = adminTeamToText(siteTeam);
         adminRenderTeamEditor();
+        document.getElementById('adminTeamPageTag').value = siteConfig.teamPageTag || '';
+        document.getElementById('adminTeamPageTitle').value = siteConfig.teamPageTitle || '';
         document.getElementById('adminPricesEditor').value = adminPricesToText(sitePrices);
+        document.getElementById('adminPricesPageTag').value = siteConfig.pricesPageTag || '';
+        document.getElementById('adminPricesPageTitle').value = siteConfig.pricesPageTitle || '';
+        document.getElementById('adminPricesPageIntro').value = siteConfig.pricesPageIntro || '';
+        document.getElementById('adminTrainingPageTag').value = siteConfig.trainingPageTag || '';
+        document.getElementById('adminTrainingPageTitle').value = siteConfig.trainingPageTitle || '';
+        document.getElementById('adminTrainingPageDescription').value = siteConfig.trainingPageDescription || '';
     }
 
     function adminSaveSiteSettings(event) {
@@ -5611,10 +5854,13 @@
         siteConfig.heroBadge = document.getElementById('adminHeroBadge').value.trim();
         siteConfig.heroTitle = document.getElementById('adminHeroTitle').value.trim();
         siteConfig.heroSubtitle = document.getElementById('adminHeroSubtitle').value.trim();
+        siteConfig.declarationButtonLabel = document.getElementById('adminDeclarationButtonLabel').value.trim() || adminDefaultSiteConfig().declarationButtonLabel;
         siteConfig.announcementText = document.getElementById('adminAnnouncementText').value.trim();
         siteConfig.servicesTag = document.getElementById('adminServicesTag').value.trim();
         siteConfig.servicesTitle = document.getElementById('adminServicesTitle').value.trim();
         siteConfig.servicesSubtitle = document.getElementById('adminServicesSubtitle').value.trim();
+        siteConfig.servicesPageTag = document.getElementById('adminServicesPageTag').value.trim();
+        siteConfig.servicesPageTitle = document.getElementById('adminServicesPageTitle').value.trim();
         siteConfig.serviceCards = adminParseServiceCards(document.getElementById('adminServicesList').value);
         siteConfig.heroLogoImage = document.getElementById('adminHeroLogoImage').value.trim() || adminDefaultSiteConfig().heroLogoImage;
         siteConfig.heroBackgroundImage = document.getElementById('adminHeroBackgroundImage').value.trim() || adminDefaultSiteConfig().heroBackgroundImage;
@@ -5624,10 +5870,15 @@
         siteConfig.bookingTitle = document.getElementById('adminBookingTitle').value.trim();
         siteConfig.bookingDescription = document.getElementById('adminBookingDescription').value.trim();
         siteConfig.instagram = document.getElementById('adminInstagram').value.trim();
+        siteConfig.instagramLabel = document.getElementById('adminInstagramLabel').value.trim() || 'Instagram';
+        siteConfig.psychologyPageTag = document.getElementById('adminPsychologyPageTag').value.trim();
+        siteConfig.psychologyPageTitle = document.getElementById('adminPsychologyPageTitle').value.trim();
+        siteConfig.psychologyPageIntro = document.getElementById('adminPsychologyPageIntro').value.trim();
         siteConfig.psychologyImage = adminNormalizeImageValue(document.getElementById('adminPsychologyImage').value) || adminDefaultSiteConfig().psychologyImage;
         siteConfig.psychologyTitle = document.getElementById('adminPsychologyTitle').value.trim();
         siteConfig.psychologyDescription = document.getElementById('adminPsychologyDescription').value.trim();
         siteConfig.psychologyFeatures = adminTextLinesToArray(document.getElementById('adminPsychologyFeatures').value);
+        siteConfig.psychologyServiceItems = adminParsePsychologyItems(document.getElementById('adminPsychologyServiceItems').value);
         siteConfig.psychologyFloatTop = document.getElementById('adminPsychologyFloatTop').value.trim();
         siteConfig.psychologyFloatTitle = document.getElementById('adminPsychologyFloatTitle').value.trim();
         siteConfig.psychologyFloatBottom = document.getElementById('adminPsychologyFloatBottom').value.trim();
@@ -5637,12 +5888,20 @@
         siteConfig.faqItems = adminParseFaq(document.getElementById('adminFaq').value);
         siteConfig.socialLinks = adminParseSocialLinks(document.getElementById('adminSocialLinks').value);
         adminSaveHeroImageFields();
-        siteConfig.aboutTag = document.getElementById('adminAboutTag').value.trim();
+        siteConfig.aboutTag = (document.getElementById('adminAboutPageTag').value || document.getElementById('adminAboutTag').value).trim();
         siteConfig.aboutTitle = document.getElementById('adminAboutTitle').value.trim();
         siteConfig.aboutMissionTitle = document.getElementById('adminAboutMissionTitle').value.trim();
         siteConfig.aboutMissionText = adminTextLinesToArray(document.getElementById('adminAboutMissionText').value);
         siteConfig.aboutValuesTitle = document.getElementById('adminAboutValuesTitle').value.trim();
         siteConfig.aboutValues = adminParseAboutValues(document.getElementById('adminAboutValues').value);
+        siteConfig.teamPageTag = document.getElementById('adminTeamPageTag').value.trim();
+        siteConfig.teamPageTitle = document.getElementById('adminTeamPageTitle').value.trim();
+        siteConfig.pricesPageTag = document.getElementById('adminPricesPageTag').value.trim();
+        siteConfig.pricesPageTitle = document.getElementById('adminPricesPageTitle').value.trim();
+        siteConfig.pricesPageIntro = document.getElementById('adminPricesPageIntro').value.trim();
+        siteConfig.trainingPageTag = document.getElementById('adminTrainingPageTag').value.trim();
+        siteConfig.trainingPageTitle = document.getElementById('adminTrainingPageTitle').value.trim();
+        siteConfig.trainingPageDescription = document.getElementById('adminTrainingPageDescription').value.trim();
         siteConfig.phone = document.getElementById('adminContactPhone').value.trim();
         siteConfig.whatsapp = document.getElementById('adminContactWhatsapp').value.trim();
         siteConfig.email = document.getElementById('adminContactEmail').value.trim();
