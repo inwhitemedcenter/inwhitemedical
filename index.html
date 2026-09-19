@@ -3146,10 +3146,11 @@
                 </div>
 
                 <div class="admin-sticky-actions">
-                    <button class="bpr-btn bpr-btn-primary" type="button" onclick="supabaseSaveSiteState()">Зберегти сайт у базу</button>
+                    <button class="bpr-btn bpr-btn-primary" type="button" onclick="adminSubmitSiteForm()">Зберегти сайт у базу</button>
                     <div class="admin-tabs" aria-label="Розділи адмін-панелі">
                         <button class="admin-tab active" type="button" data-admin-tab="home" onclick="adminShowPanel('home')">Головна</button>
                         <button class="admin-tab" type="button" data-admin-tab="psychology" onclick="adminShowPanel('psychology')">Психологія</button>
+                        <button class="admin-tab" type="button" data-admin-tab="content" onclick="adminShowPanel('content')">FAQ і відгуки</button>
                         <button class="admin-tab" type="button" data-admin-tab="services" onclick="adminShowPanel('services')">Послуги</button>
                         <button class="admin-tab" type="button" data-admin-tab="database" onclick="adminShowPanel('database')">База</button>
                         <button class="admin-tab" type="button" data-admin-tab="team" onclick="adminShowPanel('team')">Команда</button>
@@ -3534,7 +3535,7 @@
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseRegisterAdmin()">Створити адміна</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseSendPasswordReset()">Надіслати зміну пароля</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseUpdatePassword()">Змінити пароль</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseSaveSiteState()">Зберегти сайт у базу</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminSubmitSiteForm()">Зберегти сайт у базу</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseLoadParticipants()">Завантажити учасників</button>
                             <button class="bpr-btn bpr-btn-quiet" type="button" onclick="supabaseSyncParticipants()">Синхронізувати учасників</button>
                         </div>
@@ -5543,7 +5544,9 @@
                 'adminPsychologyServiceItems',
                 'adminPsychologyFloatTop',
                 'adminPsychologyFloatTitle',
-                'adminPsychologyFloatBottom',
+                'adminPsychologyFloatBottom'
+            ],
+            content: [
                 'adminTestimonialsTag',
                 'adminTestimonialsTitle',
                 'adminTestimonials',
@@ -7787,6 +7790,45 @@
         refresh();
     }
 
+    function adminSyncTestimonialsEditor() {
+        siteConfig.testimonials = adminCollectTestimonialsEditor();
+        const field = document.getElementById('adminTestimonials');
+        if (field) field.value = adminTestimonialsToText(siteConfig.testimonials);
+    }
+
+    function adminSyncFaqEditor() {
+        siteConfig.faqItems = adminCollectFaqEditor();
+        const field = document.getElementById('adminFaq');
+        if (field) field.value = adminFaqToText(siteConfig.faqItems);
+    }
+
+    function adminBindContentEditorInputs() {
+        const testimonialList = document.getElementById('adminTestimonialsCards');
+        const faqList = document.getElementById('adminFaqCards');
+        if (testimonialList && testimonialList.dataset.liveBound !== 'true') {
+            testimonialList.dataset.liveBound = 'true';
+            testimonialList.addEventListener('input', adminSyncTestimonialsEditor);
+            testimonialList.addEventListener('change', adminSyncTestimonialsEditor);
+        }
+        if (faqList && faqList.dataset.liveBound !== 'true') {
+            faqList.dataset.liveBound = 'true';
+            faqList.addEventListener('input', adminSyncFaqEditor);
+            faqList.addEventListener('change', adminSyncFaqEditor);
+        }
+    }
+
+    function adminSubmitSiteForm() {
+        adminSyncTestimonialsEditor();
+        adminSyncFaqEditor();
+        const form = document.getElementById('siteAdminForm');
+        if (form) {
+            if (typeof form.requestSubmit === 'function') form.requestSubmit();
+            else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        } else if (supabaseAccessToken) {
+            supabaseSaveSiteState();
+        }
+    }
+
     // Friendly card editors for testimonials and FAQ.
     function adminRenderTestimonialsEditor() {
         const list = document.getElementById('adminTestimonialsCards');
@@ -7810,6 +7852,8 @@
                     <label class="bpr-field bpr-checkbox bpr-full"><input data-testimonial-field="visible" type="checkbox" ${item.visible===false?'':'checked'}> Показувати на сайті</label>
                 </div>
             </div>`).join('');
+        adminBindContentEditorInputs();
+        adminSyncTestimonialsEditor();
     }
 
     function adminCollectTestimonialsEditor() {
@@ -7844,6 +7888,8 @@
                     <label class="bpr-field bpr-checkbox bpr-full"><input data-faq-field="visible" type="checkbox" ${item.visible===false?'':'checked'}> Показувати на сайті</label>
                 </div>
             </div>`).join('');
+        adminBindContentEditorInputs();
+        adminSyncFaqEditor();
     }
     function adminCollectFaqEditor() {
         const cards = document.querySelectorAll('#adminFaqCards .admin-content-card');
