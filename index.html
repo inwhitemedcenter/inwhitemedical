@@ -2512,6 +2512,92 @@
         .reveal-delay-2 { transition-delay: 0.2s; }
         .reveal-delay-3 { transition-delay: 0.3s; }
         .reveal-delay-4 { transition-delay: 0.4s; }
+    
+        /* ===== UX ENHANCEMENTS: active navigation, grouped prices, details ===== */
+        .nav-links li[data-nav-page] > a.active-page {
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .nav-links li[data-nav-page] > a.active-page::after {
+            width: 100%;
+            height: 2px;
+        }
+        .nav-links li[data-nav-page] > a.active-page::before {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--gold);
+            left: 50%;
+            transform: translateX(-50%);
+            top: -8px;
+        }
+        .price-category-section { margin: 0 0 38px; }
+        .price-category-header {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+        }
+        .price-category-header h2 {
+            font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 500; color: var(--dark);
+        }
+        .price-category-count { font-size: .75rem; color: var(--gold); background: rgba(201,169,110,.12); padding: 5px 10px; border-radius: 999px; }
+        .price-category-list { display: grid; gap: 12px; }
+        .price-row { cursor: default; }
+        .price-row:hover { transform: translateY(-2px); border-color: rgba(201,169,110,.55); box-shadow: 0 12px 30px rgba(74,74,74,.08); }
+        .psych-service-item { cursor: pointer; position: relative; }
+        .psych-service-item::after { content: 'Детальніше →'; display:block; margin-top:16px; color:var(--gold); font-size:.76rem; font-weight:600; letter-spacing:.04em; }
+        .team-card { cursor: pointer; }
+        .team-card .team-more { margin-top: 12px; color: var(--gold); font-size: .78rem; font-weight: 600; }
+        .detail-modal-overlay { position: fixed; inset:0; z-index:11000; background:rgba(20,20,20,.62); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; padding:20px; }
+        .detail-modal { width:min(720px,100%); max-height:88vh; overflow:auto; background:#fff; border-radius:28px; padding:42px; position:relative; box-shadow:0 30px 90px rgba(0,0,0,.24); animation:pageSoftEnter .3s ease both; }
+        .detail-modal-close { position:absolute; right:18px; top:18px; width:42px; height:42px; border:0; border-radius:50%; background:var(--beige); cursor:pointer; font-size:1.4rem; color:var(--graphite); }
+        .detail-modal h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,5vw,3rem); font-weight:500; color:var(--dark); margin:8px 44px 10px 0; }
+        .detail-modal-subtitle { color:var(--gold); text-transform:uppercase; letter-spacing:.08em; font-size:.78rem; margin-bottom:22px; }
+        .detail-modal-body { color:var(--graphite-light); font-size:.95rem; line-height:1.85; white-space:pre-line; }
+        .detail-modal-actions { margin-top:28px; display:flex; gap:12px; flex-wrap:wrap; }
+        .admin-price-editor-list { display:grid; gap:14px; }
+        .admin-psych-list { display:grid; gap:16px; margin-top:10px; }
+        .admin-psych-card { border:1px solid var(--beige); border-radius:18px; padding:18px; background:rgba(255,255,255,.72); }
+        .admin-psych-card-head { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:14px; }
+        .admin-psych-card-title { font-weight:700; color:var(--dark); }
+        .admin-psych-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .admin-psych-grid .bpr-full { grid-column:1/-1; }
+        .admin-psych-actions { display:flex; gap:8px; flex-wrap:wrap; }
+        @media (max-width:760px){ .admin-psych-grid{grid-template-columns:1fr;} }
+        .admin-price-card { border:1px solid var(--beige); border-radius:18px; padding:18px; background:rgba(255,255,255,.72); }
+        .admin-price-card-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+        .admin-price-card-title { font-weight:600; color:var(--dark); }
+        .admin-price-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .admin-price-grid .bpr-full { grid-column:1/-1; }
+        .price-tools { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:0 0 32px; }
+        .price-search { flex:1 1 280px; position:relative; }
+        .price-search input { width:100%; padding:14px 18px 14px 44px; border:1px solid var(--beige); border-radius:16px; background:#fff; font:inherit; color:var(--dark); outline:none; }
+        .price-search input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,169,110,.11); }
+        .price-search::before { content:'⌕'; position:absolute; left:17px; top:50%; transform:translateY(-51%); color:var(--gold); font-size:1.25rem; }
+        .price-filters { display:flex; gap:8px; flex-wrap:wrap; }
+        .price-filter { border:1px solid var(--beige); background:#fff; color:var(--graphite); border-radius:999px; padding:10px 15px; cursor:pointer; font:inherit; font-size:.8rem; transition:.25s ease; }
+        .price-filter:hover, .price-filter.active { border-color:var(--gold); color:var(--gold); background:rgba(201,169,110,.09); }
+        .price-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:center; }
+        .price-row-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end; }
+        .price-book-btn { border:1px solid rgba(201,169,110,.45); background:rgba(201,169,110,.08); color:var(--gold); border-radius:999px; padding:9px 13px; cursor:pointer; font-weight:600; font-size:.76rem; white-space:nowrap; }
+        .price-book-btn:hover { background:var(--gold); color:#fff; }
+        .detail-section { margin-top:22px; padding-top:18px; border-top:1px solid var(--beige); }
+        .detail-section h3 { font-family:'Cormorant Garamond',serif; color:var(--dark); font-size:1.35rem; margin-bottom:8px; }
+        .detail-section p { margin:0; color:var(--graphite-light); line-height:1.75; white-space:pre-line; }
+        .specialist-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:18px 0 4px; }
+        .specialist-fact { background:rgba(232,221,208,.34); border-radius:14px; padding:13px; }
+        .specialist-fact small { display:block; color:var(--gold); text-transform:uppercase; letter-spacing:.08em; font-size:.65rem; margin-bottom:5px; }
+        .specialist-fact span { color:var(--dark); font-size:.85rem; line-height:1.45; }
+        .footer-bottom { cursor: default; user-select:none; }
+        @media (max-width: 700px) {
+            .detail-modal { padding:30px 22px 24px; border-radius:22px; }
+            .admin-price-grid { grid-template-columns:1fr; }
+            .admin-price-grid .bpr-full { grid-column:auto; }
+            .specialist-facts { grid-template-columns:1fr; }
+            .price-row { grid-template-columns:1fr; }
+            .price-row-actions { justify-content:flex-start; }
+        }
+
     </style>
 </head>
 <body>
@@ -2550,7 +2636,7 @@
         <li data-nav-page="team"><a href="#" onclick="showPage('team'); return false;">Команда</a></li>
         <li data-nav-page="training"><a href="#" onclick="showPage('training'); return false;">Навчання</a></li>
         <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
-        <li><a href="#" onclick="bprOpenDeveloperPanel(); return false;">Адмін</a></li>
+        <li class="nav-admin-public-link" hidden><a href="#" onclick="bprOpenDeveloperPanel(); return false;">Адмін</a></li>
         <li><a href="#" class="nav-cta" onclick="openModal(); return false;">Записатись</a></li>
     </ul>
     <div class="hamburger" onclick="toggleMenu()">
@@ -2865,6 +2951,10 @@
             Актуальні ціни на послуги клініки. Остаточна вартість може залежати від обсягу консультації,
             матеріалів або індивідуального плану обстеження.
         </p>
+        <div class="price-tools" aria-label="Пошук і фільтри прайсу">
+            <div class="price-search"><input id="priceSearchInput" type="search" placeholder="Знайти послугу…" autocomplete="off" oninput="setPriceSearch(this.value)"></div>
+            <div id="priceFilters" class="price-filters"></div>
+        </div>
         <div id="sitePriceList" class="price-list"></div>
         <div id="sitePriceEmpty" class="bpr-empty" hidden>Прайс тимчасово не заповнений.</div>
     </div>
@@ -3169,11 +3259,13 @@
                                 <div class="admin-help">Один пункт = один рядок.</div>
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="adminPsychologyServiceItems">Картки сторінки “Психологія”</label>
-                                <textarea id="adminPsychologyServiceItems" style="min-height: 180px;"></textarea>
-                                <div class="admin-help">
-                                    Один пункт = один рядок. Формат: ярлик/емодзі | назва | опис | підпис | visible або hidden.
+                                <label>Картки сторінки “Психологія”</label>
+                                <div id="adminPsychologyCards" class="admin-psych-list"></div>
+                                <div class="bpr-inline-actions" style="margin-top: 14px;">
+                                    <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddPsychologyItem()">Додати картку</button>
                                 </div>
+                                <textarea id="adminPsychologyServiceItems" hidden></textarea>
+                                <div class="admin-help">Кожна картка редагується окремо. Можна змінювати короткий і детальний опис, ознаки для звернення, формат консультації та видимість.</div>
                             </div>
                             <div class="bpr-field">
                                 <label for="adminPsychologyFloatTop">Плашка на картинці</label>
@@ -3408,13 +3500,17 @@
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Прайс для пацієнтів</h3>
                     <p class="bpr-panel-subtitle">Ці позиції показуються на сторінці “Прайс”.</p>
                     <form onsubmit="adminSavePrices(event)">
-                        <div class="bpr-field">
+                        <div id="adminPriceCards" class="admin-price-editor-list"></div>
+                        <div class="bpr-inline-actions" style="margin-top: 18px;">
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddPriceItem()">Додати позицію</button>
+                        </div>
+                        <div class="bpr-field" hidden>
                             <label for="adminPricesEditor">Позиції прайсу</label>
                             <textarea id="adminPricesEditor" style="min-height: 210px;"></textarea>
-                            <div class="admin-help">
-                                Одна послуга = один рядок. Формат: категорія | назва послуги | опис | ціна | visible або hidden.
-                                Приклад: Консультації | Сімейний лікар | Первинний прийом | 600 грн | visible
-                            </div>
+                        </div>
+                        <div class="admin-help" style="margin-top:12px;">
+                            Рекомендовані рубрики: Консультації, Діагностика, Вакцинація, Швидкі тести, Психологія.
+                            Можна ввести й власну рубрику.
                         </div>
                         <div class="bpr-inline-actions">
                             <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти прайс</button>
@@ -3767,6 +3863,18 @@
             <p class="form-status" data-form-status></p>
             <p class="form-note">🔒 Конфіденційно · Відповідь протягом 30 хв</p>
         </form>
+    </div>
+</div>
+
+<!-- DETAIL MODAL: specialist / psychology -->
+<div id="detailInfoModal" class="detail-modal-overlay" hidden onclick="closeDetailInfoModalOutside(event)">
+    <div class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailInfoTitle">
+        <button class="detail-modal-close" type="button" onclick="closeDetailInfoModal()" aria-label="Закрити">×</button>
+        <div id="detailInfoEyebrow" class="section-tag"></div>
+        <h2 id="detailInfoTitle"></h2>
+        <div id="detailInfoSubtitle" class="detail-modal-subtitle"></div>
+        <div id="detailInfoBody" class="detail-modal-body"></div>
+        <div id="detailInfoActions" class="detail-modal-actions"></div>
     </div>
 </div>
 
@@ -4447,6 +4555,7 @@
                 name: 'Медичний психолог',
                 role: 'Засновник · Медичний психолог',
                 description: 'Спеціаліст з медичної психології. Досвід у психосоціальних втручаннях, ПТСР, тривожних розладах. Засновник INWHITE MEDICAL.',
+                biography: '',
                 visible: true,
                 allowDeclaration: false
             },
@@ -4455,6 +4564,7 @@
                 name: 'Сімейний лікар',
                 role: 'Лікар загальної практики',
                 description: '8 років досвіду у сімейній медицині. Педіатричний та терапевтичний напрямок. Доказова медицина.',
+                biography: '',
                 visible: true,
                 allowDeclaration: true
             },
@@ -4463,6 +4573,7 @@
                 name: 'Лікар УЗД',
                 role: 'Ультразвукова діагностика',
                 description: 'Фахівець з ультразвукової діагностики. Внутрішні органи, щитоподібна залоза, судинна система.',
+                biography: '',
                 visible: true,
                 allowDeclaration: false
             }
@@ -4976,6 +5087,7 @@
                 name: item.name || '',
                 role: item.role || '',
                 description: item.description || '',
+                biography: item.biography || '',
                 visible: item.visible !== false,
                 allowDeclaration: item.allowDeclaration === true
                     || declarationValue === 'declaration'
@@ -4992,6 +5104,7 @@
             item.name || '',
             item.role || '',
             item.description || '',
+            item.biography || '',
             item.allowDeclaration === true ? 'declaration' : 'no-declaration',
             item.visible === false ? 'hidden' : 'visible'
         ].join(' | ')).join('\n');
@@ -5556,6 +5669,72 @@
         }
     }
 
+    function adminRenderPsychologyEditor() {
+        const list = document.getElementById('adminPsychologyCards');
+        if (!list) return;
+        const items = Array.isArray(siteConfig.psychologyServiceItems) ? siteConfig.psychologyServiceItems : [];
+        list.innerHTML = items.map((item, index) => `
+            <div class="admin-psych-card" data-psych-index="${index}">
+                <div class="admin-psych-card-head">
+                    <div class="admin-psych-card-title">${bprEscapeText(item.title || ('Картка ' + (index + 1)))}</div>
+                    <div class="admin-psych-actions">
+                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMovePsychologyItem(${index}, -1)" ${index === 0 ? 'disabled' : ''}>↑</button>
+                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMovePsychologyItem(${index}, 1)" ${index === items.length - 1 ? 'disabled' : ''}>↓</button>
+                        <button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemovePsychologyItem(${index})">Прибрати</button>
+                    </div>
+                </div>
+                <div class="admin-psych-grid">
+                    <label class="bpr-field"><span>Емодзі / ярлик</span><input data-psych-field="icon" value="${bprEscapeText(item.icon || '•')}" placeholder="🛡️"></label>
+                    <label class="bpr-field"><span>Назва</span><input data-psych-field="title" value="${bprEscapeText(item.title || '')}" placeholder="ПТСР та гострий стрес"></label>
+                    <label class="bpr-field bpr-full"><span>Короткий опис</span><textarea data-psych-field="description" style="min-height:90px;">${bprEscapeText(item.description || '')}</textarea></label>
+                    <label class="bpr-field"><span>Підпис / формат</span><input data-psych-field="label" value="${bprEscapeText(item.label || '')}" placeholder="Індивідуально"></label>
+                    <label class="bpr-field bpr-checkbox"><input data-psych-field="visible" type="checkbox" ${item.visible === false ? '' : 'checked'}> Показувати на сайті</label>
+                    <label class="bpr-field bpr-full"><span>Про стан / детальний опис</span><textarea data-psych-field="details" style="min-height:120px;" placeholder="Що це за стан, як він може проявлятися…">${bprEscapeText(item.details || '')}</textarea></label>
+                    <label class="bpr-field bpr-full"><span>Коли варто звернутися</span><textarea data-psych-field="whenToSeek" style="min-height:120px;" placeholder="Наприклад: якщо симптоми тривають, заважають сну, роботі чи стосункам…">${bprEscapeText(item.whenToSeek || '')}</textarea></label>
+                    <label class="bpr-field bpr-full"><span>Як проходить консультація</span><textarea data-psych-field="consultationProcess" style="min-height:120px;" placeholder="Коротко опишіть формат першої консультації та наступних кроків…">${bprEscapeText(item.consultationProcess || '')}</textarea></label>
+                </div>
+            </div>`).join('');
+    }
+
+    function adminCollectPsychologyEditor() {
+        const cards = document.querySelectorAll('#adminPsychologyCards .admin-psych-card');
+        if (!cards.length) return adminParsePsychologyItems(document.getElementById('adminPsychologyServiceItems').value);
+        return Array.from(cards).map(card => {
+            const field = name => card.querySelector('[data-psych-field="' + name + '"]');
+            return {
+                icon: field('icon') ? field('icon').value.trim() : '•',
+                title: field('title') ? field('title').value.trim() : '',
+                description: field('description') ? field('description').value.trim() : '',
+                label: field('label') ? field('label').value.trim() : '',
+                details: field('details') ? field('details').value.trim() : '',
+                whenToSeek: field('whenToSeek') ? field('whenToSeek').value.trim() : '',
+                consultationProcess: field('consultationProcess') ? field('consultationProcess').value.trim() : '',
+                visible: field('visible') ? field('visible').checked : true
+            };
+        }).filter(item => item.title || item.description || item.details);
+    }
+
+    function adminAddPsychologyItem() {
+        siteConfig.psychologyServiceItems = adminCollectPsychologyEditor();
+        siteConfig.psychologyServiceItems.push({ icon:'🧠', title:'Нова картка', description:'', label:'', details:'', whenToSeek:'', consultationProcess:'', visible:true });
+        adminRenderPsychologyEditor();
+    }
+
+    function adminRemovePsychologyItem(index) {
+        siteConfig.psychologyServiceItems = adminCollectPsychologyEditor();
+        siteConfig.psychologyServiceItems.splice(index, 1);
+        adminRenderPsychologyEditor();
+    }
+
+    function adminMovePsychologyItem(index, direction) {
+        siteConfig.psychologyServiceItems = adminCollectPsychologyEditor();
+        const target = index + direction;
+        if (target < 0 || target >= siteConfig.psychologyServiceItems.length) return;
+        const [item] = siteConfig.psychologyServiceItems.splice(index, 1);
+        siteConfig.psychologyServiceItems.splice(target, 0, item);
+        adminRenderPsychologyEditor();
+    }
+
     function adminRenderPsychologyBlock() {
         const imageBox = document.getElementById('psychologyImageMain');
         const imageValue = adminNormalizeImageValue(siteConfig.psychologyImage || adminDefaultSiteConfig().psychologyImage);
@@ -5888,9 +6067,25 @@
                         <span>Посада</span>
                         <input data-team-field="role" value="${bprEscapeText(item.role || '')}" placeholder="Лікар загальної практики">
                     </label>
+                    <label class="bpr-field">
+                        <span>Спеціалізація</span>
+                        <input data-team-field="specialization" value="${bprEscapeText(item.specialization || '')}" placeholder="Сімейна медицина, медична психологія">
+                    </label>
+                    <label class="bpr-field">
+                        <span>Досвід</span>
+                        <input data-team-field="experience" value="${bprEscapeText(item.experience || '')}" placeholder="Наприклад: 5 років практики">
+                    </label>
+                    <label class="bpr-field bpr-full">
+                        <span>Освіта</span>
+                        <textarea data-team-field="education" style="min-height: 90px;" placeholder="Університет, спеціалізація, додаткова освіта…">${bprEscapeText(item.education || '')}</textarea>
+                    </label>
                     <label class="bpr-field bpr-full">
                         <span>Опис</span>
                         <textarea data-team-field="description" style="min-height: 110px;">${bprEscapeText(item.description || '')}</textarea>
+                    </label>
+                    <label class="bpr-field bpr-full">
+                        <span>Розширена біографія</span>
+                        <textarea data-team-field="biography" style="min-height: 150px;" placeholder="Освіта, досвід, професійні інтереси, підхід до роботи...">${bprEscapeText(item.biography || '')}</textarea>
                     </label>
                     <label class="bpr-field bpr-checkbox bpr-full">
                         <input data-team-field="visible" type="checkbox" ${item.visible === false ? '' : 'checked'}>
@@ -5914,7 +6109,11 @@
                 photo: adminNormalizeImageValue(field('photo') ? field('photo').value : ''),
                 name: field('name') ? field('name').value.trim() : '',
                 role: field('role') ? field('role').value.trim() : '',
+                specialization: field('specialization') ? field('specialization').value.trim() : '',
+                experience: field('experience') ? field('experience').value.trim() : '',
+                education: field('education') ? field('education').value.trim() : '',
                 description: field('description') ? field('description').value.trim() : '',
+                biography: field('biography') ? field('biography').value.trim() : '',
                 visible: field('visible') ? field('visible').checked : true,
                 allowDeclaration: field('allowDeclaration') ? field('allowDeclaration').checked : false
             };
@@ -5927,7 +6126,11 @@
             photo: '',
             name: 'Новий фахівець',
             role: '',
+            specialization: '',
+            experience: '',
+            education: '',
             description: '',
+            biography: '',
             visible: true,
             allowDeclaration: false
         });
@@ -6004,6 +6207,7 @@
         document.getElementById('adminPsychologyDescription').value = siteConfig.psychologyDescription || '';
         document.getElementById('adminPsychologyFeatures').value = adminArrayToText(siteConfig.psychologyFeatures || []);
         document.getElementById('adminPsychologyServiceItems').value = adminPsychologyItemsToText(siteConfig.psychologyServiceItems || []);
+        adminRenderPsychologyEditor();
         document.getElementById('adminPsychologyFloatTop').value = siteConfig.psychologyFloatTop || '';
         document.getElementById('adminPsychologyFloatTitle').value = siteConfig.psychologyFloatTitle || '';
         document.getElementById('adminPsychologyFloatBottom').value = siteConfig.psychologyFloatBottom || '';
@@ -6077,7 +6281,8 @@
         siteConfig.psychologyTitle = document.getElementById('adminPsychologyTitle').value.trim();
         siteConfig.psychologyDescription = document.getElementById('adminPsychologyDescription').value.trim();
         siteConfig.psychologyFeatures = adminTextLinesToArray(document.getElementById('adminPsychologyFeatures').value);
-        siteConfig.psychologyServiceItems = adminParsePsychologyItems(document.getElementById('adminPsychologyServiceItems').value);
+        siteConfig.psychologyServiceItems = adminCollectPsychologyEditor();
+        document.getElementById('adminPsychologyServiceItems').value = adminPsychologyItemsToText(siteConfig.psychologyServiceItems || []);
         siteConfig.psychologyFloatTop = document.getElementById('adminPsychologyFloatTop').value.trim();
         siteConfig.psychologyFloatTitle = document.getElementById('adminPsychologyFloatTitle').value.trim();
         siteConfig.psychologyFloatBottom = document.getElementById('adminPsychologyFloatBottom').value.trim();
@@ -6108,6 +6313,7 @@
         siteConfig.hours = document.getElementById('adminContactHours').value.trim();
         adminSaveSiteState();
         adminRenderSite();
+        adminRenderPsychologyEditor();
         alert('Налаштування сайту збережено.');
     }
 
@@ -6972,6 +7178,262 @@
         bprSaveState();
         bprRenderParticipants();
     }
+
+
+    // ===== UX / CONTENT MANAGEMENT EXTENSIONS =====
+    const PRICE_CATEGORY_ORDER = ['Консультації', 'Діагностика', 'Вакцинація', 'Швидкі тести', 'Психологія'];
+
+    function updateActiveNavigation(pageName) {
+        document.querySelectorAll('.nav-links li[data-nav-page] > a').forEach(link => link.classList.remove('active-page'));
+        const active = document.querySelector('.nav-links li[data-nav-page="' + pageName + '"] > a');
+        if (active) active.classList.add('active-page');
+    }
+
+    const originalShowPage = showPage;
+    showPage = function(pageName) {
+        originalShowPage(pageName);
+        updateActiveNavigation(currentPageName || pageName);
+        const menu = document.querySelector('.nav-links');
+        if (menu && menu.classList.contains('active')) menu.classList.remove('active');
+    };
+
+    function openDetailInfoModal({ eyebrow = '', title = '', subtitle = '', body = '', bodyHtml = '', actions = '' } = {}) {
+        const modal = document.getElementById('detailInfoModal');
+        if (!modal) return;
+        document.getElementById('detailInfoEyebrow').textContent = eyebrow;
+        document.getElementById('detailInfoTitle').textContent = title;
+        document.getElementById('detailInfoSubtitle').textContent = subtitle;
+        const bodyElement = document.getElementById('detailInfoBody');
+        if (bodyHtml) bodyElement.innerHTML = bodyHtml; else bodyElement.textContent = body;
+        document.getElementById('detailInfoActions').innerHTML = actions || '';
+        modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetailInfoModal() {
+        const modal = document.getElementById('detailInfoModal');
+        if (modal) modal.hidden = true;
+        document.body.style.overflow = '';
+    }
+
+    function closeDetailInfoModalOutside(event) {
+        if (event.target === event.currentTarget) closeDetailInfoModal();
+    }
+
+    function openTeamMemberDetails(index) {
+        const item = siteTeam[index];
+        if (!item) return;
+        const declarationLabel = siteConfig.declarationButtonLabel || 'Задекларуватись';
+        const actions = item.allowDeclaration === true
+            ? '<button class="btn-primary btn-declaration" type="button" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="const doctor=this.dataset.doctor; closeDetailInfoModal(); openDeclarationModal(doctor)"><span>' + bprEscapeText(declarationLabel) + '</span></button>'
+            : '<button class="btn-primary" type="button" onclick="closeDetailInfoModal(); openModal()">✦ Записатись</button>';
+        const facts = [
+            ['Спеціалізація', item.specialization],
+            ['Досвід', item.experience],
+            ['Освіта', item.education]
+        ].filter(entry => entry[1]);
+        const factsHtml = facts.length ? '<div class="specialist-facts">' + facts.map(([label,value]) => '<div class="specialist-fact"><small>'+bprEscapeText(label)+'</small><span>'+bprEscapeText(value)+'</span></div>').join('') + '</div>' : '';
+        const bio = item.biography || item.description || 'Детальна інформація про фахівця буде додана найближчим часом.';
+        openDetailInfoModal({
+            eyebrow: 'Наша команда',
+            title: item.name || 'Фахівець',
+            subtitle: item.role || '',
+            bodyHtml: factsHtml + '<div class="detail-section"><h3>Про фахівця</h3><p>'+bprEscapeText(bio)+'</p></div>',
+            actions
+        });
+    }
+
+    function openPsychologyItemDetails(index) {
+        const items = (siteConfig.psychologyServiceItems || []).filter(item => item.visible !== false && item.title);
+        const source = items.length ? items : adminDefaultSiteConfig().psychologyServiceItems;
+        const item = source[index];
+        if (!item) return;
+        const sections = [];
+        const details = item.details || item.description || '';
+        if (details) sections.push('<div class="detail-section"><h3>Про стан</h3><p>'+bprEscapeText(details)+'</p></div>');
+        if (item.whenToSeek) sections.push('<div class="detail-section"><h3>Коли варто звернутися</h3><p>'+bprEscapeText(item.whenToSeek)+'</p></div>');
+        if (item.consultationProcess) sections.push('<div class="detail-section"><h3>Як проходить консультація</h3><p>'+bprEscapeText(item.consultationProcess)+'</p></div>');
+        openDetailInfoModal({
+            eyebrow: 'Психологічна допомога',
+            title: item.title || 'Інформація',
+            subtitle: item.label || '',
+            bodyHtml: sections.join(''),
+            actions: '<button class="btn-primary" type="button" onclick="closeDetailInfoModal(); openBookingForPrice(\'Психологічна консультація — '+bprEscapeText(item.title||'')+'\', \'Психологія\')">✦ Записатись на консультацію</button>'
+        });
+    }
+
+    // Psychology editor: icon | title | short | label | details | when to seek help | how consultation works | visibility
+    adminPsychologyItemsToText = function(items) {
+        return (items || []).map(item => [
+            item.icon || '•', item.title || '', item.description || '', item.label || '', item.details || '', item.whenToSeek || '', item.consultationProcess || '', item.visible === false ? 'hidden' : 'visible'
+        ].join(' | ')).join('\n');
+    };
+
+    adminParsePsychologyItems = function(text) {
+        return String(text || '').split('\n').map(row => row.trim()).filter(Boolean).map(row => {
+            const parts = row.split('|').map(part => part.trim());
+            let details='', whenToSeek='', consultationProcess='', visibility='visible';
+            if (parts.length >= 8) { details=parts[4]||''; whenToSeek=parts[5]||''; consultationProcess=parts[6]||''; visibility=parts[7]||'visible'; }
+            else if (parts.length >= 6) { details=parts[4]||''; visibility=parts[5]||'visible'; }
+            else { visibility=parts[4]||'visible'; }
+            return { icon:parts[0]||'•', title:parts[1]||parts[0]||'Пункт', description:parts[2]||'', label:parts[3]||'', details, whenToSeek, consultationProcess, visible:visibility.toLowerCase()!=='hidden' };
+        });
+    };
+
+    const originalNormalizeSiteConfig = adminNormalizeSiteConfig;
+    adminNormalizeSiteConfig = function(config) {
+        const normalized = originalNormalizeSiteConfig(config);
+        normalized.psychologyServiceItems = (normalized.psychologyServiceItems || []).map(item => ({ ...item, details: item.details || '', whenToSeek: item.whenToSeek || '', consultationProcess: item.consultationProcess || '' }));
+        return normalized;
+    };
+
+    adminNormalizeTeam = function(items) {
+        const source = Array.isArray(items) ? items : adminDefaultTeam();
+        return source.map(item => {
+            const declarationHint = /сімей|загальної практики/i.test(String((item.name || '') + ' ' + (item.role || '')));
+            const declarationValue = String(item.allowDeclaration || '').toLowerCase();
+            return {
+                photo: item.photo || '', name: item.name || '', role: item.role || '', specialization: item.specialization || '', experience: item.experience || '', education: item.education || '', description: item.description || '', biography: item.biography || '', visible: item.visible !== false,
+                allowDeclaration: item.allowDeclaration === true || declarationValue === 'declaration' || declarationValue === 'true' || declarationValue === 'yes' || (typeof item.allowDeclaration === 'undefined' && declarationHint)
+            };
+        });
+    };
+
+    adminRenderTeam = function() {
+        const grid = document.getElementById('siteTeamGrid');
+        if (!grid) return;
+        const visibleTeam = siteTeam.map((item, index) => ({ item, index })).filter(entry => entry.item.visible !== false);
+        if (!visibleTeam.length) { grid.innerHTML = '<div class="bpr-empty">Команда тимчасово не заповнена.</div>'; return; }
+        grid.innerHTML = visibleTeam.map(({item, index}) => {
+            const photo = adminNormalizeImageValue(item.photo || '👨‍⚕️');
+            const isImage = adminLooksLikeImage(photo);
+            const photoHtml = isImage ? '<img src="' + bprEscapeText(photo) + '" alt="' + bprEscapeText(item.name) + '">' : bprEscapeText(photo);
+            const declarationLabel = siteConfig.declarationButtonLabel || adminDefaultSiteConfig().declarationButtonLabel;
+            const declarationButton = item.allowDeclaration === true ? '<div class="team-actions"><a href="#" class="btn-primary btn-declaration" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="event.stopPropagation(); openDeclarationModal(this.dataset.doctor); return false;"><span data-declaration-label>' + bprEscapeText(declarationLabel) + '</span></a></div>' : '';
+            return '<div class="team-card" role="button" tabindex="0" onclick="openTeamMemberDetails(' + index + ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openTeamMemberDetails(' + index + ')}">' +
+                '<div class="team-photo">' + photoHtml + '</div><div class="team-info"><div class="team-name">' + bprEscapeText(item.name) + '</div><div class="team-role">' + bprEscapeText(item.role) + '</div><p class="team-desc">' + bprEscapeText(item.description) + '</p><div class="team-more">Про фахівця →</div>' + declarationButton + '</div></div>';
+        }).join('');
+    };
+
+    adminRenderPsychologyBlock = function() {
+        const imageBox = document.getElementById('psychologyImageMain');
+        const imageValue = adminNormalizeImageValue(siteConfig.psychologyImage || adminDefaultSiteConfig().psychologyImage);
+        if (imageBox) imageBox.innerHTML = adminLooksLikeImage(imageValue) ? '<img src="' + bprEscapeText(imageValue) + '" alt="Психологічна допомога">' : bprEscapeText(imageValue);
+        [['psychologyTag','psychologyTag'],['psychologyFloatTop','psychologyFloatTop'],['psychologyFloatTitle','psychologyFloatTitle'],['psychologyFloatBottom','psychologyFloatBottom']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.textContent=siteConfig[key]||'';});
+        const title=document.getElementById('psychologyTitle'); if(title) title.innerHTML=siteConfig.psychologyTitle||'';
+        const desc=document.getElementById('psychologyDescription'); if(desc) desc.textContent=siteConfig.psychologyDescription||'';
+        const list=document.getElementById('psychologyList'); const features=Array.isArray(siteConfig.psychologyFeatures)&&siteConfig.psychologyFeatures.length?siteConfig.psychologyFeatures:adminDefaultSiteConfig().psychologyFeatures;
+        if(list) list.innerHTML=features.map(item=>'<li><div class="list-dot"></div>'+bprEscapeText(item)+'</li>').join('');
+        const grid=document.getElementById('psychologyServicesGrid'); if(!grid)return;
+        const items=(siteConfig.psychologyServiceItems||[]).filter(item=>item.visible!==false&&item.title); const visibleItems=items.length?items:adminDefaultSiteConfig().psychologyServiceItems;
+        grid.innerHTML=visibleItems.map((item,index)=>'<div class="psych-service-item" role="button" tabindex="0" onclick="openPsychologyItemDetails('+index+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openPsychologyItemDetails('+index+')}"><div style="font-size:2rem;margin-bottom:15px;">'+bprEscapeText(item.icon||'•')+'</div><h3>'+bprEscapeText(item.title)+'</h3><p>'+bprEscapeText(item.description||'')+'</p><span class="price-tag">'+bprEscapeText(item.label||'')+'</span></div>').join('');
+    };
+
+    let priceSearchTerm = '';
+    let priceActiveCategory = 'Всі';
+
+    function setPriceSearch(value) {
+        priceSearchTerm = String(value || '').trim().toLocaleLowerCase('uk');
+        adminRenderPrices();
+    }
+
+    function setPriceCategory(category) {
+        priceActiveCategory = category || 'Всі';
+        adminRenderPrices();
+    }
+
+    function openBookingForPrice(serviceName, category = '') {
+        openModal();
+        const selector = document.getElementById('modalServiceSelector');
+        if (!selector) return;
+        let target = Array.from(selector.querySelectorAll('.service-option')).find(option => option.dataset.priceService === serviceName);
+        if (!target) {
+            target = document.createElement('div');
+            target.className = 'service-option';
+            target.dataset.priceService = serviceName;
+            target.dataset.serviceName = serviceName;
+            target.textContent = '✦ ' + serviceName;
+            target.onclick = function(){ selectService(this); };
+            selector.prepend(target);
+        }
+        selectService(target);
+        const form = selector.closest('form');
+        if (form) form.dataset.priceCategory = category || '';
+    }
+
+    adminRenderPrices = function() {
+        const list=document.getElementById('sitePriceList'), empty=document.getElementById('sitePriceEmpty'), filters=document.getElementById('priceFilters');
+        if(!list||!empty)return;
+        const allVisible=sitePrices.filter(item=>item.visible!==false&&item.name);
+        const categories=[...new Set(allVisible.map(item=>(item.category||'Інше').trim()||'Інше'))].sort((a,b)=>{const ai=PRICE_CATEGORY_ORDER.indexOf(a),bi=PRICE_CATEGORY_ORDER.indexOf(b);if(ai===-1&&bi===-1)return a.localeCompare(b,'uk');if(ai===-1)return 1;if(bi===-1)return-1;return ai-bi;});
+        if(priceActiveCategory!=='Всі'&&!categories.includes(priceActiveCategory)) priceActiveCategory='Всі';
+        if(filters) filters.innerHTML=['Всі',...categories].map(cat=>'<button type="button" class="price-filter '+(priceActiveCategory===cat?'active':'')+'" onclick="setPriceCategory(this.dataset.category)" data-category="'+bprEscapeText(cat)+'">'+bprEscapeText(cat)+'</button>').join('');
+        const visible=allVisible.filter(item=>{
+            const category=(item.category||'Інше').trim()||'Інше';
+            if(priceActiveCategory!=='Всі'&&category!==priceActiveCategory)return false;
+            if(!priceSearchTerm)return true;
+            return [item.name,item.description,item.category,item.price].join(' ').toLocaleLowerCase('uk').includes(priceSearchTerm);
+        });
+        empty.hidden=visible.length>0;
+        if(!visible.length){list.innerHTML='';empty.textContent=allVisible.length?'За вашим запитом нічого не знайдено.':'Прайс тимчасово не заповнений.';return;}
+        const groups={}; visible.forEach(item=>{const cat=(item.category||'Інше').trim()||'Інше';(groups[cat] ||= []).push(item);});
+        const ordered=Object.keys(groups).sort((a,b)=>categories.indexOf(a)-categories.indexOf(b));
+        list.innerHTML=ordered.map(category=>'<section class="price-category-section"><div class="price-category-header"><h2>'+bprEscapeText(category)+'</h2><span class="price-category-count">'+groups[category].length+' '+(groups[category].length===1?'послуга':'послуг')+'</span></div><div class="price-category-list">'+groups[category].map(item=>'<div class="price-row"><div><h3>'+bprEscapeText(item.name)+'</h3><p>'+bprEscapeText(item.description||'')+'</p></div><div class="price-row-actions"><div class="price-value">'+bprEscapeText(item.price||'')+'</div><button type="button" class="price-book-btn" data-service="'+bprEscapeText(item.name)+'" data-category="'+bprEscapeText(category)+'" onclick="openBookingForPrice(this.dataset.service,this.dataset.category)">Записатись</button></div></div>').join('')+'</div></section>').join('');
+    };
+
+    function adminRenderPriceEditor() {
+        const list=document.getElementById('adminPriceCards'); if(!list)return;
+        list.innerHTML=(sitePrices||[]).map((item,index)=>'<div class="admin-price-card" data-price-index="'+index+'"><div class="admin-price-card-head"><div class="admin-price-card-title">Позиція '+(index+1)+'</div><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemovePriceItem('+index+')">Прибрати</button></div><div class="admin-price-grid">'+
+            '<label class="bpr-field"><span>Рубрика</span><input data-price-field="category" list="priceCategoryOptions" value="'+bprEscapeText(item.category||'')+'" placeholder="Консультації"></label>'+
+            '<label class="bpr-field"><span>Ціна</span><input data-price-field="price" value="'+bprEscapeText(item.price||'')+'" placeholder="600 грн"></label>'+
+            '<label class="bpr-field bpr-full"><span>Назва послуги</span><input data-price-field="name" value="'+bprEscapeText(item.name||'')+'"></label>'+
+            '<label class="bpr-field bpr-full"><span>Короткий опис</span><textarea data-price-field="description" style="min-height:90px;">'+bprEscapeText(item.description||'')+'</textarea></label>'+
+            '<label class="bpr-field bpr-checkbox bpr-full"><input data-price-field="visible" type="checkbox" '+(item.visible===false?'':'checked')+'> Показувати на сайті</label></div></div>').join('') + '<datalist id="priceCategoryOptions">'+PRICE_CATEGORY_ORDER.map(x=>'<option value="'+x+'"></option>').join('')+'</datalist>';
+    }
+
+    function adminCollectPriceEditor() {
+        const cards=document.querySelectorAll('#adminPriceCards .admin-price-card'); if(!cards.length)return adminParseRows(document.getElementById('adminPricesEditor').value,['category','name','description','price','visible']);
+        return Array.from(cards).map(card=>{const f=n=>card.querySelector('[data-price-field="'+n+'"]');return{category:f('category')?.value.trim()||'Інше',name:f('name')?.value.trim()||'',description:f('description')?.value.trim()||'',price:f('price')?.value.trim()||'',visible:f('visible')?f('visible').checked:true};}).filter(x=>x.name||x.description||x.price);
+    }
+    function adminAddPriceItem(){sitePrices=adminCollectPriceEditor();sitePrices.push({category:'Консультації',name:'Нова послуга',description:'',price:'',visible:true});adminRenderPriceEditor();}
+    function adminRemovePriceItem(index){sitePrices=adminCollectPriceEditor();sitePrices.splice(index,1);adminRenderPriceEditor();}
+
+    const originalAdminFillForms = adminFillForms;
+    adminFillForms = function(){ originalAdminFillForms(); adminRenderPriceEditor(); adminRenderTeamEditor(); };
+
+    adminSavePrices = function(event){event.preventDefault();sitePrices=adminCollectPriceEditor();document.getElementById('adminPricesEditor').value=adminPricesToText(sitePrices);adminSaveSiteState();adminRenderPrices();adminRenderPriceEditor();if(supabaseAccessToken)supabaseSaveSiteState();alert('Прайс збережено'+(supabaseAccessToken?' у базі Supabase.':'. Увійдіть у Supabase, щоб синхронізувати з базою.'));};
+
+    const originalAdminSaveTeam = adminSaveTeam;
+    adminSaveTeam = function(event){event.preventDefault();adminSaveHeroImageFields();siteTeam=adminCollectTeamEditor();document.getElementById('adminTeamEditor').value=adminTeamToText(siteTeam);adminSaveSiteState();adminRenderPageHeroes();adminRenderTeam();adminRenderTeamEditor();adminRenderAppointmentServices();if(supabaseAccessToken)supabaseSaveSiteState();alert('Команду збережено'+(supabaseAccessToken?' у базі Supabase.':'. Увійдіть у Supabase, щоб синхронізувати з базою.'));};
+
+    // Shareable page URLs (#prices, #team, ...) + browser back/forward support.
+    const showPageWithActiveState = showPage;
+    showPage = function(pageName, options = {}) {
+        const safePage = SITE_PAGE_ORDER.includes(pageName) ? pageName : 'home';
+        showPageWithActiveState(safePage);
+        if (!options.fromHistory) {
+            const nextHash = '#' + safePage;
+            if (window.location.hash !== nextHash) history.pushState({page:safePage}, '', nextHash);
+        }
+    };
+
+    function openPageFromLocation() {
+        const requested = (window.location.hash || '#home').slice(1).toLowerCase();
+        showPage(SITE_PAGE_ORDER.includes(requested) ? requested : 'home', {fromHistory:true});
+    }
+    window.addEventListener('popstate', openPageFromLocation);
+    window.addEventListener('hashchange', openPageFromLocation);
+    setTimeout(openPageFromLocation, 0);
+
+    // Hidden admin entry: triple click/tap on footer bottom within 1.8 seconds.
+    function initHiddenAdminEntry(){
+        const footer=document.querySelector('.footer-bottom'); if(!footer||footer.dataset.adminTriggerReady==='true')return; footer.dataset.adminTriggerReady='true';
+        let taps=[]; footer.addEventListener('click',()=>{const now=Date.now();taps=taps.filter(t=>now-t<1800);taps.push(now);if(taps.length>=3){taps=[];bprOpenDeveloperPanel();}});
+    }
+
+    document.addEventListener('keydown', e=>{if(e.key==='Escape'){closeDetailInfoModal();}});
+    updateActiveNavigation('home');
+    initHiddenAdminEntry();
 
     bprInitTrainingModule();
     supabaseLoadSiteState({ silent: true });
