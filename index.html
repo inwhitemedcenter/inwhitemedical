@@ -2289,19 +2289,59 @@
 
         .admin-sticky-actions {
             position: sticky;
-            top: 78px;
-            z-index: 25;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            top: 76px;
+            z-index: 120;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 14px;
             align-items: center;
-            justify-content: space-between;
-            background: rgba(250, 248, 244, 0.96);
+            background: rgba(250, 248, 244, 0.97);
             border: 1px solid var(--beige);
             border-radius: 18px;
             padding: 12px;
             margin-bottom: 18px;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 12px 34px rgba(42,42,42,0.10);
+        }
+
+        .admin-save-cluster {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-save-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 34px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(168,181,160,0.14);
+            border: 1px solid rgba(168,181,160,0.36);
+            color: var(--graphite);
+            font-size: 0.76rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .admin-save-status.is-local { background: rgba(201,169,110,0.12); border-color: rgba(201,169,110,0.36); color: #8a6a30; }
+        .admin-save-status.is-error { background: rgba(156,59,52,0.10); border-color: rgba(156,59,52,0.28); color: #8b2f2a; }
+        .admin-save-status.is-success { background: rgba(95,123,86,0.13); border-color: rgba(95,123,86,0.30); color: #4f6848; }
+        .admin-save-status.is-saving { opacity: .82; }
+
+        .admin-main-save {
+            min-width: 172px;
+            box-shadow: 0 8px 22px rgba(201,169,110,0.26);
+        }
+
+        @media (max-width: 760px) {
+            .admin-sticky-actions { top: 66px; grid-template-columns: 1fr; padding: 10px; }
+            .admin-save-cluster { position: sticky; left: 0; }
+            .admin-main-save { flex: 1; }
+            .admin-save-status { flex: 1 1 100%; }
+            .admin-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+            .admin-tab { flex: 0 0 auto; }
         }
 
         .admin-tabs {
@@ -3206,7 +3246,10 @@
                 </div>
 
                 <div class="admin-sticky-actions">
-                    <button class="bpr-btn bpr-btn-primary" type="button" onclick="adminSubmitSiteForm()">Зберегти сайт у базу</button>
+                    <div class="admin-save-cluster">
+                        <button id="adminMainSaveButton" class="bpr-btn bpr-btn-primary admin-main-save" type="button" onclick="adminSubmitSiteForm()">Зберегти зміни</button>
+                        <div id="adminSaveStatus" class="admin-save-status is-local" role="status" aria-live="polite">Зміни ще не синхронізовані</div>
+                    </div>
                     <div class="admin-tabs" aria-label="Розділи адмін-панелі">
                         <button class="admin-tab active" type="button" data-admin-tab="home" onclick="adminShowPanel('home')">Головна</button>
                         <button class="admin-tab" type="button" data-admin-tab="psychology" onclick="adminShowPanel('psychology')">Психологія</button>
@@ -3495,7 +3538,7 @@
                                 <input id="adminAboutPageTag">
                             </div>
                             <div class="bpr-field bpr-full">
-                                <button id="adminSaveAboutButton" class="bpr-btn bpr-btn-secondary" type="button" onclick="adminSaveAboutSection()">Зберегти “Про нас”</button>
+                                
                                 <div class="admin-help">
                                     Зберігає верхню картинку, заголовки, місію та цінності саме для розділу “Про нас”.
                                 </div>
@@ -3546,7 +3589,7 @@
                             </div>
                         </div>
                         <div class="bpr-inline-actions">
-                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти налаштування</button>
+                            
                         </div>
                     </form>
                 </div>
@@ -3595,7 +3638,7 @@
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseRegisterAdmin()">Створити адміна</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseSendPasswordReset()">Надіслати зміну пароля</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseUpdatePassword()">Змінити пароль</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminSubmitSiteForm()">Зберегти сайт у базу</button>
+                            
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseLoadParticipants()">Завантажити учасників</button>
                             <button class="bpr-btn bpr-btn-quiet" type="button" onclick="supabaseSyncParticipants()">Синхронізувати учасників</button>
                         </div>
@@ -3619,7 +3662,7 @@
                             </div>
                         </div>
                         <div class="bpr-inline-actions">
-                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти команду</button>
+                            
                         </div>
                     </form>
                 </div>
@@ -3641,7 +3684,7 @@
                             Можна ввести й власну рубрику.
                         </div>
                         <div class="bpr-inline-actions">
-                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти прайс</button>
+                            
                         </div>
                     </form>
                 </div>
@@ -3650,7 +3693,7 @@
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Навчальні заходи</h3>
                     <p class="bpr-panel-subtitle">Онлайн-заходи мають запис, тест і сертифікат. Офлайн-заходи ведуть на ваше посилання Google Forms.</p>
                     <div class="bpr-inline-actions" style="margin-bottom: 18px;">
-                        <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminSaveTrainingHeroImage()">Зберегти фон навчання</button>
+                        
                     </div>
 
                 <div class="bpr-dev-layout">
@@ -4026,6 +4069,37 @@
         <div id="detailInfoSubtitle" class="detail-modal-subtitle"></div>
         <div id="detailInfoBody" class="detail-modal-body"></div>
         <div id="detailInfoActions" class="detail-modal-actions"></div>
+    </div>
+</div>
+
+<div id="adminLoginRequiredModal" class="bpr-modal-overlay" hidden>
+    <div class="bpr-modal" style="max-width: 520px;">
+        <div class="bpr-modal-body">
+            <div class="bpr-modal-head">
+                <div>
+                    <div class="bpr-eyebrow">Збереження в базу</div>
+                    <h2 class="bpr-panel-title">Потрібен вхід адміністратора</h2>
+                </div>
+                <button class="bpr-close" type="button" onclick="adminCloseLoginRequiredModal()">×</button>
+            </div>
+            <p class="bpr-panel-subtitle">Зміни вже збережені на цьому пристрої, але для надійного збереження в Supabase потрібно увійти. Після входу натисніть «Зберегти зміни» ще раз.</p>
+            <form onsubmit="adminLoginFromModal(event)">
+                <div class="bpr-field">
+                    <label for="adminQuickLoginEmail">Email адміністратора</label>
+                    <input id="adminQuickLoginEmail" type="email" autocomplete="username" placeholder="inwhite.medcenter@gmail.com" required>
+                </div>
+                <div class="bpr-field" style="margin-top:12px;">
+                    <label for="adminQuickLoginPassword">Пароль</label>
+                    <input id="adminQuickLoginPassword" type="password" autocomplete="current-password" required>
+                </div>
+                <p id="adminQuickLoginStatus" class="bpr-note" style="margin-top:12px;"></p>
+                <div class="bpr-inline-actions" style="margin-top:16px;">
+                    <button class="bpr-btn bpr-btn-primary" type="submit">Увійти</button>
+                    <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminOpenDatabasePanelFromLogin()">Відкрити «База»</button>
+                    <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminCloseLoginRequiredModal()">Пізніше</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -4542,6 +4616,9 @@
     const SITE_CONFIG_STORAGE = 'inwhite_site_config_v1';
     const SITE_TEAM_STORAGE = 'inwhite_site_team_v1';
     const SITE_PRICES_STORAGE = 'inwhite_site_prices_v1';
+    const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
+    const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
+    const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
     const SUPABASE_TOKEN_STORAGE = 'inwhite_supabase_token_v1';
     const DEFAULT_SUPABASE_URL = 'https://ukfldbbsbyjkyussbyfq.supabase.co';
@@ -5068,6 +5145,7 @@
             sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
             document.getElementById('supabaseAdminPassword').value = '';
             supabaseSetStatus('Supabase: адмін увійшов, можна зберігати зміни.');
+            adminRefreshSaveStatus();
         } catch (error) {
             supabaseSetStatus('Помилка входу: перевірте email, пароль і чи підтверджений користувач у Supabase Auth.');
         }
@@ -5187,7 +5265,7 @@
         siteTeam = Array.isArray(row.site_team) ? row.site_team : adminDefaultTeam();
         sitePrices = Array.isArray(row.site_prices) ? row.site_prices : adminDefaultPrices();
         bprTrainings = Array.isArray(row.bpr_trainings) ? row.bpr_trainings : bprDefaultTrainings();
-        adminSaveSiteState();
+        adminSaveSiteState({ fromCloud: true, updatedAt: row.updated_at || new Date().toISOString() });
         bprSaveState();
         adminRenderSite();
         adminFillForms();
@@ -5202,31 +5280,54 @@
                 method: 'GET'
             }, false);
             if (rows && rows[0]) {
+                const remoteTime = Date.parse(rows[0].updated_at || '') || 0;
+                const localTime = Date.parse(localStorage.getItem(SITE_LOCAL_UPDATED_STORAGE) || '') || 0;
+                const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
+                if (!options.force && dirty && localTime && localTime > remoteTime) {
+                    if (!options.silent) supabaseSetStatus('Локальні зміни новіші за базу. Вони не були перезаписані. Натисніть «Зберегти зміни» після входу адміністратора.');
+                    adminRefreshSaveStatus();
+                    return false;
+                }
                 supabaseApplySitePayload(rows[0]);
                 if (!options.silent) supabaseSetStatus('Дані сайту завантажені з Supabase.');
+                adminRefreshSaveStatus();
+                return true;
             } else if (!options.silent) {
-                supabaseSetStatus('У базі ще немає запису сайту. Натисніть “Зберегти сайт у базу”.');
+                supabaseSetStatus('У базі ще немає запису сайту. Увійдіть і натисніть «Зберегти зміни».');
             }
         } catch (error) {
-            if (!options.silent) supabaseSetStatus('Не вдалося завантажити з Supabase. Перевірте SQL-таблиці.');
+            if (!options.silent) supabaseSetStatus('Не вдалося завантажити з Supabase. Перевірте підключення або SQL-таблиці.');
         }
+        return false;
     }
 
-    async function supabaseSaveSiteState() {
+    async function supabaseSaveSiteState(options = {}) {
         if (!supabaseAccessToken) {
             supabaseSetStatus('Спочатку увійдіть в Supabase як адміністратор.');
-            return;
+            adminSetSaveStatus('Локально збережено · потрібен вхід', 'local');
+            if (!options.silentAuthPrompt) adminRequireSupabaseLogin();
+            return false;
         }
         try {
             supabaseSetStatus('Збереження сайту в Supabase...');
+            adminSetSaveStatus('Зберігаю в Supabase…', 'saving');
+            const payload = supabaseSitePayload();
             await supabaseRequest('/rest/v1/inwhite_site_state?on_conflict=id', {
                 method: 'POST',
                 headers: { Prefer: 'resolution=merge-duplicates' },
-                body: JSON.stringify(supabaseSitePayload())
+                body: JSON.stringify(payload)
             }, true);
+            const savedAt = payload.updated_at || new Date().toISOString();
+            localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, savedAt);
+            localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, savedAt);
+            localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
             supabaseSetStatus('Сайт збережено в Supabase.');
+            adminSetSaveStatus('Синхронізовано з Supabase ✓', 'success');
+            return true;
         } catch (error) {
-            supabaseSetStatus('Помилка збереження сайту. Перевірте права таблиці.');
+            supabaseSetStatus('Помилка збереження сайту. Перевірте права таблиці або підключення.');
+            adminSetSaveStatus('Помилка синхронізації', 'error');
+            return false;
         }
     }
 
@@ -6231,10 +6332,44 @@
         `).join('');
     }
 
-    function adminSaveSiteState() {
+    function adminSaveSiteState(options = {}) {
         localStorage.setItem(SITE_CONFIG_STORAGE, JSON.stringify(siteConfig));
         localStorage.setItem(SITE_TEAM_STORAGE, JSON.stringify(siteTeam));
         localStorage.setItem(SITE_PRICES_STORAGE, JSON.stringify(sitePrices));
+        const timestamp = options.updatedAt || new Date().toISOString();
+        localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, timestamp);
+        if (options.fromCloud) {
+            localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, timestamp);
+            localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
+        } else {
+            localStorage.setItem(SITE_DIRTY_STORAGE, 'true');
+        }
+        adminRefreshSaveStatus();
+    }
+
+    function adminEnsureLocalVersionMarker() {
+        const hasLocal = localStorage.getItem(SITE_CONFIG_STORAGE) || localStorage.getItem(SITE_TEAM_STORAGE) || localStorage.getItem(SITE_PRICES_STORAGE);
+        if (hasLocal && !localStorage.getItem(SITE_LOCAL_UPDATED_STORAGE)) {
+            localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, new Date().toISOString());
+            localStorage.setItem(SITE_DIRTY_STORAGE, 'true');
+        }
+    }
+
+    function adminSetSaveStatus(message, state = 'local') {
+        const el = document.getElementById('adminSaveStatus');
+        if (!el) return;
+        el.textContent = message;
+        el.classList.remove('is-local','is-error','is-success','is-saving');
+        if (state) el.classList.add('is-' + state);
+    }
+
+    function adminRefreshSaveStatus() {
+        const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
+        if (!supabaseAccessToken) {
+            adminSetSaveStatus(dirty ? 'Локально збережено · потрібен вхід' : 'Потрібен вхід для Supabase', 'local');
+            return;
+        }
+        adminSetSaveStatus(dirty ? 'Є незбережені в базі зміни' : 'Синхронізовано з Supabase ✓', dirty ? 'local' : 'success');
     }
 
     function adminRenderSite() {
@@ -6619,7 +6754,7 @@
         adminSaveSiteState();
         adminRenderSite();
         adminRenderPsychologyEditor();
-        alert('Налаштування сайту збережено.');
+        adminSetSaveStatus('Зміни збережено локально', 'local');
     }
 
     function adminSaveHeroImageFields() {
@@ -7983,16 +8118,110 @@
         }
     }
 
-    function adminSubmitSiteForm() {
+    function adminCollectAllVisibleEditors() {
         adminSyncTestimonialsEditor();
         adminSyncFaqEditor();
-        const form = document.getElementById('siteAdminForm');
-        if (form) {
-            if (typeof form.requestSubmit === 'function') form.requestSubmit();
-            else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-        } else if (supabaseAccessToken) {
-            supabaseSaveSiteState();
+        if (document.getElementById('adminPsychologyCards')) {
+            siteConfig.psychologyServiceItems = adminCollectPsychologyEditor();
+            const psychField = document.getElementById('adminPsychologyServiceItems');
+            if (psychField) psychField.value = adminPsychologyItemsToText(siteConfig.psychologyServiceItems || []);
         }
+        if (document.getElementById('adminTeamCards')) {
+            siteTeam = adminCollectTeamEditor();
+            const teamField = document.getElementById('adminTeamEditor');
+            if (teamField) teamField.value = adminTeamToText(siteTeam);
+        }
+        if (document.getElementById('adminPricesCards')) {
+            sitePrices = adminCollectPriceEditor();
+            const priceField = document.getElementById('adminPricesEditor');
+            if (priceField) priceField.value = adminPricesToText(sitePrices);
+        }
+    }
+
+    async function adminSubmitSiteForm() {
+        const button = document.getElementById('adminMainSaveButton');
+        if (button?.disabled) return;
+        if (button) { button.disabled = true; button.dataset.originalText = button.textContent; button.textContent = 'Зберігаю…'; }
+        try {
+            adminCollectAllVisibleEditors();
+            const form = document.getElementById('siteAdminForm');
+            if (form) adminSaveSiteSettings({ preventDefault(){} });
+            else adminSaveSiteState();
+
+            // Team and price editors are intentionally collected after the shared form too,
+            // because those sections have their own card-based editors.
+            if (document.getElementById('adminTeamCards')) siteTeam = adminCollectTeamEditor();
+            if (document.getElementById('adminPricesCards')) sitePrices = adminCollectPriceEditor();
+            adminSaveSiteState();
+            adminRenderSite();
+            adminRenderTeam();
+            adminRenderPrices();
+            bprSaveState();
+
+            if (!supabaseAccessToken) {
+                adminSetSaveStatus('Локально збережено · увійдіть для бази', 'local');
+                adminRequireSupabaseLogin();
+                return;
+            }
+            await supabaseSaveSiteState({ silentAuthPrompt: true });
+        } finally {
+            if (button) { button.disabled = false; button.textContent = button.dataset.originalText || 'Зберегти зміни'; }
+        }
+    }
+
+    function adminRequireSupabaseLogin() {
+        const modal = document.getElementById('adminLoginRequiredModal');
+        const email = document.getElementById('adminQuickLoginEmail');
+        const existingEmail = document.getElementById('supabaseAdminEmail')?.value || 'inwhite.medcenter@gmail.com';
+        if (email && !email.value) email.value = existingEmail;
+        const status = document.getElementById('adminQuickLoginStatus');
+        if (status) status.textContent = 'Ваші зміни не втрачені — вони вже збережені локально.';
+        if (modal) modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => document.getElementById('adminQuickLoginPassword')?.focus(), 60);
+    }
+
+    function adminCloseLoginRequiredModal() {
+        const modal = document.getElementById('adminLoginRequiredModal');
+        if (modal) modal.hidden = true;
+        document.body.style.overflow = '';
+    }
+
+    async function adminLoginFromModal(event) {
+        event.preventDefault();
+        const email = document.getElementById('adminQuickLoginEmail')?.value.trim() || '';
+        const password = document.getElementById('adminQuickLoginPassword')?.value || '';
+        const status = document.getElementById('adminQuickLoginStatus');
+        if (!email || !password) { if (status) status.textContent = 'Введіть email і пароль.'; return; }
+        try {
+            if (status) status.textContent = 'Вхід…';
+            supabaseConfig = supabaseNormalizeConfig(supabaseConfig);
+            const data = await supabaseRequest('/auth/v1/token?grant_type=password', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            }, false);
+            if (!data?.access_token) throw new Error('Не отримано токен доступу');
+            supabaseAccessToken = data.access_token;
+            sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
+            const dbEmail = document.getElementById('supabaseAdminEmail');
+            if (dbEmail) dbEmail.value = email;
+            const dbPassword = document.getElementById('supabaseAdminPassword');
+            if (dbPassword) dbPassword.value = '';
+            document.getElementById('adminQuickLoginPassword').value = '';
+            supabaseSetStatus('Supabase: адмін увійшов, можна зберігати зміни.');
+            adminSetSaveStatus('Авторизовано · натисніть «Зберегти зміни»', 'success');
+            adminCloseLoginRequiredModal();
+            supabaseFillForm();
+        } catch (error) {
+            if (status) status.textContent = 'Не вдалося увійти. Перевірте email і пароль.';
+            adminSetSaveStatus('Помилка входу в Supabase', 'error');
+        }
+    }
+
+    function adminOpenDatabasePanelFromLogin() {
+        adminCloseLoginRequiredModal();
+        adminShowPanel('database');
+        setTimeout(() => document.getElementById('supabaseLoginForm')?.scrollIntoView({ behavior:'smooth', block:'center' }), 80);
     }
 
     // Friendly card editors for testimonials and FAQ.
@@ -8136,13 +8365,15 @@
         adminSaveSiteState();
         adminRenderTestimonials();
         adminRenderFaq();
-        if (supabaseAccessToken) supabaseSaveSiteState();
+        adminRefreshSaveStatus();
     };
 
     initTrainingAdminUX();
     initBackToTop();
 
     bprInitTrainingModule();
+    adminEnsureLocalVersionMarker();
+    adminRefreshSaveStatus();
     supabaseLoadSiteState({ silent: true });
     supabaseOpenRecoveryModal();
 </script>
