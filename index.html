@@ -2679,7 +2679,43 @@
             .back-to-top { right:18px; bottom:18px; width:44px; height:44px; }
         }
 
-    </style>
+    
+        /* ===== QUICK SPECIALIST BOOKING ===== */
+        .team-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .team-actions .team-booking-btn,
+        .team-actions .team-declaration-btn {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+        .team-actions .team-declaration-btn {
+            padding: 12px 18px;
+            border-radius: 50px;
+        }
+        .quick-booking-note {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            border-radius: 14px;
+            background: rgba(201,169,110,0.10);
+            border: 1px solid rgba(201,169,110,0.28);
+            color: var(--graphite);
+        }
+        .quick-booking-note strong { color: var(--dark); font-size: .9rem; }
+        .quick-booking-note span { color: var(--graphite-light); font-size: .8rem; line-height: 1.5; }
+        .specialist-quick-booking .form-row {
+            grid-template-columns: 1fr 1fr;
+        }
+        @media (max-width: 640px) {
+            .specialist-quick-booking .form-row { grid-template-columns: 1fr; }
+        }
+</style>
 </head>
 <body>
 
@@ -4353,7 +4389,7 @@
         };
         const appointment = {
             service: selectedService ? selectedService.textContent.trim() : '',
-            doctor: isDeclarationForm(form) ? getValue('[data-appointment-doctor]') : '',
+            doctor: isDeclarationForm(form) ? getValue('[data-appointment-doctor]') : (form.dataset.selectedSpecialist || ''),
             fullName: sanitizeAppointmentName(getValue('[data-appointment-name]')).trim(),
             phone: normalizeAppointmentPhone(getValue('[data-appointment-phone]')),
             date: getValue('[data-appointment-date]'),
@@ -6294,9 +6330,11 @@
             const isImage = adminLooksLikeImage(photo);
             const photoHtml = isImage ? '<img src="' + bprEscapeText(photo) + '" alt="' + bprEscapeText(item.name) + '">' : bprEscapeText(photo);
             const declarationLabel = siteConfig.declarationButtonLabel || adminDefaultSiteConfig().declarationButtonLabel;
+            const bookingButton = '<button type="button" class="btn-primary team-booking-btn" onclick="openBookingForTeamMember(' + siteTeam.indexOf(item) + ')">✦ Записатись</button>';
             const declarationButton = item.allowDeclaration === true
-                ? '<div class="team-actions"><a href="#" class="btn-primary btn-declaration" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="openDeclarationModal(this.dataset.doctor); return false;"><span data-declaration-label>' + bprEscapeText(declarationLabel) + '</span></a></div>'
+                ? '<a href="#" class="btn-secondary btn-declaration team-declaration-btn" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="openDeclarationModal(this.dataset.doctor); return false;"><span data-declaration-label>' + bprEscapeText(declarationLabel) + '</span></a>'
                 : '';
+            const teamActions = '<div class="team-actions">' + bookingButton + declarationButton + '</div>';
             return `
                 <div class="team-card">
                     <div class="team-photo">${photoHtml}</div>
@@ -6304,7 +6342,7 @@
                         <div class="team-name">${bprEscapeText(item.name)}</div>
                         <div class="team-role">${bprEscapeText(item.role)}</div>
                         <p class="team-desc">${bprEscapeText(item.description)}</p>
-                        ${declarationButton}
+                        ${teamActions}
                     </div>
                 </div>
             `;
@@ -7491,9 +7529,10 @@
         const item = siteTeam[index];
         if (!item) return;
         const declarationLabel = siteConfig.declarationButtonLabel || 'Задекларуватись';
-        const actions = item.allowDeclaration === true
-            ? '<button class="btn-primary btn-declaration" type="button" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="const doctor=this.dataset.doctor; closeDetailInfoModal(); openDeclarationModal(doctor)"><span>' + bprEscapeText(declarationLabel) + '</span></button>'
-            : '<button class="btn-primary" type="button" data-specialist="' + bprEscapeText(item.name || '') + '" onclick="const specialist=this.dataset.specialist; closeDetailInfoModal(); openBookingForSpecialist(specialist)">✦ Записатись</button>';
+        const actions = '<button class="btn-primary" type="button" onclick="closeDetailInfoModal(); openBookingForTeamMember(' + index + ')">✦ Записатись</button>'
+            + (item.allowDeclaration === true
+                ? '<button class="btn-secondary btn-declaration" type="button" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="const doctor=this.dataset.doctor; closeDetailInfoModal(); openDeclarationModal(doctor)"><span>' + bprEscapeText(declarationLabel) + '</span></button>'
+                : '');
         const facts = [
             ['Спеціалізація', item.specialization],
             ['Досвід', item.experience],
@@ -7729,18 +7768,105 @@
         }
     }
 
+    function inferSpecialistService(item) {
+        const text = ((item?.role || '') + ' ' + (item?.specialization || '')).toLocaleLowerCase('uk');
+        if (text.includes('психолог')) return 'Психологічна консультація';
+        if (text.includes('ультразв') || text.includes('узд')) return 'УЗД';
+        if (text.includes('дермат')) return 'Консультація дерматолога';
+        if (text.includes('терапев')) return 'Консультація лікаря';
+        if (text.includes('сімейн') || text.includes('загальної практики')) return 'Консультація сімейного лікаря';
+        return 'Консультація спеціаліста';
+    }
+
+    function setSpecialistQuickBookingMode(form, enabled) {
+        if (!form) return;
+        const modal = form.closest('.modal');
+        const title = modal?.querySelector('.modal-title');
+        if (title) title.textContent = enabled ? 'Швидкий запис до спеціаліста' : 'Запис на прийом';
+
+        form.classList.toggle('specialist-quick-booking', !!enabled);
+        const nameInput = form.querySelector('[data-appointment-name]');
+        const phoneInput = form.querySelector('[data-appointment-phone]');
+        const contactRow = nameInput?.closest('.form-row');
+
+        Array.from(form.children).forEach(child => {
+            if (child === contactRow || child.id === 'bookingContext' || child.matches?.('.form-submit, .form-status, .form-note')) return;
+            if (child.classList?.contains('declaration-doctor-field')) return;
+            if (child.classList?.contains('form-group') || child.classList?.contains('form-row')) child.hidden = !!enabled;
+        });
+        if (contactRow) contactRow.hidden = false;
+        if (nameInput) nameInput.required = true;
+        if (phoneInput) phoneInput.required = true;
+
+        let quickNote = form.querySelector('.quick-booking-note');
+        if (enabled) {
+            if (!quickNote) {
+                quickNote = document.createElement('div');
+                quickNote.className = 'quick-booking-note';
+                quickNote.innerHTML = '<strong>Мінімум полів</strong><span>Вкажіть ПІБ і телефон. Рецепціоніст зателефонує, уточнить причину звернення, зручний день і час.</span>';
+                form.insertBefore(quickNote, contactRow || form.firstChild);
+            }
+            quickNote.hidden = false;
+        } else if (quickNote) {
+            quickNote.hidden = true;
+        }
+    }
+
+    function prepareSpecialistService(form, serviceName) {
+        const selector = form?.querySelector('.service-selector');
+        if (!selector) return;
+        form.querySelectorAll('.service-option').forEach(option => option.classList.remove('selected'));
+        let option = Array.from(selector.querySelectorAll('.service-option')).find(el =>
+            String(el.dataset.serviceName || el.textContent || '').toLocaleLowerCase('uk').includes(String(serviceName || '').toLocaleLowerCase('uk'))
+        );
+        if (!option) {
+            option = document.createElement('div');
+            option.className = 'service-option';
+            option.dataset.priceService = serviceName;
+            option.dataset.serviceName = serviceName;
+            option.dataset.specialistService = 'true';
+            option.textContent = '✦ ' + serviceName;
+            selector.appendChild(option);
+        }
+        option.classList.add('selected');
+        form.dataset.selectedPriceService = serviceName;
+    }
+
+    function openBookingForTeamMember(index) {
+        const item = siteTeam[index];
+        if (!item) return;
+        openModal();
+        const form = document.querySelector('#modalOverlay form');
+        if (!form) return;
+        const serviceName = inferSpecialistService(item);
+        form.dataset.selectedSpecialist = item.name || '';
+        form.dataset.priceCategory = 'Консультації';
+        prepareSpecialistService(form, serviceName);
+        setSpecialistQuickBookingMode(form, true);
+        updateBookingContext(form);
+        setTimeout(() => form.querySelector('[data-appointment-name]')?.focus(), 80);
+    }
+
     function openBookingForSpecialist(specialistName) {
+        const index = siteTeam.findIndex(item => item.name === specialistName);
+        if (index >= 0) return openBookingForTeamMember(index);
         openModal();
         const form = document.querySelector('#modalOverlay form');
         if (!form) return;
         form.dataset.selectedSpecialist = specialistName || '';
+        prepareSpecialistService(form, 'Консультація спеціаліста');
+        setSpecialistQuickBookingMode(form, true);
         updateBookingContext(form);
     }
 
     const originalResetAppointmentFormUx = resetAppointmentForm;
     resetAppointmentForm = function(form) {
         originalResetAppointmentFormUx(form);
-        if (form) delete form.dataset.selectedSpecialist;
+        if (form) {
+            delete form.dataset.selectedSpecialist;
+            form.querySelectorAll('.service-option[data-specialist-service="true"]').forEach(option => option.remove());
+            setSpecialistQuickBookingMode(form, false);
+        }
         updateBookingContext(form);
     };
 
