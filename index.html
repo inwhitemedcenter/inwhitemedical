@@ -2755,6 +2755,113 @@
         @media (max-width: 640px) {
             .specialist-quick-booking .form-row { grid-template-columns: 1fr; }
         }
+
+
+        /* ===== FRIENDLY ADMIN PANELS V13 ===== */
+        .admin-friendly-panel-shell {
+            display: grid;
+            gap: 14px;
+            width: 100%;
+        }
+        .admin-friendly-card {
+            background: rgba(255,255,255,.96);
+            border: 1px solid rgba(212,196,176,.62);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(74,74,74,.055);
+        }
+        .admin-friendly-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 17px 18px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .admin-friendly-card-head:hover { background: rgba(201,169,110,.045); }
+        .admin-friendly-card-title { min-width: 0; }
+        .admin-friendly-card-title strong {
+            display: block;
+            color: var(--dark);
+            font-size: .98rem;
+            margin-bottom: 3px;
+        }
+        .admin-friendly-card-title small {
+            display: block;
+            color: var(--graphite-light);
+            font-size: .76rem;
+            line-height: 1.45;
+        }
+        .admin-friendly-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+        .admin-friendly-toggle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid var(--beige-dark);
+            background: var(--white);
+            color: var(--graphite);
+            cursor: pointer;
+            transition: .22s ease;
+            font-size: 1rem;
+        }
+        .admin-friendly-card.open .admin-friendly-toggle { transform: rotate(180deg); background: rgba(201,169,110,.12); border-color: var(--gold); }
+        .admin-friendly-card-body {
+            padding: 0 18px 18px;
+            border-top: 1px solid rgba(232,221,208,.55);
+        }
+        .admin-friendly-card:not(.open) .admin-friendly-card-body { display: none; }
+        .admin-friendly-card-body .bpr-form-grid,
+        .admin-friendly-field-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 14px;
+            padding-top: 16px;
+        }
+        .admin-friendly-card-body .bpr-field { margin: 0; }
+        .admin-friendly-card-body .bpr-field.bpr-full { grid-column: 1/-1; }
+        .admin-page-visibility-card { border-color: rgba(201,169,110,.55); }
+        .admin-page-visibility-card .admin-friendly-card-head { cursor: default; }
+        .admin-page-visibility-card .admin-friendly-card-body { display: none !important; }
+        .admin-page-visibility-button {
+            border: 1px solid rgba(95,123,86,.35);
+            background: rgba(168,181,160,.16);
+            color: #526b4b;
+            padding: 9px 13px;
+            border-radius: 999px;
+            font: inherit;
+            font-size: .78rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .admin-page-visibility-button.is-hidden {
+            background: rgba(156,59,52,.08);
+            border-color: rgba(156,59,52,.24);
+            color: #8c3934;
+        }
+        .admin-panel-intro {
+            padding: 15px 17px;
+            background: linear-gradient(135deg, rgba(201,169,110,.10), rgba(168,181,160,.08));
+            border: 1px solid rgba(201,169,110,.22);
+            border-radius: 18px;
+            margin-bottom: 14px;
+        }
+        .admin-panel-intro strong { color: var(--dark); display:block; margin-bottom:4px; }
+        .admin-panel-intro span { color: var(--graphite-light); font-size:.82rem; line-height:1.55; }
+        .admin-friendly-card .admin-help { margin-top: 10px; }
+        @media (max-width: 720px) {
+            .admin-friendly-card-head { align-items: flex-start; padding: 15px; }
+            .admin-friendly-card-body { padding: 0 15px 15px; }
+            .admin-friendly-field-grid { grid-template-columns: 1fr; }
+            .admin-friendly-card-body .bpr-field { grid-column: 1/-1; }
+            .admin-page-visibility-button { font-size:.72rem; padding:8px 10px; }
+        }
 </style>
 </head>
 <body>
@@ -8367,6 +8474,189 @@
         adminRenderFaq();
         adminRefreshSaveStatus();
     };
+
+
+
+    // ===== FRIENDLY ADMIN PANELS V13 =====
+    const ADMIN_FRIENDLY_PANEL_DEFS = {
+        home: {
+            intro: ['Головна сторінка', 'Редагуйте перший екран, запис, контакти та соціальні мережі окремими компактними блоками.'],
+            visibility: 'adminPageHome',
+            groups: [
+                ['Перший екран', 'Головний заголовок, опис, оголошення та зображення.', ['adminHeroBadge','adminHeroTitle','adminHeroSubtitle','adminAnnouncementText','adminHeroLogoImage','adminHeroBackgroundImage']],
+                ['Кнопки та декларація', 'Підписи основних дій на головній сторінці.', ['adminDeclarationButtonLabel','adminInstagramLabel']],
+                ['Запис на прийом', 'Тексти блоку запису, доступні послуги та формати.', ['adminBookingTag','adminBookingTitle','adminBookingDescription','adminAppointmentServices','adminAppointmentFormats']],
+                ['Контакти', 'Телефон, WhatsApp, email, графік та адреса.', ['adminContactPhone','adminContactWhatsapp','adminContactEmail','adminContactHours','adminContactAddress']],
+                ['Соціальні мережі', 'Instagram та інші посилання, що відображаються на сайті.', ['adminInstagram','adminSocialLinks']]
+            ]
+        },
+        psychology: {
+            intro: ['Психологія', 'Окремо керуйте шапкою сторінки, основним блоком і картками станів.'],
+            visibility: 'adminPagePsychology',
+            groups: [
+                ['Шапка сторінки', 'Заголовок, вступний текст та верхнє зображення.', ['adminHeroPsychologyImage','adminPsychologyPageTag','adminPsychologyPageTitle','adminPsychologyPageIntro']],
+                ['Основний блок', 'Головне зображення, заголовок та опис напрямку.', ['adminPsychologyTag','adminPsychologyImage','adminPsychologyTitle','adminPsychologyDescription']],
+                ['Короткі переваги', 'Список тез, які пояснюють підхід клініки.', ['adminPsychologyFeatures']],
+                ['Картки станів', 'ПТСР, тривога, депресія та інші картки з детальними описами.', ['adminPsychologyServiceItems']],
+                ['Плаваюча картка', 'Маленький інформаційний блок поверх зображення.', ['adminPsychologyFloatTop','adminPsychologyFloatTitle','adminPsychologyFloatBottom']]
+            ]
+        },
+        services: {
+            intro: ['Послуги', 'Налаштуйте сторінку послуг і картки, які бачить пацієнт.'],
+            visibility: 'adminPageServices',
+            groups: [
+                ['Шапка сторінки', 'Заголовок сторінки та фонове зображення.', ['adminHeroServicesImage','adminServicesPageTag','adminServicesPageTitle']],
+                ['Секція послуг', 'Плашка, заголовок і короткий вступ.', ['adminServicesTag','adminServicesTitle','adminServicesSubtitle']],
+                ['Картки послуг', 'Список послуг, їх підписи, переходи та видимість.', ['adminServicesList']]
+            ]
+        },
+        prices: {
+            intro: ['Прайс', 'Зверху — оформлення сторінки, нижче — зручний редактор кожної позиції прайсу.'],
+            visibility: 'adminPagePrices',
+            groups: [
+                ['Шапка сторінки', 'Заголовок, пояснення та фонове зображення.', ['adminHeroPricesImage','adminPricesPageTag','adminPricesPageTitle','adminPricesPageIntro']]
+            ]
+        },
+        team: {
+            intro: ['Команда', 'Налаштуйте заголовок сторінки, а спеціалістів редагуйте окремими картками нижче.'],
+            visibility: 'adminPageTeam',
+            groups: [
+                ['Шапка сторінки', 'Заголовок і фонове фото сторінки команди.', ['adminHeroTeamImage','adminTeamPageTag','adminTeamPageTitle']]
+            ]
+        },
+        about: {
+            intro: ['Про нас', 'Розбийте інформацію про клініку на окремі логічні блоки.'],
+            visibility: 'adminPageAbout',
+            groups: [
+                ['Шапка сторінки', 'Плашка, заголовок і верхнє зображення.', ['adminHeroAboutImage','adminAboutTag','adminAboutPageTag','adminAboutTitle']],
+                ['Місія', 'Заголовок і основний текст про місію клініки.', ['adminAboutMissionTitle','adminAboutMissionText']],
+                ['Цінності', 'Заголовок і список ключових цінностей.', ['adminAboutValuesTitle','adminAboutValues']]
+            ]
+        },
+        training: {
+            intro: ['Навчання', 'Оформлення сторінки знаходиться тут, а окремі заходи редагуються картками нижче.'],
+            visibility: 'adminPageTraining',
+            groups: [
+                ['Шапка сторінки', 'Фонове зображення, плашка, заголовок і вступний опис.', ['adminHeroTrainingImage','adminTrainingPageTag','adminTrainingPageTitle','adminTrainingPageDescription']]
+            ]
+        },
+        content: {
+            intro: ['FAQ і відгуки', 'Додавайте, приховуйте, змінюйте порядок і редагуйте кожен елемент окремо.'],
+            groups: [
+                ['Заголовок відгуків', 'Плашка та заголовок секції відгуків на головній.', ['adminTestimonialsTag','adminTestimonialsTitle']]
+            ]
+        }
+    };
+
+    function adminFriendlyFieldForId(id) {
+        const el = document.getElementById(id);
+        return el ? el.closest('.bpr-field') : null;
+    }
+
+    function adminFriendlyMakeCard(title, description, fields, panelName, openByDefault=false) {
+        const card = document.createElement('section');
+        card.className = 'admin-friendly-card' + (openByDefault ? ' open' : '');
+        card.setAttribute('data-admin-panel', panelName);
+        const head = document.createElement('div');
+        head.className = 'admin-friendly-card-head';
+        head.innerHTML = `<div class="admin-friendly-card-title"><strong>${bprEscapeText(title)}</strong><small>${bprEscapeText(description || '')}</small></div><div class="admin-friendly-card-actions"><button class="admin-friendly-toggle" type="button" aria-label="Розгорнути або згорнути">⌄</button></div>`;
+        const body = document.createElement('div');
+        body.className = 'admin-friendly-card-body';
+        const grid = document.createElement('div');
+        grid.className = 'admin-friendly-field-grid';
+        fields.forEach(field => { if (field) grid.appendChild(field); });
+        body.appendChild(grid);
+        card.append(head, body);
+        head.addEventListener('click', e => {
+            if (e.target.closest('button') && !e.target.classList.contains('admin-friendly-toggle')) return;
+            card.classList.toggle('open');
+        });
+        head.querySelector('.admin-friendly-toggle')?.addEventListener('click', e => {
+            e.stopPropagation();
+            card.classList.toggle('open');
+        });
+        return card;
+    }
+
+    function adminFriendlyMakeVisibilityCard(panelName, checkboxId) {
+        const checkbox = document.getElementById(checkboxId);
+        const field = checkbox ? checkbox.closest('.bpr-field') : null;
+        if (!checkbox || !field) return null;
+        field.style.display = 'none';
+        const card = document.createElement('section');
+        card.className = 'admin-friendly-card admin-page-visibility-card';
+        card.setAttribute('data-admin-panel', panelName);
+        const head = document.createElement('div');
+        head.className = 'admin-friendly-card-head';
+        const refresh = () => {
+            const visible = !!checkbox.checked;
+            head.innerHTML = `<div class="admin-friendly-card-title"><strong>Видимість сторінки</strong><small>${visible ? 'Сторінка доступна відвідувачам.' : 'Сторінка прихована від відвідувачів.'}</small></div><div class="admin-friendly-card-actions"><button type="button" class="admin-page-visibility-button ${visible?'':'is-hidden'}">${visible?'Показується':'Приховано'}</button></div>`;
+            head.querySelector('button')?.addEventListener('click', () => {
+                checkbox.checked = !checkbox.checked;
+                checkbox.dispatchEvent(new Event('change',{bubbles:true}));
+                adminSaveSiteState();
+                refresh();
+            });
+        };
+        refresh();
+        card.appendChild(head);
+        return card;
+    }
+
+    function adminBuildFriendlyPanels() {
+        const form = document.getElementById('siteAdminForm');
+        if (!form || form.dataset.friendlyPanelsReady === 'true') return;
+        adminSetupPanelFields();
+        const rootGrid = form.querySelector('.bpr-form-grid');
+        if (!rootGrid) return;
+
+        Object.entries(ADMIN_FRIENDLY_PANEL_DEFS).forEach(([panelName, def]) => {
+            const shell = document.createElement('div');
+            shell.className = 'admin-friendly-panel-shell';
+            shell.setAttribute('data-admin-panel', panelName);
+            const intro = document.createElement('div');
+            intro.className = 'admin-panel-intro';
+            intro.innerHTML = `<strong>${bprEscapeText(def.intro?.[0] || panelName)}</strong><span>${bprEscapeText(def.intro?.[1] || '')}</span>`;
+            shell.appendChild(intro);
+            if (def.visibility) {
+                const vis = adminFriendlyMakeVisibilityCard(panelName, def.visibility);
+                if (vis) shell.appendChild(vis);
+            }
+            (def.groups || []).forEach((group, idx) => {
+                const fields = (group[2] || []).map(adminFriendlyFieldForId).filter(Boolean);
+                if (!fields.length) return;
+                shell.appendChild(adminFriendlyMakeCard(group[0], group[1], fields, panelName, idx === 0));
+            });
+            rootGrid.appendChild(shell);
+        });
+        form.dataset.friendlyPanelsReady = 'true';
+    }
+
+    const originalAdminShowPanelFriendlyV13 = adminShowPanel;
+    adminShowPanel = function(panelName) {
+        adminBuildFriendlyPanels();
+        originalAdminShowPanelFriendlyV13(panelName);
+    };
+
+    const originalAdminFillFormsFriendlyV13 = adminFillForms;
+    adminFillForms = function() {
+        originalAdminFillFormsFriendlyV13();
+        adminBuildFriendlyPanels();
+        // Refresh friendly visibility cards after values are loaded.
+        document.querySelectorAll('.admin-page-visibility-card').forEach(card => card.remove());
+        const rootGrid = document.querySelector('#siteAdminForm .bpr-form-grid');
+        if (rootGrid) {
+            Object.entries(ADMIN_FRIENDLY_PANEL_DEFS).forEach(([panelName, def]) => {
+                if (!def.visibility) return;
+                const shell = rootGrid.querySelector(`.admin-friendly-panel-shell[data-admin-panel="${panelName}"]`);
+                const intro = shell?.querySelector('.admin-panel-intro');
+                const vis = adminFriendlyMakeVisibilityCard(panelName, def.visibility);
+                if (shell && vis) intro?.after(vis);
+            });
+        }
+    };
+
+    adminBuildFriendlyPanels();
 
     initTrainingAdminUX();
     initBackToTop();
