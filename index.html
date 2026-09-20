@@ -1505,6 +1505,21 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
+
+        /* ===== SIMPLIFIED CONTENT EDITORS + BRAND ICONS ===== */
+        .admin-content-card.compact { padding: 0; overflow: hidden; }
+        .admin-content-card.compact .admin-content-card-head { padding: 16px 18px; margin: 0; gap: 12px; }
+        .admin-content-card-summary { min-width: 0; flex: 1; }
+        .admin-content-card-summary strong { display:block; color:var(--dark); font-size:.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .admin-content-card-summary small { display:block; margin-top:4px; color:var(--graphite-light); font-size:.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .admin-editor-body { padding: 0 18px 18px; border-top: 1px solid rgba(232,221,208,.7); }
+        .admin-editor-body[hidden] { display:none !important; }
+        .admin-visibility-btn { border-radius:999px; padding:8px 12px; border:1px solid rgba(95,123,86,.25); background:rgba(95,123,86,.10); color:#4f6848; font:inherit; font-size:.76rem; cursor:pointer; white-space:nowrap; }
+        .admin-visibility-btn.is-hidden { border-color:rgba(156,59,52,.22); background:rgba(156,59,52,.09); color:#8b3b35; }
+        .brand-contact-icon svg, .social-link svg, .float-action [data-brand-icon] svg { width:22px; height:22px; display:block; }
+        .social-link svg { width:20px; height:20px; }
+        .float-action [data-brand-icon] { display:flex; align-items:center; justify-content:center; }
+
         /* ===== PAGES ===== */
         .page {
             display: none;
@@ -2412,8 +2427,10 @@
         .team-photo img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            object-position: center;
             display: block;
+            background: linear-gradient(135deg, #F7F3EE 0%, #EDE4D8 100%);
         }
 
         @media print {
@@ -2683,7 +2700,7 @@
 <!-- FLOATING BUTTONS -->
 <div class="floating-btn">
     <a id="siteFloatingPhone" href="tel:+380XXXXXXXXX" class="float-action phone" title="Зателефонувати">📞</a>
-    <a id="siteFloatingWhatsapp" href="https://wa.me/380XXXXXXXXX" target="_blank" class="float-action chat" title="WhatsApp">💬</a>
+    <a id="siteFloatingWhatsapp" href="https://wa.me/380XXXXXXXXX" target="_blank" class="float-action chat" title="WhatsApp" aria-label="WhatsApp"><span data-brand-icon="whatsapp"></span></a>
 </div>
 
 <!-- NAVIGATION -->
@@ -2817,10 +2834,17 @@
                         </div>
                     </a>
                     <a id="bookingContactInstagram" href="https://instagram.com/inwhitemedical" target="_blank" class="contact-item">
-                        <div class="contact-icon">📸</div>
+                        <div class="contact-icon brand-contact-icon" data-brand-icon="instagram"></div>
                         <div class="contact-text">
                             <small>Instagram</small>
                             <strong>@inwhitemedical</strong>
+                        </div>
+                    </a>
+                    <a id="bookingContactWhatsapp" href="https://wa.me/380XXXXXXXXX" target="_blank" class="contact-item">
+                        <div class="contact-icon brand-contact-icon" data-brand-icon="whatsapp"></div>
+                        <div class="contact-text">
+                            <small>WhatsApp</small>
+                            <strong>Написати нам</strong>
                         </div>
                     </a>
                     <div id="bookingContactAddress" class="contact-item">
@@ -4674,9 +4698,9 @@
                 }
             ],
             socialLinks: [
-                { icon: '📸', label: 'Instagram', url: 'https://instagram.com/inwhitemedical', visible: true },
-                { icon: '👥', label: 'Facebook', url: 'https://facebook.com', visible: true },
-                { icon: '✈️', label: 'Telegram', url: 'https://t.me/', visible: true }
+                { icon: 'instagram', label: 'Instagram', url: 'https://instagram.com/inwhitemedical', visible: true },
+                { icon: 'facebook', label: 'Facebook', url: 'https://facebook.com', visible: true },
+                { icon: 'whatsapp', label: 'WhatsApp', url: 'https://wa.me/380XXXXXXXXX', visible: true }
             ],
             pageHeroImages: {
                 psychology: '',
@@ -5815,7 +5839,7 @@
         const cards = (siteConfig.serviceCards || []).filter(item => item.visible !== false && item.title);
         const html = cards.map((item, index) => `
             <a href="#" class="service-card reveal visible reveal-delay-${(index % 4) + 1}" onclick="${adminServiceCardAction(item.target, index)}">
-                <div class="service-icon">${bprEscapeText(item.icon || '•')}</div>
+                <div class="service-icon">${brandIconSvg((item.label || '') + ' ' + (item.url || '') + ' ' + (item.icon || ''))}</div>
                 <h3>${bprEscapeText(item.title)}</h3>
                 <p>${bprEscapeText(item.description)}</p>
                 <span class="service-link">${bprEscapeText(item.label || 'Детальніше')} →</span>
@@ -5910,7 +5934,7 @@
                     </div>
                 </div>
                 <div class="admin-psych-grid">
-                    <label class="bpr-field"><span>Емодзі / ярлик</span><input data-psych-field="icon" value="${bprEscapeText(item.icon || '•')}" placeholder="🛡️"></label>
+                    <label class="bpr-field"><span>Емодзі / ярлик</span><input data-psych-field="icon" value="${brandIconSvg((item.label || '') + ' ' + (item.url || '') + ' ' + (item.icon || ''))}" placeholder="🛡️"></label>
                     <label class="bpr-field"><span>Назва</span><input data-psych-field="title" value="${bprEscapeText(item.title || '')}" placeholder="ПТСР та гострий стрес"></label>
                     <label class="bpr-field bpr-full"><span>Короткий опис</span><textarea data-psych-field="description" style="min-height:90px;">${bprEscapeText(item.description || '')}</textarea></label>
                     <label class="bpr-field"><span>Підпис / формат</span><input data-psych-field="label" value="${bprEscapeText(item.label || '')}" placeholder="Індивідуально"></label>
@@ -6001,7 +6025,7 @@
             const visibleItems = items.length ? items : adminDefaultSiteConfig().psychologyServiceItems;
             psychologyGrid.innerHTML = visibleItems.map(item => `
                 <div class="psych-service-item">
-                    <div style="font-size: 2rem; margin-bottom: 15px;">${bprEscapeText(item.icon || '•')}</div>
+                    <div style="font-size: 2rem; margin-bottom: 15px;">${brandIconSvg((item.label || '') + ' ' + (item.url || '') + ' ' + (item.icon || ''))}</div>
                     <h3>${bprEscapeText(item.title)}</h3>
                     <p>${bprEscapeText(item.description || '')}</p>
                     <span class="price-tag">${bprEscapeText(item.label || '')}</span>
@@ -6091,6 +6115,9 @@
             const value = bookingHours.querySelector('strong');
             if (value) value.textContent = siteConfig.hours || '';
         }
+        const bookingWhatsapp = document.getElementById('bookingContactWhatsapp');
+        if (bookingWhatsapp) bookingWhatsapp.href = 'https://wa.me/' + String(siteConfig.whatsapp || '').replace(/[^\d]/g, '');
+        renderBrandIcons(document);
     }
 
     function adminRenderTestimonials() {
@@ -6102,7 +6129,7 @@
         if (!grid) return;
         const testimonials = (siteConfig.testimonials || [])
             .filter(item => item.visible !== false && item.text);
-        const visibleTestimonials = testimonials.length ? testimonials : adminDefaultSiteConfig().testimonials;
+        const visibleTestimonials = testimonials;
         grid.innerHTML = visibleTestimonials.map((item, index) => {
             const starsCount = Math.max(1, Math.min(5, parseInt(item.stars, 10) || 5));
             const stars = '★★★★★'.slice(0, starsCount);
@@ -6129,7 +6156,7 @@
         if (!list) return;
         const items = (siteConfig.faqItems || [])
             .filter(item => item.visible !== false && item.question && item.answer);
-        const visibleItems = items.length ? items : adminDefaultSiteConfig().faqItems;
+        const visibleItems = items;
         list.innerHTML = visibleItems.map(item => `
             <div class="faq-item">
                 <button class="faq-question" onclick="toggleFaq(this)">
@@ -6143,15 +6170,27 @@
         `).join('');
     }
 
+    function brandIconSvg(name) {
+        const key = String(name || '').toLowerCase();
+        if (key.includes('instagram')) return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.5" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>`;
+        if (key.includes('facebook')) return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.7 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.6 1.6-1.6H17V3.8c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1V10H8v3h2.6v8h3.1Z"/></svg>`;
+        if (key.includes('whatsapp') || key.includes('wa.me')) return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="M20.2 11.8a8.1 8.1 0 0 1-11.9 7.1L4 20l1.2-4.1A8.1 8.1 0 1 1 20.2 11.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7.8c.3-.3.7-.2.9.1l1 1.8c.2.3.1.6-.1.9l-.6.7c.7 1.4 1.8 2.5 3.3 3.2l.7-.8c.2-.3.6-.3.9-.1l1.8.9c.4.2.5.6.3.9-.6 1.2-1.7 1.7-2.9 1.5-3.6-.7-6.3-3.4-7-7-.2-1 .4-1.8 1.7-2.1Z" fill="currentColor"/></svg>`;
+        return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>`;
+    }
+
+    function renderBrandIcons(root=document) {
+        root.querySelectorAll('[data-brand-icon]').forEach(el => { el.innerHTML = brandIconSvg(el.dataset.brandIcon); });
+    }
+
     function adminRenderSocialLinks() {
         const list = document.getElementById('siteFooterSocialLinks');
         if (!list) return;
         const links = (siteConfig.socialLinks || [])
             .filter(item => item.visible !== false && item.url);
-        const visibleLinks = links.length ? links : adminDefaultSiteConfig().socialLinks;
+        const visibleLinks = links;
         list.innerHTML = visibleLinks.map(item => `
             <a href="${bprEscapeText(item.url || '#')}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="${bprEscapeText(item.label || 'Соцмережа')}">
-                ${bprEscapeText(item.icon || '•')}
+                ${brandIconSvg((item.label || '') + ' ' + (item.url || '') + ' ' + (item.icon || ''))}
             </a>
         `).join('');
     }
@@ -6238,6 +6277,7 @@
         adminRenderTestimonials();
         adminRenderFaq();
         adminRenderSocialLinks();
+        renderBrandIcons(document);
     }
 
     function adminRenderTeam() {
@@ -7835,25 +7875,51 @@
         if (!list) return;
         const items = Array.isArray(siteConfig.testimonials) ? siteConfig.testimonials : [];
         list.innerHTML = items.map((item,index)=>`
-            <div class="admin-content-card" data-testimonial-index="${index}">
+            <div class="admin-content-card compact" data-testimonial-index="${index}">
                 <div class="admin-content-card-head">
-                    <div class="admin-content-card-title">Відгук ${index+1}</div>
+                    <div class="admin-content-card-summary">
+                        <strong>${bprEscapeText(item.name || `Відгук ${index+1}`)}</strong>
+                        <small>${bprEscapeText((item.text || 'Без тексту').slice(0,90))}</small>
+                    </div>
                     <div class="admin-content-card-actions">
-                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveTestimonial(${index},-1)" ${index===0?'disabled':''}>↑</button>
-                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveTestimonial(${index},1)" ${index===items.length-1?'disabled':''}>↓</button>
-                        <button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveTestimonial(${index})">Прибрати</button>
+                        <button class="admin-visibility-btn ${item.visible===false?'is-hidden':''}" type="button" onclick="adminToggleTestimonialVisibility(${index})">${item.visible===false?'Приховано':'Показується'}</button>
+                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminToggleEditorBody(this)">Редагувати</button>
+                        <button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveTestimonial(${index})">Видалити</button>
                     </div>
                 </div>
-                <div class="admin-content-grid">
-                    <label class="bpr-field"><span>Оцінка 1–5</span><input type="number" min="1" max="5" data-testimonial-field="stars" value="${bprEscapeText(String(item.stars || 5))}"></label>
-                    <label class="bpr-field"><span>Ім’я</span><input data-testimonial-field="name" value="${bprEscapeText(item.name || '')}"></label>
-                    <label class="bpr-field bpr-full"><span>Текст відгуку</span><textarea data-testimonial-field="text" style="min-height:100px;">${bprEscapeText(item.text || '')}</textarea></label>
-                    <label class="bpr-field bpr-full"><span>Деталі</span><input data-testimonial-field="detail" value="${bprEscapeText(item.detail || '')}" placeholder="Наприклад: Онлайн-консультація"></label>
-                    <label class="bpr-field bpr-checkbox bpr-full"><input data-testimonial-field="visible" type="checkbox" ${item.visible===false?'':'checked'}> Показувати на сайті</label>
+                <div class="admin-editor-body" hidden>
+                    <div class="admin-content-grid" style="padding-top:16px;">
+                        <label class="bpr-field"><span>Оцінка 1–5</span><input type="number" min="1" max="5" data-testimonial-field="stars" value="${bprEscapeText(String(item.stars || 5))}"></label>
+                        <label class="bpr-field"><span>Ім’я</span><input data-testimonial-field="name" value="${bprEscapeText(item.name || '')}"></label>
+                        <label class="bpr-field bpr-full"><span>Текст відгуку</span><textarea data-testimonial-field="text" style="min-height:100px;">${bprEscapeText(item.text || '')}</textarea></label>
+                        <label class="bpr-field bpr-full"><span>Деталі (необов’язково)</span><input data-testimonial-field="detail" value="${bprEscapeText(item.detail || '')}" placeholder="Наприклад: Онлайн-консультація"></label>
+                        <input data-testimonial-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden>
+                        <div class="bpr-inline-actions bpr-full">
+                            <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveTestimonial(${index},-1)" ${index===0?'disabled':''}>↑ Вище</button>
+                            <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveTestimonial(${index},1)" ${index===items.length-1?'disabled':''}>↓ Нижче</button>
+                        </div>
+                    </div>
                 </div>
             </div>`).join('');
         adminBindContentEditorInputs();
         adminSyncTestimonialsEditor();
+    }
+
+    function adminToggleEditorBody(button) {
+        const card = button.closest('.admin-content-card');
+        const body = card && card.querySelector('.admin-editor-body');
+        if (!body) return;
+        body.hidden = !body.hidden;
+        button.textContent = body.hidden ? 'Редагувати' : 'Згорнути';
+    }
+
+    function adminToggleTestimonialVisibility(index) {
+        siteConfig.testimonials = adminCollectTestimonialsEditor();
+        if (!siteConfig.testimonials[index]) return;
+        siteConfig.testimonials[index].visible = siteConfig.testimonials[index].visible === false;
+        adminRenderTestimonialsEditor();
+        adminRenderTestimonials();
+        adminSaveSiteState();
     }
 
     function adminCollectTestimonialsEditor() {
@@ -7873,24 +7939,43 @@
         if (!list) return;
         const items = Array.isArray(siteConfig.faqItems) ? siteConfig.faqItems : [];
         list.innerHTML = items.map((item,index)=>`
-            <div class="admin-content-card" data-faq-index="${index}">
+            <div class="admin-content-card compact" data-faq-index="${index}">
                 <div class="admin-content-card-head">
-                    <div class="admin-content-card-title">Запитання ${index+1}</div>
+                    <div class="admin-content-card-summary">
+                        <strong>${bprEscapeText(item.question || `Запитання ${index+1}`)}</strong>
+                        <small>${bprEscapeText((item.answer || 'Без відповіді').slice(0,90))}</small>
+                    </div>
                     <div class="admin-content-card-actions">
-                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveFaqItem(${index},-1)" ${index===0?'disabled':''}>↑</button>
-                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveFaqItem(${index},1)" ${index===items.length-1?'disabled':''}>↓</button>
-                        <button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveFaqItem(${index})">Прибрати</button>
+                        <button class="admin-visibility-btn ${item.visible===false?'is-hidden':''}" type="button" onclick="adminToggleFaqVisibility(${index})">${item.visible===false?'Приховано':'Показується'}</button>
+                        <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminToggleEditorBody(this)">Редагувати</button>
+                        <button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveFaqItem(${index})">Видалити</button>
                     </div>
                 </div>
-                <div class="admin-content-grid">
-                    <label class="bpr-field bpr-full"><span>Питання</span><input data-faq-field="question" value="${bprEscapeText(item.question || '')}"></label>
-                    <label class="bpr-field bpr-full"><span>Відповідь</span><textarea data-faq-field="answer" style="min-height:110px;">${bprEscapeText(item.answer || '')}</textarea></label>
-                    <label class="bpr-field bpr-checkbox bpr-full"><input data-faq-field="visible" type="checkbox" ${item.visible===false?'':'checked'}> Показувати на сайті</label>
+                <div class="admin-editor-body" hidden>
+                    <div class="admin-content-grid" style="padding-top:16px;">
+                        <label class="bpr-field bpr-full"><span>Питання</span><input data-faq-field="question" value="${bprEscapeText(item.question || '')}"></label>
+                        <label class="bpr-field bpr-full"><span>Відповідь</span><textarea data-faq-field="answer" style="min-height:110px;">${bprEscapeText(item.answer || '')}</textarea></label>
+                        <input data-faq-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden>
+                        <div class="bpr-inline-actions bpr-full">
+                            <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveFaqItem(${index},-1)" ${index===0?'disabled':''}>↑ Вище</button>
+                            <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveFaqItem(${index},1)" ${index===items.length-1?'disabled':''}>↓ Нижче</button>
+                        </div>
+                    </div>
                 </div>
             </div>`).join('');
         adminBindContentEditorInputs();
         adminSyncFaqEditor();
     }
+
+    function adminToggleFaqVisibility(index) {
+        siteConfig.faqItems = adminCollectFaqEditor();
+        if (!siteConfig.faqItems[index]) return;
+        siteConfig.faqItems[index].visible = siteConfig.faqItems[index].visible === false;
+        adminRenderFaqEditor();
+        adminRenderFaq();
+        adminSaveSiteState();
+    }
+
     function adminCollectFaqEditor() {
         const cards = document.querySelectorAll('#adminFaqCards .admin-content-card');
         if (!cards.length) return adminParseFaq(document.getElementById('adminFaq')?.value || '');
