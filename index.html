@@ -7857,9 +7857,13 @@
             const isImage = adminLooksLikeImage(photo);
             const photoHtml = isImage ? '<img src="' + bprEscapeText(photo) + '" alt="' + bprEscapeText(item.name) + '">' : bprEscapeText(photo);
             const declarationLabel = siteConfig.declarationButtonLabel || adminDefaultSiteConfig().declarationButtonLabel;
-            const declarationButton = item.allowDeclaration === true ? '<div class="team-actions"><a href="#" class="btn-primary btn-declaration" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="event.stopPropagation(); openDeclarationModal(this.dataset.doctor); return false;"><span data-declaration-label>' + bprEscapeText(declarationLabel) + '</span></a></div>' : '';
+            const bookingButton = '<button type="button" class="btn-primary team-booking-btn" onclick="event.stopPropagation(); openBookingForTeamMember(' + index + ')">✦ Записатись</button>';
+            const declarationButton = item.allowDeclaration === true
+                ? '<a href="#" class="btn-secondary btn-declaration team-declaration-btn" data-doctor="' + bprEscapeText(item.name || '') + '" onclick="event.stopPropagation(); openDeclarationModal(this.dataset.doctor); return false;"><span data-declaration-label>' + bprEscapeText(declarationLabel) + '</span></a>'
+                : '';
+            const actionButtons = '<div class="team-actions">' + bookingButton + declarationButton + '</div>';
             return '<div class="team-card" role="button" tabindex="0" onclick="openTeamMemberDetails(' + index + ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openTeamMemberDetails(' + index + ')}">' +
-                '<div class="team-photo">' + photoHtml + '</div><div class="team-info"><div class="team-name">' + bprEscapeText(item.name) + '</div><div class="team-role">' + bprEscapeText(item.role) + '</div><p class="team-desc">' + bprEscapeText(item.description) + '</p><div class="team-more">Про фахівця →</div>' + declarationButton + '</div></div>';
+                '<div class="team-photo">' + photoHtml + '</div><div class="team-info"><div class="team-name">' + bprEscapeText(item.name) + '</div><div class="team-role">' + bprEscapeText(item.role) + '</div><p class="team-desc">' + bprEscapeText(item.description) + '</p><div class="team-more">Про фахівця →</div>' + actionButtons + '</div></div>';
         }).join('');
     };
 
