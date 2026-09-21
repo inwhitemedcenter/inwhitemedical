@@ -3019,7 +3019,43 @@
                 justify-content: center;
             }
         }
-</style>
+
+
+        /* ===== STANDALONE ADMIN WORKSPACE v19 ===== */
+        #bprDevPanel {
+            position: fixed;
+            inset: 0;
+            z-index: 8000;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 34px 28px 60px;
+            border: 0;
+            border-radius: 0;
+            background: linear-gradient(135deg, #FAF8F4 0%, #F5F0E8 52%, #FAFAF8 100%);
+            box-shadow: none;
+        }
+        #bprDevPanel[hidden] { display: none !important; }
+        #bprDevPanel > .bpr-topbar,
+        #bprDevPanel > .admin-sticky-actions,
+        #bprDevPanel > .admin-section,
+        #bprDevPanel > .bpr-panel {
+            width: min(1400px, 100%);
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #bprDevPanel > .admin-sticky-actions {
+            top: 0;
+            z-index: 40;
+        }
+        body.admin-panel-open { overflow: hidden !important; }
+        @media (max-width: 720px) {
+            #bprDevPanel { padding: 20px 12px 42px; }
+        }
+
+    </style>
 </head>
 <body>
 
@@ -3494,18 +3530,25 @@
                 </div>
             </div>
 
-            <div id="bprDevPanel" class="bpr-panel" hidden>
+            
+        </div>
+    </section>
+</div>
+
+
+<!-- ==================== ADMIN PANEL (STANDALONE) ==================== -->
+<div id="bprDevPanel" class="bpr-panel" hidden>
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v18</div>
+                        <div class="admin-v16-badge">● Admin v19</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
                         </p>
                     </div>
                     <div class="bpr-actions">
-                        <button class="bpr-btn bpr-btn-secondary" type="button" onclick="bprCreateTraining()">Новий захід</button>
+                        <button id="adminNewTrainingButton" class="bpr-btn bpr-btn-secondary" type="button" onclick="bprCreateTraining()" hidden>Новий захід</button>
                         <button class="bpr-btn bpr-btn-quiet" type="button" onclick="bprCloseDeveloperPanel()">Закрити</button>
                     </div>
                 </div>
@@ -4112,9 +4155,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</div>
 
 <div id="serviceInfoModal" class="bpr-modal-overlay" hidden onclick="closeServiceInfoModalOnOverlay(event)">
     <div class="bpr-modal" style="max-width:680px;">
@@ -6024,12 +6064,16 @@
 
     function adminShowPanel(panelName) {
         adminSetupPanelFields();
+        const devPanel = document.getElementById('bprDevPanel');
+        if (devPanel) devPanel.dataset.currentPanel = panelName;
         document.querySelectorAll('#bprDevPanel [data-admin-panel]').forEach(panel => {
             panel.classList.toggle('active', panel.getAttribute('data-admin-panel') === panelName);
         });
         document.querySelectorAll('#bprDevPanel [data-admin-tab]').forEach(tab => {
             tab.classList.toggle('active', tab.getAttribute('data-admin-tab') === panelName);
         });
+        const newTrainingButton = document.getElementById('adminNewTrainingButton');
+        if (newTrainingButton) newTrainingButton.hidden = panelName !== 'training';
     }
 
     function adminLoadImageFile(event, targetId) {
@@ -7604,15 +7648,16 @@
     }
 
     function bprShowDeveloperPanel() {
-        bprOpeningDeveloperPanel = true;
-        showPage('training');
-        bprOpeningDeveloperPanel = false;
-        document.getElementById('bprDevPanel').hidden = false;
+        const panel = document.getElementById('bprDevPanel');
+        if (!panel) return;
+        panel.hidden = false;
+        document.body.classList.add('admin-panel-open');
+        document.body.style.overflow = 'hidden';
         adminShowPanel('home');
         adminFillForms();
         bprRenderDeveloperTrainingList();
         bprRenderParticipants();
-        document.getElementById('bprDevPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        panel.scrollTo({ top: 0, behavior: 'auto' });
     }
 
     function bprCloseDeveloperLogin() {
@@ -7627,7 +7672,10 @@
     }
 
     function bprCloseDeveloperPanel() {
-        document.getElementById('bprDevPanel').hidden = true;
+        const panel = document.getElementById('bprDevPanel');
+        if (panel) panel.hidden = true;
+        document.body.classList.remove('admin-panel-open');
+        document.body.style.overflow = '';
     }
 
     function bprRenderDeveloperTrainingList() {
