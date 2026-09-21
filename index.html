@@ -3656,7 +3656,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v22</div>
+                        <div class="admin-v16-badge">● Admin v23</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -4609,6 +4609,8 @@
         form.reset();
         delete form.dataset.priceCategory;
         delete form.dataset.selectedPriceService;
+        delete form.dataset.declarationQuick;
+        delete form.dataset.selectedSpecialist;
         setAppointmentFormStatus(form, '');
         form.querySelectorAll('.service-option[data-price-service]').forEach(option => option.remove());
         const firstService = form.querySelector('.service-option');
@@ -4616,6 +4618,17 @@
         if (firstService) firstService.classList.add('selected');
         adminRenderAppointmentFormats(form);
         updateDeclarationFields(form);
+        const overlay = form.closest('#modalOverlay');
+        if (overlay) {
+            const title = overlay.querySelector('.modal-title');
+            if (title) title.textContent = 'Запис на прийом';
+            const context = document.getElementById('bookingContext');
+            const contextText = document.getElementById('bookingContextText');
+            if (context) context.hidden = true;
+            if (contextText) contextText.textContent = '';
+            const submit = form.querySelector('.form-submit');
+            if (submit) submit.textContent = 'Записатись ✦';
+        }
     }
 
     function openModal() {
@@ -4628,11 +4641,27 @@
 
     function openDeclarationModal(doctorName = '') {
         openModal();
+        const overlay = document.getElementById('modalOverlay');
+        const form = overlay ? overlay.querySelector('form') : null;
+        if (!form) return;
+        form.dataset.declarationQuick = 'true';
+        if (doctorName) form.dataset.selectedSpecialist = doctorName;
         selectAppointmentService('Декларація', document.getElementById('modalServiceSelector'));
         adminRenderDeclarationDoctors(doctorName);
-        const doctorSelect = document.querySelector('#modalOverlay [data-appointment-doctor]');
+        const doctorSelect = form.querySelector('[data-appointment-doctor]');
         if (doctorSelect && doctorName) doctorSelect.value = doctorName;
-        updateDeclarationFields(document.querySelector('#modalOverlay form'));
+        const title = overlay.querySelector('.modal-title');
+        if (title) title.textContent = 'Заявка на декларацію';
+        const context = document.getElementById('bookingContext');
+        const contextText = document.getElementById('bookingContextText');
+        if (context && contextText) {
+            context.hidden = false;
+            contextText.textContent = doctorName
+                ? 'Декларація · ' + doctorName
+                : 'Залиште ПІБ і номер телефону — рецепціоніст зв’яжеться з вами';
+        }
+        updateDeclarationFields(form);
+        setTimeout(() => form.querySelector('[data-appointment-name]')?.focus(), 80);
     }
 
     function closeModal() {
@@ -4687,6 +4716,8 @@
         if (form && !el.dataset.priceService) {
             delete form.dataset.priceCategory;
             delete form.dataset.selectedPriceService;
+        delete form.dataset.declarationQuick;
+        delete form.dataset.selectedSpecialist;
         }
         updateDeclarationFields(form);
         adminRenderAppointmentFormats(form);
@@ -4793,12 +4824,36 @@
     function updateDeclarationFields(form) {
         if (!form) return;
         const isDeclaration = isDeclarationForm(form);
+        const quickDeclaration = isDeclaration && form.dataset.declarationQuick === 'true';
+
         form.querySelectorAll('.declaration-doctor-field').forEach(field => {
+            const showDoctor = isDeclaration && !quickDeclaration;
             field.hidden = false;
-            field.classList.toggle('form-field-hidden', !isDeclaration);
+            field.classList.toggle('form-field-hidden', !showDoctor);
             const select = field.querySelector('select');
-            if (select) select.required = isDeclaration;
+            if (select) select.required = showDoctor;
         });
+
+        // Для швидкої декларації залишаємо лише ПІБ і телефон.
+        const serviceField = form.querySelector('.service-selector')?.closest('.form-group');
+        const dateInput = form.querySelector('[data-appointment-date]');
+        const timeSelect = form.querySelector('[data-appointment-time]');
+        const dateField = dateInput?.closest('.form-group');
+        const timeField = timeSelect?.closest('.form-group');
+        const dateTimeRow = dateField?.closest('.form-row');
+        const commentField = form.querySelector('[data-appointment-comment]')?.closest('.form-group');
+        const formatField = form.querySelector('.appointment-format-field');
+
+        [serviceField, dateTimeRow, commentField, formatField].forEach(field => {
+            if (!field) return;
+            field.classList.toggle('form-field-hidden', quickDeclaration);
+        });
+        if (dateInput) dateInput.required = !quickDeclaration && dateInput.closest('#bookingForm') !== null;
+        if (timeSelect) timeSelect.required = false;
+
+        const submit = form.querySelector('.form-submit');
+        if (submit) submit.textContent = quickDeclaration ? 'Надіслати заявку ✦' : (submit.dataset.defaultText || submit.textContent);
+
         adminRenderAppointmentFormats(form);
     }
 
@@ -4891,7 +4946,7 @@
         };
         const appointment = {
             service: selectedService ? selectedService.textContent.trim() : '',
-            doctor: isDeclarationForm(form) ? getValue('[data-appointment-doctor]') : (form.dataset.selectedSpecialist || ''),
+            doctor: isDeclarationForm(form) ? (form.dataset.selectedSpecialist || getValue('[data-appointment-doctor]')) : (form.dataset.selectedSpecialist || ''),
             fullName: sanitizeAppointmentName(getValue('[data-appointment-name]')).trim(),
             phone: normalizeAppointmentPhone(getValue('[data-appointment-phone]')),
             date: getValue('[data-appointment-date]'),
