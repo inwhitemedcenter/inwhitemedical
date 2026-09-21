@@ -2929,7 +2929,97 @@
             font-size: .85rem;
         }
 
-    </style>
+    
+
+        /* ===== STRUCTURED ADMIN EDITORS V17: no clipping + easier editing ===== */
+        .admin-structured-card {
+            overflow: visible !important;
+        }
+        .admin-structured-head {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto !important;
+            align-items: start !important;
+            gap: 14px 18px !important;
+            width: 100% !important;
+        }
+        .admin-structured-summary {
+            min-width: 0 !important;
+            width: 100% !important;
+            cursor: pointer;
+        }
+        .admin-structured-summary > div:last-child {
+            min-width: 0 !important;
+            width: 100% !important;
+        }
+        .admin-structured-summary strong {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            line-height: 1.28;
+        }
+        .admin-structured-summary small {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            max-width: none !important;
+            line-height: 1.38;
+            overflow-wrap: anywhere;
+        }
+        .admin-structured-actions {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+            gap: 8px !important;
+            min-width: max-content;
+            max-width: 100%;
+        }
+        .admin-structured-body {
+            width: 100% !important;
+            min-width: 0 !important;
+            overflow: visible !important;
+        }
+        .admin-structured-grid,
+        .admin-structured-grid > *,
+        .admin-structured-body input,
+        .admin-structured-body textarea,
+        .admin-structured-body select {
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+        .admin-structured-summary::after {
+            content: 'Натисніть, щоб редагувати';
+            display: block;
+            margin-top: 7px;
+            color: var(--gold);
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .02em;
+        }
+        .admin-structured-card.is-open .admin-structured-summary::after {
+            content: 'Редагування відкрито';
+            color: var(--sage-dark);
+        }
+        @media (max-width: 1120px) {
+            .admin-structured-head {
+                grid-template-columns: 1fr !important;
+            }
+            .admin-structured-actions {
+                width: 100% !important;
+                min-width: 0 !important;
+                justify-content: flex-start !important;
+            }
+        }
+        @media (max-width: 620px) {
+            .admin-structured-card { padding: 14px !important; }
+            .admin-structured-actions .bpr-btn,
+            .admin-structured-actions .admin-visibility-btn {
+                flex: 1 1 auto;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+</style>
 </head>
 <body>
 
@@ -2987,7 +3077,7 @@
             <img class="hero-brand-logo" src="assets/logo.png" alt="INWHITE MEDICAL логотип">
             <div class="hero-badge">
                 <div class="hero-badge-dot"></div>
-                Відкриваємось у 2025 · Чоп, Закарпаття
+                Медичний центр · Чоп, Закарпаття
             </div>
             <h1>Медицина,<br>що <em>турбується</em><br>про вас</h1>
             <p class="hero-subtitle">
@@ -3408,10 +3498,10 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v16</div>
+                        <div class="admin-v16-badge">● Admin v18</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
-                            редагувати команду, прайс і навчальні заходи.
+                            редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
                         </p>
                     </div>
                     <div class="bpr-actions">
@@ -3450,7 +3540,7 @@
                             <label class="bpr-field bpr-checkbox"><input id="adminPageTeam" type="checkbox"> Команда</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageAbout" type="checkbox"> Про нас</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageTraining" type="checkbox"> Навчання</label>
-                            <div class="bpr-field bpr-full" data-admin-panel="about">
+                            <div class="bpr-field bpr-full">
                                 <label for="adminHeroBadge">Плашка на головній</label>
                                 <input id="adminHeroBadge">
                             </div>
@@ -3466,8 +3556,8 @@
                                 <label for="adminDeclarationButtonLabel">Назва кнопки декларації</label>
                                 <input id="adminDeclarationButtonLabel" placeholder="Задекларуватись">
                             </div>
-                            <div class="bpr-field">
-                                <label for="adminInstagramLabel">Назва кнопки Instagram</label>
+                            <div class="bpr-field" hidden aria-hidden="true">
+                                <label for="adminInstagramLabel">Підпис Instagram</label>
                                 <input id="adminInstagramLabel" placeholder="Instagram">
                             </div>
                             <div class="bpr-field bpr-full">
@@ -3572,8 +3662,8 @@
                                 <textarea id="adminBookingDescription"></textarea>
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="adminInstagram">Instagram</label>
-                                <input id="adminInstagram" placeholder="@inwhitemedical">
+                                <label for="adminInstagram">Instagram — акаунт або посилання</label>
+                                <input id="adminInstagram" placeholder="@inwhitemedical або https://instagram.com/...">
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminPsychologyImage">Картинка блоку психології</label>
@@ -3658,8 +3748,8 @@
                                     Сторінки: psychology, services, team, prices, about, training.
                                 </div>
                             </div>
-                            <div class="bpr-field">
-                                <label for="adminAboutTag">Плашка “Про нас”</label>
+                            <div class="bpr-field" hidden aria-hidden="true">
+                                <label for="adminAboutTag">Плашка “Про нас” (службове дублююче поле)</label>
                                 <input id="adminAboutTag">
                             </div>
                             <div class="bpr-field">
@@ -4822,7 +4912,7 @@
                 about: true,
                 training: true
             },
-            heroBadge: 'Відкриваємось у 2025 · Чоп, Закарпаття',
+            heroBadge: 'Медичний центр · Чоп, Закарпаття',
             heroTitle: 'Медицина,<br>що <em>турбується</em><br>про вас',
             heroSubtitle: 'Сучасний медичний центр первинної допомоги. Вже зараз — психологічна підтримка онлайн для вас та вашої родини.',
             heroLogoImage: 'assets/logo.png',
@@ -4969,7 +5059,7 @@
                 },
                 {
                     question: 'Коли відкриється клініка офіційно?',
-                    answer: 'Офіційне відкриття заплановано на кінець 2025 року. Наразі в приміщенні тривають ремонтні роботи. Слідкуйте за нашим Instagram для отримання актуальних новин!',
+                    answer: 'Актуальну інформацію про початок прийому, графік роботи та нові послуги публікуємо на сайті й у наших соціальних мережах.',
                     visible: true
                 },
                 {
@@ -5849,7 +5939,6 @@
                 'adminBookingTitle',
                 'adminBookingDescription',
                 'adminInstagram',
-                'adminInstagramLabel',
                 'adminAppointmentServices',
                 'adminAppointmentFormats',
                 'adminSocialLinks',
@@ -5907,7 +5996,6 @@
             about: [
                 'adminPageAbout',
                 'adminHeroAboutImage',
-                'adminAboutTag',
                 'adminAboutPageTag',
                 'adminSaveAboutButton',
                 'adminAboutValuesTitle',
@@ -6881,7 +6969,7 @@
         siteConfig.bookingTitle = document.getElementById('adminBookingTitle').value.trim();
         siteConfig.bookingDescription = document.getElementById('adminBookingDescription').value.trim();
         siteConfig.instagram = document.getElementById('adminInstagram').value.trim();
-        siteConfig.instagramLabel = document.getElementById('adminInstagramLabel').value.trim() || 'Instagram';
+        siteConfig.instagramLabel = 'Instagram';
         siteConfig.psychologyPageTag = document.getElementById('adminPsychologyPageTag').value.trim();
         siteConfig.psychologyPageTitle = document.getElementById('adminPsychologyPageTitle').value.trim();
         siteConfig.psychologyPageIntro = document.getElementById('adminPsychologyPageIntro').value.trim();
@@ -8553,17 +8641,37 @@
         return '<span class="service-emoji">' + bprEscapeText(raw) + '</span>';
     }
     function adminStructuredToggle(button) {
-        const card = button.closest('.admin-structured-card'); const body = card?.querySelector('.admin-structured-body'); if (!body) return;
-        body.hidden = !body.hidden; button.textContent = body.hidden ? 'Редагувати' : 'Згорнути';
+        const card = button.closest('.admin-structured-card');
+        const body = card?.querySelector('.admin-structured-body');
+        if (!body) return;
+        body.hidden = !body.hidden;
+        card.classList.toggle('is-open', !body.hidden);
+        button.textContent = body.hidden ? '✎ Редагувати' : '⌃ Згорнути';
+        if (!body.hidden) {
+            const firstField = body.querySelector('input:not([type=hidden]), textarea, select');
+            setTimeout(() => firstField?.focus({preventScroll:true}), 50);
+        }
     }
     function adminVisibleButton(value, onclick) { return '<button class="admin-visibility-btn '+(value===false?'is-hidden':'')+'" type="button" onclick="'+onclick+'">'+(value===false?'Приховано':'Показується')+'</button>'; }
+
+    function adminBindStructuredCardClicks(root=document) {
+        root.querySelectorAll('.admin-structured-card').forEach(card => {
+            if (card.dataset.cardClickBound === 'true') return;
+            card.dataset.cardClickBound = 'true';
+            const summary = card.querySelector('.admin-structured-summary');
+            summary?.addEventListener('click', () => {
+                const button = card.querySelector('.admin-structured-actions .bpr-btn-quiet');
+                if (button) adminStructuredToggle(button);
+            });
+        });
+    }
 
     function adminRenderServiceCardsEditor() {
         const list=document.getElementById('adminServiceCardsEditor'); if(!list)return;
         const items=Array.isArray(siteConfig.serviceCards)?siteConfig.serviceCards:[];
         list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-service-card-index="${i}">
           <div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${adminServiceIconMarkup(item.icon)}</div><div><strong>${bprEscapeText(item.title||'Нова послуга')}</strong><small>${bprEscapeText(item.description||'Без опису')}</small></div></div>
-          <div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleServiceCardVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveServiceCard(${i})">Видалити</button></div></div>
+          <div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleServiceCardVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">✎ Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveServiceCard(${i})">Видалити</button></div></div>
           <div class="admin-structured-body" hidden><div class="admin-structured-grid">
             <label class="bpr-field"><span>Емодзі або картинка</span><input data-service-card-field="icon" value="${bprEscapeText(item.icon||'')}" placeholder="💉 або assets/icon.png"></label>
             <label class="bpr-field"><span>Назва</span><input data-service-card-field="title" value="${bprEscapeText(item.title||'')}"></label>
@@ -8584,7 +8692,7 @@
     function adminMoveServiceCard(i,d){siteConfig.serviceCards=adminCollectServiceCardsEditor();const j=i+d;if(j<0||j>=siteConfig.serviceCards.length)return;[siteConfig.serviceCards[i],siteConfig.serviceCards[j]]=[siteConfig.serviceCards[j],siteConfig.serviceCards[i]];adminRenderServiceCardsEditor();adminRenderServiceCards();}
     function adminToggleServiceCardVisibility(i){siteConfig.serviceCards=adminCollectServiceCardsEditor();if(!siteConfig.serviceCards[i])return;siteConfig.serviceCards[i].visible=siteConfig.serviceCards[i].visible===false;adminRenderServiceCardsEditor();adminRenderServiceCards();adminSaveSiteState();}
 
-    function adminRenderAppointmentServicesEditor(){const list=document.getElementById('adminAppointmentServicesEditor');if(!list)return;const items=Array.isArray(siteConfig.appointmentServices)?siteConfig.appointmentServices:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-appointment-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${adminServiceIconMarkup(item.icon)}</div><div><strong>${bprEscapeText(item.name||'Нова послуга')}</strong><small>Кнопка у формі запису</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleAppointmentServiceVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveAppointmentService(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Емодзі</span><input data-appointment-field="icon" value="${bprEscapeText(item.icon||'')}"></label><label class="bpr-field"><span>Назва</span><input data-appointment-field="name" value="${bprEscapeText(item.name||'')}"></label><input data-appointment-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAppointmentService(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAppointmentService(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncAppointmentServicesEditor();}
+    function adminRenderAppointmentServicesEditor(){const list=document.getElementById('adminAppointmentServicesEditor');if(!list)return;const items=Array.isArray(siteConfig.appointmentServices)?siteConfig.appointmentServices:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-appointment-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${adminServiceIconMarkup(item.icon)}</div><div><strong>${bprEscapeText(item.name||'Нова послуга')}</strong><small>Кнопка у формі запису</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleAppointmentServiceVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">✎ Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveAppointmentService(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Емодзі</span><input data-appointment-field="icon" value="${bprEscapeText(item.icon||'')}"></label><label class="bpr-field"><span>Назва</span><input data-appointment-field="name" value="${bprEscapeText(item.name||'')}"></label><input data-appointment-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAppointmentService(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAppointmentService(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncAppointmentServicesEditor();}
     function adminCollectAppointmentServicesEditor(){const cards=document.querySelectorAll('#adminAppointmentServicesEditor .admin-structured-card');if(!cards.length)return adminParseAppointmentServices(document.getElementById('adminAppointmentServices')?.value||'');return Array.from(cards).map(card=>{const f=n=>card.querySelector(`[data-appointment-field="${n}"]`);return{icon:f('icon')?.value.trim()||'✚',name:f('name')?.value.trim()||'',visible:f('visible')?f('visible').checked:true};}).filter(x=>x.name);}
     function adminSyncAppointmentServicesEditor(){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();const f=document.getElementById('adminAppointmentServices');if(f)f.value=adminAppointmentServicesToText(siteConfig.appointmentServices);}
     function adminAddAppointmentService(){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();siteConfig.appointmentServices.push({icon:'✚',name:'Нова послуга',visible:true});adminRenderAppointmentServicesEditor();}
@@ -8592,7 +8700,7 @@
     function adminMoveAppointmentService(i,d){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();const j=i+d;if(j<0||j>=siteConfig.appointmentServices.length)return;[siteConfig.appointmentServices[i],siteConfig.appointmentServices[j]]=[siteConfig.appointmentServices[j],siteConfig.appointmentServices[i]];adminRenderAppointmentServicesEditor();adminRenderAppointmentServices();}
     function adminToggleAppointmentServiceVisibility(i){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();if(!siteConfig.appointmentServices[i])return;siteConfig.appointmentServices[i].visible=siteConfig.appointmentServices[i].visible===false;adminRenderAppointmentServicesEditor();adminRenderAppointmentServices();adminSaveSiteState();}
 
-    function adminRenderSocialLinksEditor(){const list=document.getElementById('adminSocialLinksEditor');if(!list)return;const items=Array.isArray(siteConfig.socialLinks)?siteConfig.socialLinks:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-social-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${brandIconSvg((item.label||'')+' '+(item.url||''))}</div><div><strong>${bprEscapeText(item.label||'Соцмережа')}</strong><small>${bprEscapeText(item.url||'Без посилання')}</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleSocialVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveSocialLink(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Назва</span><input data-social-field="label" value="${bprEscapeText(item.label||'')}"></label><label class="bpr-field"><span>Посилання</span><input data-social-field="url" value="${bprEscapeText(item.url||'')}" placeholder="https://..."></label><input data-social-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveSocialLink(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveSocialLink(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncSocialLinksEditor();}
+    function adminRenderSocialLinksEditor(){const list=document.getElementById('adminSocialLinksEditor');if(!list)return;const items=Array.isArray(siteConfig.socialLinks)?siteConfig.socialLinks:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-social-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${brandIconSvg((item.label||'')+' '+(item.url||''))}</div><div><strong>${bprEscapeText(item.label||'Соцмережа')}</strong><small>${bprEscapeText(item.url||'Без посилання')}</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleSocialVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">✎ Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveSocialLink(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Назва</span><input data-social-field="label" value="${bprEscapeText(item.label||'')}"></label><label class="bpr-field"><span>Посилання</span><input data-social-field="url" value="${bprEscapeText(item.url||'')}" placeholder="https://..."></label><input data-social-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveSocialLink(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveSocialLink(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncSocialLinksEditor();}
     function adminCollectSocialLinksEditor(){const cards=document.querySelectorAll('#adminSocialLinksEditor .admin-structured-card');if(!cards.length)return adminParseSocialLinks(document.getElementById('adminSocialLinks')?.value||'');return Array.from(cards).map(card=>{const f=n=>card.querySelector(`[data-social-field="${n}"]`);return{label:f('label')?.value.trim()||'',url:f('url')?.value.trim()||'',visible:f('visible')?f('visible').checked:true};}).filter(x=>x.label||x.url);}
     function adminSyncSocialLinksEditor(){siteConfig.socialLinks=adminCollectSocialLinksEditor();const f=document.getElementById('adminSocialLinks');if(f)f.value=adminSocialLinksToText(siteConfig.socialLinks);}
     function adminAddSocialLink(){siteConfig.socialLinks=adminCollectSocialLinksEditor();siteConfig.socialLinks.push({label:'Instagram',url:'',visible:true});adminRenderSocialLinksEditor();}
@@ -8601,11 +8709,11 @@
     function adminToggleSocialVisibility(i){siteConfig.socialLinks=adminCollectSocialLinksEditor();if(!siteConfig.socialLinks[i])return;siteConfig.socialLinks[i].visible=siteConfig.socialLinks[i].visible===false;adminRenderSocialLinksEditor();adminRenderSocialLinks();adminSaveSiteState();}
 
     const ADMIN_HERO_PAGES=[['psychology','Психологія'],['services','Послуги'],['prices','Прайс'],['team','Команда'],['about','Про нас'],['training','Навчання']];
-    function adminRenderPageHeroImagesEditor(){const list=document.getElementById('adminPageHeroImagesEditor');if(!list)return;const imgs=siteConfig.pageHeroImages||{};list.innerHTML=ADMIN_HERO_PAGES.map(([key,label])=>`<div class="admin-structured-card" data-hero-page="${key}"><div class="admin-structured-head"><div class="admin-structured-summary"><div><strong>${label}</strong><small>${bprEscapeText(imgs[key]||'Без картинки')}</small></div></div><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button></div><div class="admin-structured-body" hidden><label class="bpr-field"><span>Шлях або URL картинки</span><input data-hero-field value="${bprEscapeText(imgs[key]||'')}" placeholder="assets/photo.jpg або https://..."></label></div></div>`).join('');adminSyncPageHeroImagesEditor();}
+    function adminRenderPageHeroImagesEditor(){const list=document.getElementById('adminPageHeroImagesEditor');if(!list)return;const imgs=siteConfig.pageHeroImages||{};list.innerHTML=ADMIN_HERO_PAGES.map(([key,label])=>`<div class="admin-structured-card" data-hero-page="${key}"><div class="admin-structured-head"><div class="admin-structured-summary"><div><strong>${label}</strong><small>${bprEscapeText(imgs[key]||'Без картинки')}</small></div></div><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">✎ Редагувати</button></div><div class="admin-structured-body" hidden><label class="bpr-field"><span>Шлях або URL картинки</span><input data-hero-field value="${bprEscapeText(imgs[key]||'')}" placeholder="assets/photo.jpg або https://..."></label></div></div>`).join('');adminSyncPageHeroImagesEditor();}
     function adminCollectPageHeroImagesEditor(){const out={};document.querySelectorAll('#adminPageHeroImagesEditor .admin-structured-card').forEach(card=>{out[card.dataset.heroPage]=card.querySelector('[data-hero-field]')?.value.trim()||'';});return out;}
     function adminSyncPageHeroImagesEditor(){if(!document.getElementById('adminPageHeroImagesEditor'))return;siteConfig.pageHeroImages={...(siteConfig.pageHeroImages||{}),...adminCollectPageHeroImagesEditor()};const f=document.getElementById('adminPageHeroImages');if(f)f.value=adminPageHeroImagesToText(siteConfig.pageHeroImages);}
 
-    function adminRenderAboutValuesEditor(){const list=document.getElementById('adminAboutValuesEditor');if(!list)return;const items=Array.isArray(siteConfig.aboutValues)?siteConfig.aboutValues:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-value-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div><strong>${bprEscapeText(item.title||'Нова цінність')}</strong><small>${bprEscapeText(item.description||'Без опису')}</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleAboutValueVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveAboutValue(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Назва</span><input data-value-field="title" value="${bprEscapeText(item.title||'')}"></label><label class="bpr-field bpr-full"><span>Опис</span><textarea data-value-field="description" style="min-height:90px;">${bprEscapeText(item.description||'')}</textarea></label><input data-value-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAboutValue(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAboutValue(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncAboutValuesEditor();}
+    function adminRenderAboutValuesEditor(){const list=document.getElementById('adminAboutValuesEditor');if(!list)return;const items=Array.isArray(siteConfig.aboutValues)?siteConfig.aboutValues:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-value-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div><strong>${bprEscapeText(item.title||'Нова цінність')}</strong><small>${bprEscapeText(item.description||'Без опису')}</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleAboutValueVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">✎ Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveAboutValue(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Назва</span><input data-value-field="title" value="${bprEscapeText(item.title||'')}"></label><label class="bpr-field bpr-full"><span>Опис</span><textarea data-value-field="description" style="min-height:90px;">${bprEscapeText(item.description||'')}</textarea></label><input data-value-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAboutValue(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAboutValue(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncAboutValuesEditor();}
     function adminCollectAboutValuesEditor(){const cards=document.querySelectorAll('#adminAboutValuesEditor .admin-structured-card');if(!cards.length)return adminParseAboutValues(document.getElementById('adminAboutValues')?.value||'');return Array.from(cards).map(card=>{const f=n=>card.querySelector(`[data-value-field="${n}"]`);return{title:f('title')?.value.trim()||'',description:f('description')?.value.trim()||'',visible:f('visible')?f('visible').checked:true};}).filter(x=>x.title||x.description);}
     function adminSyncAboutValuesEditor(){siteConfig.aboutValues=adminCollectAboutValuesEditor();const f=document.getElementById('adminAboutValues');if(f)f.value=adminAboutValuesToText(siteConfig.aboutValues);}
     function adminAddAboutValue(){siteConfig.aboutValues=adminCollectAboutValuesEditor();siteConfig.aboutValues.push({title:'Нова цінність',description:'',visible:true});adminRenderAboutValuesEditor();}
@@ -8616,7 +8724,7 @@
     function adminBindStructuredEditors(){
       [['adminServiceCardsEditor',adminSyncServiceCardsEditor],['adminAppointmentServicesEditor',adminSyncAppointmentServicesEditor],['adminSocialLinksEditor',adminSyncSocialLinksEditor],['adminPageHeroImagesEditor',adminSyncPageHeroImagesEditor],['adminAboutValuesEditor',adminSyncAboutValuesEditor]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el&&el.dataset.bound!=='true'){el.dataset.bound='true';el.addEventListener('input',fn);el.addEventListener('change',fn);}});
     }
-    function adminRenderStructuredEditors(){adminRenderServiceCardsEditor();adminRenderAppointmentServicesEditor();adminRenderSocialLinksEditor();adminRenderPageHeroImagesEditor();adminRenderAboutValuesEditor();adminBindStructuredEditors();}
+    function adminRenderStructuredEditors(){adminRenderServiceCardsEditor();adminRenderAppointmentServicesEditor();adminRenderSocialLinksEditor();adminRenderPageHeroImagesEditor();adminRenderAboutValuesEditor();adminBindStructuredEditors();adminBindStructuredCardClicks(document);}
 
     const originalAdminFillFormsV15=adminFillForms;
     adminFillForms=function(){originalAdminFillFormsV15();adminRenderStructuredEditors();};
@@ -8632,10 +8740,10 @@
             visibility: 'adminPageHome',
             groups: [
                 ['Перший екран', 'Головний заголовок, опис, оголошення та зображення.', ['adminHeroBadge','adminHeroTitle','adminHeroSubtitle','adminAnnouncementText','adminHeroLogoImage','adminHeroBackgroundImage']],
-                ['Кнопки та декларація', 'Підписи основних дій на головній сторінці.', ['adminDeclarationButtonLabel','adminInstagramLabel']],
+                ['Декларація', 'Налаштування кнопки для укладення декларації на головній сторінці.', ['adminDeclarationButtonLabel']],
                 ['Запис на прийом', 'Тексти блоку запису, доступні послуги та формати.', ['adminBookingTag','adminBookingTitle','adminBookingDescription','adminAppointmentServices','adminAppointmentFormats']],
                 ['Контакти', 'Телефон, WhatsApp, email, графік та адреса.', ['adminContactPhone','adminContactWhatsapp','adminContactEmail','adminContactHours','adminContactAddress']],
-                ['Соціальні мережі', 'Instagram та інші посилання, що відображаються на сайті.', ['adminInstagram','adminSocialLinks']]
+                ['Соціальні мережі', 'Instagram, Facebook, WhatsApp та інші посилання. Назви, адреси й видимість редагуються тут.', ['adminInstagram','adminSocialLinks']]
             ]
         },
         psychology: {
@@ -8676,7 +8784,7 @@
             intro: ['Про нас', 'Розбийте інформацію про клініку на окремі логічні блоки.'],
             visibility: 'adminPageAbout',
             groups: [
-                ['Шапка сторінки', 'Плашка, заголовок і верхнє зображення.', ['adminHeroAboutImage','adminAboutTag','adminAboutPageTag','adminAboutTitle']],
+                ['Шапка сторінки', 'Плашка, заголовок і верхнє зображення.', ['adminHeroAboutImage','adminAboutPageTag','adminAboutTitle']],
                 ['Місія', 'Заголовок і основний текст про місію клініки.', ['adminAboutMissionTitle','adminAboutMissionText']],
                 ['Цінності', 'Заголовок і список ключових цінностей.', ['adminAboutValuesTitle','adminAboutValues']]
             ]
