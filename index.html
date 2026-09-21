@@ -2862,7 +2862,26 @@
             .admin-friendly-card-body .bpr-field { grid-column: 1/-1; }
             .admin-page-visibility-button { font-size:.72rem; padding:8px 10px; }
         }
-</style>
+
+        /* ===== STRUCTURED ADMIN EDITORS V15 ===== */
+        .admin-structured-card { border:1px solid rgba(212,196,176,.75); border-radius:18px; background:#fff; padding:16px; margin-bottom:12px; box-shadow:0 8px 24px rgba(74,74,74,.05); }
+        .admin-structured-head { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+        .admin-structured-summary { display:flex; align-items:center; gap:12px; min-width:0; }
+        .admin-structured-emoji { width:42px; height:42px; border-radius:12px; background:#f5efe6; display:grid; place-items:center; font-size:1.45rem; flex:0 0 auto; overflow:hidden; }
+        .admin-structured-emoji img { width:100%; height:100%; object-fit:contain; }
+        .admin-structured-summary strong { display:block; color:var(--dark); font-size:.96rem; }
+        .admin-structured-summary small { display:block; color:var(--graphite-light); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:520px; }
+        .admin-structured-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+        .admin-structured-body { padding-top:15px; }
+        .admin-structured-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+        .admin-structured-grid .bpr-full { grid-column:1/-1; }
+        .admin-icon-preview-row { display:flex; gap:10px; align-items:center; }
+        .admin-icon-preview { width:48px; height:48px; flex:0 0 48px; border-radius:12px; background:#f5efe6; display:grid; place-items:center; font-size:1.6rem; overflow:hidden; }
+        .admin-icon-preview img { width:100%; height:100%; object-fit:contain; }
+        .service-icon > span.service-emoji, .psych-service-item .service-emoji { font-size:1.8rem; line-height:1; }
+        .service-icon img.service-icon-image { width:34px; height:34px; object-fit:contain; }
+        @media(max-width:760px){ .admin-structured-head{align-items:flex-start;flex-direction:column}.admin-structured-actions{width:100%;justify-content:flex-start}.admin-structured-grid{grid-template-columns:1fr}.admin-structured-grid .bpr-full{grid-column:auto}.admin-structured-summary small{max-width:260px} }
+    </style>
 </head>
 <body>
 
@@ -3419,12 +3438,10 @@
                                 <textarea id="adminServicesSubtitle"></textarea>
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="adminServicesList">Послуги</label>
-                                <textarea id="adminServicesList" style="min-height: 210px;"></textarea>
-                                <div class="admin-help">
-                                    Одна послуга = один рядок. Формат: емодзі | назва | опис | мітка | сторінка | visible або hidden.
-                                    Сторінка: psychology, services, prices, booking або повне https-посилання.
-                                </div>
+                                <label>Картки послуг</label>
+                                <div id="adminServiceCardsEditor" class="admin-content-list"></div>
+                                <div class="bpr-inline-actions" style="margin-top:12px;"><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddServiceCard()">+ Додати послугу</button></div>
+                                <textarea id="adminServicesList" hidden></textarea>
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminHeroLogoImage">Лого/картинка на головній</label>
@@ -3465,12 +3482,10 @@
                                 <input type="file" accept="image/*" onchange="adminLoadImageFile(event, 'adminHeroTrainingImage')">
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="adminAppointmentServices">Кнопки послуг у записі</label>
-                                <textarea id="adminAppointmentServices" style="min-height: 150px;"></textarea>
-                                <div class="admin-help">
-                                    Одна кнопка = один рядок. Формат: емодзі | назва | visible або hidden.
-                                    Приклад: 💉 | Вакцинація | hidden
-                                </div>
+                                <label>Послуги у формі запису</label>
+                                <div id="adminAppointmentServicesEditor" class="admin-content-list"></div>
+                                <div class="bpr-inline-actions" style="margin-top:12px;"><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddAppointmentService()">+ Додати послугу</button></div>
+                                <textarea id="adminAppointmentServices" hidden></textarea>
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminAppointmentFormats">Формати консультації</label>
@@ -3581,12 +3596,10 @@
                                 <div class="admin-help">Питання та відповіді редагуються окремими картками. Порядок можна змінювати стрілками.</div>
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="adminSocialLinks">Соцмережі внизу сайту</label>
-                                <textarea id="adminSocialLinks" style="min-height: 120px;"></textarea>
-                                <div class="admin-help">
-                                    Один значок = один рядок. Формат: ярлик/емодзі | назва кнопки | приховане посилання | visible або hidden.
-                                    На сайті показується тільки ярлик кнопки, саме посилання не виводиться текстом.
-                                </div>
+                                <label>Соціальні мережі внизу сайту</label>
+                                <div id="adminSocialLinksEditor" class="admin-content-list"></div>
+                                <div class="bpr-inline-actions" style="margin-top:12px;"><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddSocialLink()">+ Додати соцмережу</button></div>
+                                <textarea id="adminSocialLinks" hidden></textarea>
                             </div>
                             <div class="bpr-field bpr-full" hidden>
                                 <label for="adminPageHeroImages">Верхні картинки сторінок</label>
@@ -3668,11 +3681,10 @@
                                 <div class="admin-help">Новий абзац = новий рядок.</div>
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="adminAboutValues">Цінності</label>
-                                <textarea id="adminAboutValues" style="min-height: 150px;"></textarea>
-                                <div class="admin-help">
-                                    Один пункт = один рядок. Формат: емодзі/назва | опис | visible або hidden.
-                                </div>
+                                <label>Цінності</label>
+                                <div id="adminAboutValuesEditor" class="admin-content-list"></div>
+                                <div class="bpr-inline-actions" style="margin-top:12px;"><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddAboutValue()">+ Додати цінність</button></div>
+                                <textarea id="adminAboutValues" hidden></textarea>
                             </div>
                             <div class="bpr-field">
                                 <label for="adminContactPhone">Телефон</label>
@@ -6083,7 +6095,7 @@
         const cards = (siteConfig.serviceCards || []).filter(item => item.visible !== false && item.title);
         const html = cards.map((item, index) => `
             <a href="#" class="service-card reveal visible reveal-delay-${(index % 4) + 1}" onclick="${adminServiceCardAction(item.target, index)}">
-                <div class="service-icon">${brandIconSvg((item.label || '') + ' ' + (item.url || '') + ' ' + (item.icon || ''))}</div>
+                <div class="service-icon">${adminServiceIconMarkup(item.icon)}</div>
                 <h3>${bprEscapeText(item.title)}</h3>
                 <p>${bprEscapeText(item.description)}</p>
                 <span class="service-link">${bprEscapeText(item.label || 'Детальніше')} →</span>
@@ -6178,7 +6190,7 @@
                     </div>
                 </div>
                 <div class="admin-psych-grid">
-                    <label class="bpr-field"><span>Емодзі / ярлик</span><input data-psych-field="icon" value="${brandIconSvg((item.label || '') + ' ' + (item.url || '') + ' ' + (item.icon || ''))}" placeholder="🛡️"></label>
+                    <label class="bpr-field"><span>Емодзі / ярлик</span><input data-psych-field="icon" value="${bprEscapeText(item.icon || '')}" placeholder="🛡️"></label>
                     <label class="bpr-field"><span>Назва</span><input data-psych-field="title" value="${bprEscapeText(item.title || '')}" placeholder="ПТСР та гострий стрес"></label>
                     <label class="bpr-field bpr-full"><span>Короткий опис</span><textarea data-psych-field="description" style="min-height:90px;">${bprEscapeText(item.description || '')}</textarea></label>
                     <label class="bpr-field"><span>Підпис / формат</span><input data-psych-field="label" value="${bprEscapeText(item.label || '')}" placeholder="Індивідуально"></label>
@@ -6269,7 +6281,7 @@
             const visibleItems = items.length ? items : adminDefaultSiteConfig().psychologyServiceItems;
             psychologyGrid.innerHTML = visibleItems.map(item => `
                 <div class="psych-service-item">
-                    <div style="font-size: 2rem; margin-bottom: 15px;">${brandIconSvg((item.label || '') + ' ' + (item.url || '') + ' ' + (item.icon || ''))}</div>
+                    <div style="font-size: 2rem; margin-bottom: 15px;">${adminServiceIconMarkup(item.icon)}</div>
                     <h3>${bprEscapeText(item.title)}</h3>
                     <p>${bprEscapeText(item.description || '')}</p>
                     <span class="price-tag">${bprEscapeText(item.label || '')}</span>
@@ -8481,6 +8493,89 @@
 
 
 
+
+    // ===== STRUCTURED ADMIN EDITORS V15 =====
+    function adminServiceIconMarkup(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '<span class="service-emoji">✚</span>';
+        if (/<svg[\s>]/i.test(raw) || raw.includes('&lt;svg')) return '<span class="service-emoji">🧠</span>';
+        const normalized = adminNormalizeImageValue(raw);
+        if (adminLooksLikeImage(normalized)) return '<img class="service-icon-image" src="' + bprEscapeText(normalized) + '" alt="">';
+        return '<span class="service-emoji">' + bprEscapeText(raw) + '</span>';
+    }
+    function adminStructuredToggle(button) {
+        const card = button.closest('.admin-structured-card'); const body = card?.querySelector('.admin-structured-body'); if (!body) return;
+        body.hidden = !body.hidden; button.textContent = body.hidden ? 'Редагувати' : 'Згорнути';
+    }
+    function adminVisibleButton(value, onclick) { return '<button class="admin-visibility-btn '+(value===false?'is-hidden':'')+'" type="button" onclick="'+onclick+'">'+(value===false?'Приховано':'Показується')+'</button>'; }
+
+    function adminRenderServiceCardsEditor() {
+        const list=document.getElementById('adminServiceCardsEditor'); if(!list)return;
+        const items=Array.isArray(siteConfig.serviceCards)?siteConfig.serviceCards:[];
+        list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-service-card-index="${i}">
+          <div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${adminServiceIconMarkup(item.icon)}</div><div><strong>${bprEscapeText(item.title||'Нова послуга')}</strong><small>${bprEscapeText(item.description||'Без опису')}</small></div></div>
+          <div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleServiceCardVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveServiceCard(${i})">Видалити</button></div></div>
+          <div class="admin-structured-body" hidden><div class="admin-structured-grid">
+            <label class="bpr-field"><span>Емодзі або картинка</span><input data-service-card-field="icon" value="${bprEscapeText(item.icon||'')}" placeholder="💉 або assets/icon.png"></label>
+            <label class="bpr-field"><span>Назва</span><input data-service-card-field="title" value="${bprEscapeText(item.title||'')}"></label>
+            <label class="bpr-field bpr-full"><span>Опис</span><textarea data-service-card-field="description" style="min-height:90px;">${bprEscapeText(item.description||'')}</textarea></label>
+            <label class="bpr-field"><span>Підпис кнопки</span><input data-service-card-field="label" value="${bprEscapeText(item.label||'Детальніше')}"></label>
+            <label class="bpr-field"><span>Куди веде</span><select data-service-card-field="target"><option value="services">Інформація про послугу</option><option value="psychology">Психологія</option><option value="prices">Прайс</option><option value="booking">Запис</option><option value="custom">Інше посилання</option></select></label>
+            <label class="bpr-field bpr-full" data-service-custom-wrap hidden><span>Власне посилання</span><input data-service-card-field="customTarget" placeholder="https://..."></label>
+            <input data-service-card-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden>
+            <div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveServiceCard(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveServiceCard(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div>
+          </div></div></div>`).join('');
+        list.querySelectorAll('.admin-structured-card').forEach((card,i)=>{ const item=items[i]||{}; const sel=card.querySelector('[data-service-card-field="target"]'); const custom=card.querySelector('[data-service-card-field="customTarget"]'); const wrap=card.querySelector('[data-service-custom-wrap]'); const known=['services','psychology','prices','booking']; if(sel){sel.value=known.includes(item.target)?item.target:'custom';} if(custom)custom.value=known.includes(item.target)?'':(item.target||''); if(wrap)wrap.hidden=sel?.value!=='custom'; sel?.addEventListener('change',()=>{if(wrap)wrap.hidden=sel.value!=='custom';}); });
+        adminSyncServiceCardsEditor();
+    }
+    function adminCollectServiceCardsEditor(){ const cards=document.querySelectorAll('#adminServiceCardsEditor .admin-structured-card'); if(!cards.length)return adminParseServiceCards(document.getElementById('adminServicesList')?.value||''); return Array.from(cards).map(card=>{const f=n=>card.querySelector(`[data-service-card-field="${n}"]`); const sel=f('target')?.value||'services'; return {icon:f('icon')?.value.trim()||'✚',title:f('title')?.value.trim()||'',description:f('description')?.value.trim()||'',label:f('label')?.value.trim()||'Детальніше',target:sel==='custom'?(f('customTarget')?.value.trim()||'services'):sel,visible:f('visible')?f('visible').checked:true};}).filter(x=>x.title||x.description); }
+    function adminSyncServiceCardsEditor(){ siteConfig.serviceCards=adminCollectServiceCardsEditor(); const f=document.getElementById('adminServicesList'); if(f)f.value=adminServiceCardsToText(siteConfig.serviceCards); }
+    function adminAddServiceCard(){siteConfig.serviceCards=adminCollectServiceCardsEditor();siteConfig.serviceCards.push({icon:'✚',title:'Нова послуга',description:'',label:'Детальніше',target:'services',visible:true});adminRenderServiceCardsEditor();}
+    function adminRemoveServiceCard(i){siteConfig.serviceCards=adminCollectServiceCardsEditor();siteConfig.serviceCards.splice(i,1);adminRenderServiceCardsEditor();adminRenderServiceCards();}
+    function adminMoveServiceCard(i,d){siteConfig.serviceCards=adminCollectServiceCardsEditor();const j=i+d;if(j<0||j>=siteConfig.serviceCards.length)return;[siteConfig.serviceCards[i],siteConfig.serviceCards[j]]=[siteConfig.serviceCards[j],siteConfig.serviceCards[i]];adminRenderServiceCardsEditor();adminRenderServiceCards();}
+    function adminToggleServiceCardVisibility(i){siteConfig.serviceCards=adminCollectServiceCardsEditor();if(!siteConfig.serviceCards[i])return;siteConfig.serviceCards[i].visible=siteConfig.serviceCards[i].visible===false;adminRenderServiceCardsEditor();adminRenderServiceCards();adminSaveSiteState();}
+
+    function adminRenderAppointmentServicesEditor(){const list=document.getElementById('adminAppointmentServicesEditor');if(!list)return;const items=Array.isArray(siteConfig.appointmentServices)?siteConfig.appointmentServices:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-appointment-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${adminServiceIconMarkup(item.icon)}</div><div><strong>${bprEscapeText(item.name||'Нова послуга')}</strong><small>Кнопка у формі запису</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleAppointmentServiceVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveAppointmentService(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Емодзі</span><input data-appointment-field="icon" value="${bprEscapeText(item.icon||'')}"></label><label class="bpr-field"><span>Назва</span><input data-appointment-field="name" value="${bprEscapeText(item.name||'')}"></label><input data-appointment-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAppointmentService(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAppointmentService(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncAppointmentServicesEditor();}
+    function adminCollectAppointmentServicesEditor(){const cards=document.querySelectorAll('#adminAppointmentServicesEditor .admin-structured-card');if(!cards.length)return adminParseAppointmentServices(document.getElementById('adminAppointmentServices')?.value||'');return Array.from(cards).map(card=>{const f=n=>card.querySelector(`[data-appointment-field="${n}"]`);return{icon:f('icon')?.value.trim()||'✚',name:f('name')?.value.trim()||'',visible:f('visible')?f('visible').checked:true};}).filter(x=>x.name);}
+    function adminSyncAppointmentServicesEditor(){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();const f=document.getElementById('adminAppointmentServices');if(f)f.value=adminAppointmentServicesToText(siteConfig.appointmentServices);}
+    function adminAddAppointmentService(){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();siteConfig.appointmentServices.push({icon:'✚',name:'Нова послуга',visible:true});adminRenderAppointmentServicesEditor();}
+    function adminRemoveAppointmentService(i){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();siteConfig.appointmentServices.splice(i,1);adminRenderAppointmentServicesEditor();adminRenderAppointmentServices();}
+    function adminMoveAppointmentService(i,d){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();const j=i+d;if(j<0||j>=siteConfig.appointmentServices.length)return;[siteConfig.appointmentServices[i],siteConfig.appointmentServices[j]]=[siteConfig.appointmentServices[j],siteConfig.appointmentServices[i]];adminRenderAppointmentServicesEditor();adminRenderAppointmentServices();}
+    function adminToggleAppointmentServiceVisibility(i){siteConfig.appointmentServices=adminCollectAppointmentServicesEditor();if(!siteConfig.appointmentServices[i])return;siteConfig.appointmentServices[i].visible=siteConfig.appointmentServices[i].visible===false;adminRenderAppointmentServicesEditor();adminRenderAppointmentServices();adminSaveSiteState();}
+
+    function adminRenderSocialLinksEditor(){const list=document.getElementById('adminSocialLinksEditor');if(!list)return;const items=Array.isArray(siteConfig.socialLinks)?siteConfig.socialLinks:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-social-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div class="admin-structured-emoji">${brandIconSvg((item.label||'')+' '+(item.url||''))}</div><div><strong>${bprEscapeText(item.label||'Соцмережа')}</strong><small>${bprEscapeText(item.url||'Без посилання')}</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleSocialVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveSocialLink(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Назва</span><input data-social-field="label" value="${bprEscapeText(item.label||'')}"></label><label class="bpr-field"><span>Посилання</span><input data-social-field="url" value="${bprEscapeText(item.url||'')}" placeholder="https://..."></label><input data-social-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveSocialLink(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveSocialLink(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncSocialLinksEditor();}
+    function adminCollectSocialLinksEditor(){const cards=document.querySelectorAll('#adminSocialLinksEditor .admin-structured-card');if(!cards.length)return adminParseSocialLinks(document.getElementById('adminSocialLinks')?.value||'');return Array.from(cards).map(card=>{const f=n=>card.querySelector(`[data-social-field="${n}"]`);return{label:f('label')?.value.trim()||'',url:f('url')?.value.trim()||'',visible:f('visible')?f('visible').checked:true};}).filter(x=>x.label||x.url);}
+    function adminSyncSocialLinksEditor(){siteConfig.socialLinks=adminCollectSocialLinksEditor();const f=document.getElementById('adminSocialLinks');if(f)f.value=adminSocialLinksToText(siteConfig.socialLinks);}
+    function adminAddSocialLink(){siteConfig.socialLinks=adminCollectSocialLinksEditor();siteConfig.socialLinks.push({label:'Instagram',url:'',visible:true});adminRenderSocialLinksEditor();}
+    function adminRemoveSocialLink(i){siteConfig.socialLinks=adminCollectSocialLinksEditor();siteConfig.socialLinks.splice(i,1);adminRenderSocialLinksEditor();adminRenderSocialLinks();}
+    function adminMoveSocialLink(i,d){siteConfig.socialLinks=adminCollectSocialLinksEditor();const j=i+d;if(j<0||j>=siteConfig.socialLinks.length)return;[siteConfig.socialLinks[i],siteConfig.socialLinks[j]]=[siteConfig.socialLinks[j],siteConfig.socialLinks[i]];adminRenderSocialLinksEditor();adminRenderSocialLinks();}
+    function adminToggleSocialVisibility(i){siteConfig.socialLinks=adminCollectSocialLinksEditor();if(!siteConfig.socialLinks[i])return;siteConfig.socialLinks[i].visible=siteConfig.socialLinks[i].visible===false;adminRenderSocialLinksEditor();adminRenderSocialLinks();adminSaveSiteState();}
+
+    const ADMIN_HERO_PAGES=[['psychology','Психологія'],['services','Послуги'],['prices','Прайс'],['team','Команда'],['about','Про нас'],['training','Навчання']];
+    function adminRenderPageHeroImagesEditor(){const list=document.getElementById('adminPageHeroImagesEditor');if(!list)return;const imgs=siteConfig.pageHeroImages||{};list.innerHTML=ADMIN_HERO_PAGES.map(([key,label])=>`<div class="admin-structured-card" data-hero-page="${key}"><div class="admin-structured-head"><div class="admin-structured-summary"><div><strong>${label}</strong><small>${bprEscapeText(imgs[key]||'Без картинки')}</small></div></div><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button></div><div class="admin-structured-body" hidden><label class="bpr-field"><span>Шлях або URL картинки</span><input data-hero-field value="${bprEscapeText(imgs[key]||'')}" placeholder="assets/photo.jpg або https://..."></label></div></div>`).join('');adminSyncPageHeroImagesEditor();}
+    function adminCollectPageHeroImagesEditor(){const out={};document.querySelectorAll('#adminPageHeroImagesEditor .admin-structured-card').forEach(card=>{out[card.dataset.heroPage]=card.querySelector('[data-hero-field]')?.value.trim()||'';});return out;}
+    function adminSyncPageHeroImagesEditor(){if(!document.getElementById('adminPageHeroImagesEditor'))return;siteConfig.pageHeroImages={...(siteConfig.pageHeroImages||{}),...adminCollectPageHeroImagesEditor()};const f=document.getElementById('adminPageHeroImages');if(f)f.value=adminPageHeroImagesToText(siteConfig.pageHeroImages);}
+
+    function adminRenderAboutValuesEditor(){const list=document.getElementById('adminAboutValuesEditor');if(!list)return;const items=Array.isArray(siteConfig.aboutValues)?siteConfig.aboutValues:[];list.innerHTML=items.map((item,i)=>`<div class="admin-structured-card" data-value-index="${i}"><div class="admin-structured-head"><div class="admin-structured-summary"><div><strong>${bprEscapeText(item.title||'Нова цінність')}</strong><small>${bprEscapeText(item.description||'Без опису')}</small></div></div><div class="admin-structured-actions">${adminVisibleButton(item.visible,`adminToggleAboutValueVisibility(${i})`)}<button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminStructuredToggle(this)">Редагувати</button><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemoveAboutValue(${i})">Видалити</button></div></div><div class="admin-structured-body" hidden><div class="admin-structured-grid"><label class="bpr-field"><span>Назва</span><input data-value-field="title" value="${bprEscapeText(item.title||'')}"></label><label class="bpr-field bpr-full"><span>Опис</span><textarea data-value-field="description" style="min-height:90px;">${bprEscapeText(item.description||'')}</textarea></label><input data-value-field="visible" type="checkbox" ${item.visible===false?'':'checked'} hidden><div class="bpr-inline-actions bpr-full"><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAboutValue(${i},-1)" ${i===0?'disabled':''}>↑ Вище</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminMoveAboutValue(${i},1)" ${i===items.length-1?'disabled':''}>↓ Нижче</button></div></div></div></div>`).join('');adminSyncAboutValuesEditor();}
+    function adminCollectAboutValuesEditor(){const cards=document.querySelectorAll('#adminAboutValuesEditor .admin-structured-card');if(!cards.length)return adminParseAboutValues(document.getElementById('adminAboutValues')?.value||'');return Array.from(cards).map(card=>{const f=n=>card.querySelector(`[data-value-field="${n}"]`);return{title:f('title')?.value.trim()||'',description:f('description')?.value.trim()||'',visible:f('visible')?f('visible').checked:true};}).filter(x=>x.title||x.description);}
+    function adminSyncAboutValuesEditor(){siteConfig.aboutValues=adminCollectAboutValuesEditor();const f=document.getElementById('adminAboutValues');if(f)f.value=adminAboutValuesToText(siteConfig.aboutValues);}
+    function adminAddAboutValue(){siteConfig.aboutValues=adminCollectAboutValuesEditor();siteConfig.aboutValues.push({title:'Нова цінність',description:'',visible:true});adminRenderAboutValuesEditor();}
+    function adminRemoveAboutValue(i){siteConfig.aboutValues=adminCollectAboutValuesEditor();siteConfig.aboutValues.splice(i,1);adminRenderAboutValuesEditor();adminRenderAboutPage();}
+    function adminMoveAboutValue(i,d){siteConfig.aboutValues=adminCollectAboutValuesEditor();const j=i+d;if(j<0||j>=siteConfig.aboutValues.length)return;[siteConfig.aboutValues[i],siteConfig.aboutValues[j]]=[siteConfig.aboutValues[j],siteConfig.aboutValues[i]];adminRenderAboutValuesEditor();adminRenderAboutPage();}
+    function adminToggleAboutValueVisibility(i){siteConfig.aboutValues=adminCollectAboutValuesEditor();if(!siteConfig.aboutValues[i])return;siteConfig.aboutValues[i].visible=siteConfig.aboutValues[i].visible===false;adminRenderAboutValuesEditor();adminRenderAboutPage();adminSaveSiteState();}
+
+    function adminBindStructuredEditors(){
+      [['adminServiceCardsEditor',adminSyncServiceCardsEditor],['adminAppointmentServicesEditor',adminSyncAppointmentServicesEditor],['adminSocialLinksEditor',adminSyncSocialLinksEditor],['adminPageHeroImagesEditor',adminSyncPageHeroImagesEditor],['adminAboutValuesEditor',adminSyncAboutValuesEditor]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el&&el.dataset.bound!=='true'){el.dataset.bound='true';el.addEventListener('input',fn);el.addEventListener('change',fn);}});
+    }
+    function adminRenderStructuredEditors(){adminRenderServiceCardsEditor();adminRenderAppointmentServicesEditor();adminRenderSocialLinksEditor();adminRenderPageHeroImagesEditor();adminRenderAboutValuesEditor();adminBindStructuredEditors();}
+
+    const originalAdminFillFormsV15=adminFillForms;
+    adminFillForms=function(){originalAdminFillFormsV15();adminRenderStructuredEditors();};
+    const originalAdminCollectAllVisibleEditorsV15=adminCollectAllVisibleEditors;
+    adminCollectAllVisibleEditors=function(){originalAdminCollectAllVisibleEditorsV15();adminSyncServiceCardsEditor();adminSyncAppointmentServicesEditor();adminSyncSocialLinksEditor();adminSyncPageHeroImagesEditor();adminSyncAboutValuesEditor();};
+    const originalAdminSaveSiteSettingsV15=adminSaveSiteSettings;
+    adminSaveSiteSettings=function(event){adminSyncServiceCardsEditor();adminSyncAppointmentServicesEditor();adminSyncSocialLinksEditor();adminSyncPageHeroImagesEditor();adminSyncAboutValuesEditor();originalAdminSaveSiteSettingsV15(event);adminRenderStructuredEditors();};
+
     // ===== FRIENDLY ADMIN PANELS V13 =====
     const ADMIN_FRIENDLY_PANEL_DEFS = {
         home: {
@@ -8661,6 +8756,7 @@
     };
 
     adminBuildFriendlyPanels();
+    adminRenderStructuredEditors();
 
     initTrainingAdminUX();
     initBackToTop();
