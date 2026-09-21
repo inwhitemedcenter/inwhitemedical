@@ -3632,7 +3632,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v20</div>
+                        <div class="admin-v16-badge">● Admin v21</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -3760,13 +3760,17 @@
                                 <div class="bpr-inline-actions" style="margin-top:12px;"><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddAppointmentService()">+ Додати послугу</button></div>
                                 <textarea id="adminAppointmentServices" hidden></textarea>
                             </div>
-                            <div class="bpr-field bpr-full">
-                                <label for="adminAppointmentFormats">Формати консультації</label>
-                                <textarea id="adminAppointmentFormats" style="min-height: 110px;"></textarea>
-                                <div class="admin-help">
-                                    Один формат = один рядок. Наприклад: Онлайн-сесія або Офлайн в клініці.
-                                </div>
+                            <div class="bpr-field">
+                                <label for="adminClinicFormatLabel">Назва очного формату</label>
+                                <input id="adminClinicFormatLabel" placeholder="Наприклад: У клініці">
+                                <div class="admin-help">Цей текст бачить пацієнт для очного прийому.</div>
                             </div>
+                            <div class="bpr-field">
+                                <label for="adminOnlineFormatLabel">Назва онлайн-формату</label>
+                                <input id="adminOnlineFormatLabel" placeholder="Наприклад: Онлайн-консультація">
+                                <div class="admin-help">Цей текст бачить пацієнт для дистанційної консультації.</div>
+                            </div>
+                            <textarea id="adminAppointmentFormats" hidden></textarea>
                             <div class="bpr-field">
                                 <label for="adminBookingTag">Плашка блоку запису</label>
                                 <input id="adminBookingTag">
@@ -4721,6 +4725,16 @@
         return selected ? String(selected.dataset.serviceName || selected.dataset.priceService || selected.textContent || '').trim() : '';
     }
 
+    function getClinicFormatLabel() {
+        const formats = Array.isArray(siteConfig.appointmentFormats) ? siteConfig.appointmentFormats : [];
+        return String(formats[0] || 'У клініці').trim() || 'У клініці';
+    }
+
+    function getOnlineFormatLabel() {
+        const formats = Array.isArray(siteConfig.appointmentFormats) ? siteConfig.appointmentFormats : [];
+        return String(formats[1] || 'Онлайн-консультація').trim() || 'Онлайн-консультація';
+    }
+
     function resolveAppointmentFormats(form) {
         const service = getSelectedAppointmentService(form);
         const category = String(form?.dataset.priceCategory || '').trim();
@@ -4734,21 +4748,21 @@
             'інʼєкц', 'ін\'єкц', 'маніпуляц', 'забір', 'перев\'яз'
         ];
         if (physicalPatterns.some(pattern => text.includes(pattern))) {
-            return { formats: ['У клініці'], hide: false, fixedValue: 'У клініці' };
+            return { formats: [getClinicFormatLabel()], hide: false, fixedValue: getClinicFormatLabel() };
         }
 
         if (text.includes('психолог') || text.includes('птср') || text.includes('стрес') || text.includes('тривог') || text.includes('депрес')) {
-            return { formats: ['У клініці', 'Онлайн-консультація'], hide: false, fixedValue: '' };
+            return { formats: [getClinicFormatLabel(), getOnlineFormatLabel()], hide: false, fixedValue: '' };
         }
 
         if (text.includes('сімейн') || text.includes('консультац')) {
-            return { formats: ['У клініці', 'Онлайн-консультація'], hide: false, fixedValue: '' };
+            return { formats: [getClinicFormatLabel(), getOnlineFormatLabel()], hide: false, fixedValue: '' };
         }
 
         const configured = Array.isArray(siteConfig.appointmentFormats) && siteConfig.appointmentFormats.length
             ? siteConfig.appointmentFormats
-            : ['У клініці'];
-        return { formats: configured, hide: configured.length <= 1, fixedValue: configured[0] || 'У клініці' };
+            : [getClinicFormatLabel()];
+        return { formats: configured, hide: configured.length <= 1, fixedValue: configured[0] || getClinicFormatLabel() };
     }
 
     function updateDeclarationFields(form) {
@@ -4771,7 +4785,7 @@
                 let select = field.querySelector('[data-appointment-format]');
                 if (!select) return;
                 const previous = select.value;
-                const formats = rule.formats.length ? rule.formats : ['У клініці'];
+                const formats = rule.formats.length ? rule.formats : [getClinicFormatLabel()];
                 select.innerHTML = formats.map(format => '<option value="' + bprEscapeText(format) + '">' + bprEscapeText(format) + '</option>').join('');
                 if (previous && formats.includes(previous)) select.value = previous;
                 else select.value = rule.fixedValue || formats[0];
@@ -4857,7 +4871,7 @@
             phone: normalizeAppointmentPhone(getValue('[data-appointment-phone]')),
             date: getValue('[data-appointment-date]'),
             time: getValue('[data-appointment-time]'),
-            format: isDeclarationForm(form) ? '' : (resolveAppointmentFormats(form).fixedValue || getValue('[data-appointment-format]') || 'У клініці'),
+            format: isDeclarationForm(form) ? '' : (resolveAppointmentFormats(form).fixedValue || getValue('[data-appointment-format]') || getClinicFormatLabel()),
             comment: getValue('[data-appointment-comment]')
         };
         if (!appointment.service) {
@@ -6071,7 +6085,8 @@
                 'adminBookingDescription',
                 'adminInstagram',
                 'adminAppointmentServices',
-                'adminAppointmentFormats',
+                'adminClinicFormatLabel',
+                'adminOnlineFormatLabel',
                 'adminSocialLinks',
                 'adminContactPhone',
                 'adminContactWhatsapp',
@@ -7024,6 +7039,8 @@
         document.getElementById('adminHeroTrainingImage').value = adminNormalizeImageValue(heroImages.training || '');
         document.getElementById('adminAppointmentServices').value = adminAppointmentServicesToText(siteConfig.appointmentServices || []);
         document.getElementById('adminAppointmentFormats').value = adminAppointmentFormatsToText(siteConfig.appointmentFormats || []);
+        document.getElementById('adminClinicFormatLabel').value = getClinicFormatLabel();
+        document.getElementById('adminOnlineFormatLabel').value = getOnlineFormatLabel();
         document.getElementById('adminBookingTag').value = siteConfig.bookingTag || '';
         document.getElementById('adminPsychologyTag').value = siteConfig.psychologyTag || '';
         document.getElementById('adminBookingTitle').value = siteConfig.bookingTitle || '';
@@ -7098,7 +7115,11 @@
         siteConfig.heroLogoImage = document.getElementById('adminHeroLogoImage').value.trim() || adminDefaultSiteConfig().heroLogoImage;
         siteConfig.heroBackgroundImage = document.getElementById('adminHeroBackgroundImage').value.trim() || adminDefaultSiteConfig().heroBackgroundImage;
         siteConfig.appointmentServices = adminParseAppointmentServices(document.getElementById('adminAppointmentServices').value);
-        siteConfig.appointmentFormats = adminParseAppointmentFormats(document.getElementById('adminAppointmentFormats').value);
+        siteConfig.appointmentFormats = [
+            document.getElementById('adminClinicFormatLabel').value.trim() || 'У клініці',
+            document.getElementById('adminOnlineFormatLabel').value.trim() || 'Онлайн-консультація'
+        ];
+        document.getElementById('adminAppointmentFormats').value = adminAppointmentFormatsToText(siteConfig.appointmentFormats);
         siteConfig.bookingTag = document.getElementById('adminBookingTag').value.trim();
         siteConfig.psychologyTag = document.getElementById('adminPsychologyTag').value.trim();
         siteConfig.bookingTitle = document.getElementById('adminBookingTitle').value.trim();
@@ -8880,7 +8901,7 @@
             groups: [
                 ['Перший екран', 'Головний заголовок, опис, оголошення та зображення.', ['adminHeroBadge','adminHeroTitle','adminHeroSubtitle','adminAnnouncementText','adminHeroLogoImage','adminHeroBackgroundImage']],
                 ['Декларація', 'Налаштування кнопки для укладення декларації на головній сторінці.', ['adminDeclarationButtonLabel']],
-                ['Запис на прийом', 'Тексти блоку запису, доступні послуги та формати.', ['adminBookingTag','adminBookingTitle','adminBookingDescription','adminAppointmentServices','adminAppointmentFormats']],
+                ['Запис на прийом', 'Тексти блоку запису, доступні послуги та формати.', ['adminBookingTag','adminBookingTitle','adminBookingDescription','adminAppointmentServices','adminClinicFormatLabel','adminOnlineFormatLabel']],
                 ['Контакти', 'Телефон, WhatsApp, email, графік та адреса.', ['adminContactPhone','adminContactWhatsapp','adminContactEmail','adminContactHours','adminContactAddress']],
                 ['Соціальні мережі', 'Instagram, Facebook, WhatsApp та інші посилання. Назви, адреси й видимість редагуються тут.', ['adminInstagram','adminSocialLinks']]
             ]
