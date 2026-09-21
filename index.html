@@ -3055,7 +3055,98 @@
             #bprDevPanel { padding: 20px 12px 42px; }
         }
 
-    </style>
+    
+        /* ===== WIDE ADMIN EDITOR V20 ===== */
+        #bprDevPanel > .bpr-topbar,
+        #bprDevPanel > .admin-sticky-actions,
+        #bprDevPanel > .admin-section,
+        #bprDevPanel > .bpr-panel {
+            width: min(1680px, calc(100vw - 48px)) !important;
+        }
+        .admin-structured-head {
+            grid-template-columns: minmax(0, 1fr) minmax(310px, 430px) !important;
+            gap: 18px 24px !important;
+        }
+        .admin-structured-summary {
+            display: grid !important;
+            grid-template-columns: 54px minmax(0, 1fr) !important;
+            align-items: start !important;
+            gap: 14px !important;
+        }
+        .admin-structured-emoji {
+            width: 54px !important;
+            height: 54px !important;
+            font-size: 1.65rem !important;
+        }
+        .admin-structured-summary strong {
+            font-size: 1.02rem !important;
+            line-height: 1.28 !important;
+        }
+        .admin-structured-summary small {
+            font-size: .84rem !important;
+            line-height: 1.5 !important;
+            max-width: 900px !important;
+        }
+        .admin-structured-actions {
+            max-width: 430px !important;
+            justify-content: flex-end !important;
+            align-content: flex-start !important;
+        }
+        .admin-structured-actions .bpr-btn,
+        .admin-structured-actions .admin-visibility-btn {
+            padding: 10px 14px !important;
+            font-size: .76rem !important;
+            min-width: 0 !important;
+            white-space: nowrap !important;
+        }
+        .admin-structured-body {
+            margin-top: 10px !important;
+            padding-top: 18px !important;
+            border-top: 1px solid rgba(232,221,208,.7);
+        }
+        .admin-structured-grid {
+            grid-template-columns: minmax(220px, .7fr) minmax(360px, 1.3fr) !important;
+            gap: 16px 18px !important;
+        }
+        .admin-structured-grid .bpr-full {
+            grid-column: 1 / -1 !important;
+        }
+        .admin-structured-body textarea {
+            min-height: 120px !important;
+            line-height: 1.55 !important;
+            resize: vertical !important;
+        }
+        .admin-structured-body input,
+        .admin-structured-body select,
+        .admin-structured-body textarea {
+            font-size: .95rem !important;
+        }
+        @media (max-width: 1180px) {
+            .admin-structured-head {
+                grid-template-columns: 1fr !important;
+            }
+            .admin-structured-actions {
+                max-width: none !important;
+                width: 100% !important;
+                justify-content: flex-start !important;
+            }
+            .admin-structured-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        @media (max-width: 720px) {
+            #bprDevPanel > .bpr-topbar,
+            #bprDevPanel > .admin-sticky-actions,
+            #bprDevPanel > .admin-section,
+            #bprDevPanel > .bpr-panel {
+                width: 100% !important;
+            }
+            .admin-structured-summary {
+                grid-template-columns: 46px minmax(0,1fr) !important;
+            }
+            .admin-structured-emoji { width:46px !important; height:46px !important; }
+        }
+</style>
 </head>
 <body>
 
@@ -3541,7 +3632,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v19</div>
+                        <div class="admin-v16-badge">● Admin v20</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
