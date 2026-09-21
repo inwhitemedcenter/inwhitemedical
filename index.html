@@ -2881,6 +2881,54 @@
         .service-icon > span.service-emoji, .psych-service-item .service-emoji { font-size:1.8rem; line-height:1; }
         .service-icon img.service-icon-image { width:34px; height:34px; object-fit:contain; }
         @media(max-width:760px){ .admin-structured-head{align-items:flex-start;flex-direction:column}.admin-structured-actions{width:100%;justify-content:flex-start}.admin-structured-grid{grid-template-columns:1fr}.admin-structured-grid .bpr-full{grid-column:auto}.admin-structured-summary small{max-width:260px} }
+    
+
+        /* ===== V16: force structured admin editors / hide legacy pipe fields ===== */
+        #adminServicesList,
+        #adminAppointmentServices,
+        #adminSocialLinks,
+        #adminPageHeroImages,
+        #adminAboutValues,
+        #adminPsychologyServiceItems,
+        #adminTestimonials,
+        #adminFaq {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            max-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            pointer-events: none !important;
+        }
+        .admin-v16-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(201,169,110,.13);
+            border: 1px solid rgba(201,169,110,.45);
+            color: #9a773c;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        .admin-content-list:empty::before {
+            content: 'Редактор завантажується…';
+            display: block;
+            padding: 16px;
+            border: 1px dashed var(--beige-dark);
+            border-radius: 14px;
+            color: var(--graphite-light);
+            font-size: .85rem;
+        }
+
     </style>
 </head>
 <body>
@@ -3360,6 +3408,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
+                        <div class="admin-v16-badge">● Admin v16</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи.
@@ -8766,6 +8815,101 @@
     adminRefreshSaveStatus();
     supabaseLoadSiteState({ silent: true });
     supabaseOpenRecoveryModal();
+
+
+    // ===== V16 ROBUST ADMIN INITIALIZATION + LEGACY ICON REPAIR =====
+    function adminServiceFallbackIcon(title) {
+        const value = String(title || '').toLowerCase();
+        if (/психолог|птср|стрес|тривог|депрес/.test(value)) return '🧠';
+        if (/сімейн|загальної практики|лікар/.test(value)) return '🩺';
+        if (/узд|ультразв/.test(value)) return '🔬';
+        if (/вакцин/.test(value)) return '💉';
+        if (/тест|аналіз|лаборатор|crp|глюкоз/.test(value)) return '🧪';
+        return '✦';
+    }
+
+    function adminIconLooksCorrupted(icon) {
+        const raw = String(icon || '').trim();
+        if (!raw) return true;
+        return /<svg[\s>]/i.test(raw)
+            || /&lt;svg/i.test(raw)
+            || /brand-icon/i.test(raw)
+            || /circle[^>]+stroke/i.test(raw)
+            || /data:image\/svg\+xml/i.test(raw)
+            || raw === '⊕'
+            || raw === '✚'
+            || raw === '➕';
+    }
+
+    function adminRepairLegacyServiceIcons() {
+        let changed = false;
+        const repair = (items, titleKey) => {
+            if (!Array.isArray(items)) return items;
+            return items.map(item => {
+                const current = item || {};
+                if (adminIconLooksCorrupted(current.icon)) {
+                    changed = true;
+                    return { ...current, icon: adminServiceFallbackIcon(current[titleKey] || current.title || current.name) };
+                }
+                return current;
+            });
+        };
+        siteConfig.serviceCards = repair(siteConfig.serviceCards, 'title');
+        siteConfig.appointmentServices = repair(siteConfig.appointmentServices, 'name');
+        siteConfig.psychologyServiceItems = repair(siteConfig.psychologyServiceItems, 'title');
+        if (changed) adminSaveSiteState();
+        return changed;
+    }
+
+    function adminForceStructuredEditors() {
+        adminRepairLegacyServiceIcons();
+        if (typeof adminRenderStructuredEditors === 'function') adminRenderStructuredEditors();
+        if (typeof adminRenderPsychologyEditor === 'function') adminRenderPsychologyEditor();
+        if (typeof adminRenderTestimonialsEditor === 'function') adminRenderTestimonialsEditor();
+        if (typeof adminRenderFaqEditor === 'function') adminRenderFaqEditor();
+        // Legacy pipe editors are compatibility storage only and must never be visible.
+        ['adminServicesList','adminAppointmentServices','adminSocialLinks','adminPageHeroImages','adminAboutValues','adminPsychologyServiceItems','adminTestimonials','adminFaq'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.hidden = true;
+                el.setAttribute('aria-hidden','true');
+                el.tabIndex = -1;
+            }
+        });
+    }
+
+    // Repair icons before every public render, including values already saved incorrectly in Supabase.
+    const adminRenderSiteV16Original = adminRenderSite;
+    adminRenderSite = function() {
+        adminRepairLegacyServiceIcons();
+        return adminRenderSiteV16Original.apply(this, arguments);
+    };
+
+    // Always rebuild the friendly editors after forms are populated.
+    const adminFillFormsV16Original = adminFillForms;
+    adminFillForms = function() {
+        const result = adminFillFormsV16Original.apply(this, arguments);
+        adminForceStructuredEditors();
+        return result;
+    };
+
+    // Also enforce editors each time the admin panel is shown.
+    const bprShowDeveloperPanelV16Original = bprShowDeveloperPanel;
+    bprShowDeveloperPanel = function() {
+        const result = bprShowDeveloperPanelV16Original.apply(this, arguments);
+        setTimeout(adminForceStructuredEditors, 0);
+        return result;
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        adminRepairLegacyServiceIcons();
+        setTimeout(() => {
+            adminRenderServiceCards();
+            adminRenderAppointmentServices();
+            adminRenderPsychologyBlock();
+        }, 0);
+    });
+
 </script>
 </body>
 </html>
