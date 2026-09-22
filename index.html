@@ -561,11 +561,28 @@
         }
 
         .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            --service-cols: 4;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: stretch;
             gap: 25px;
             max-width: 1200px;
             margin: 0 auto;
+        }
+
+        .services-grid .service-card {
+            flex: 0 1 calc((100% - (var(--service-cols) - 1) * 25px) / var(--service-cols));
+            min-width: 0;
+        }
+
+        @media (max-width: 980px) {
+            .services-grid { --service-cols: 2 !important; }
+        }
+
+        @media (max-width: 620px) {
+            .services-grid { --service-cols: 1 !important; gap: 16px; }
+            .services-grid .service-card { flex-basis: 100%; }
         }
 
         .service-card {
@@ -3656,7 +3673,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v23</div>
+                        <div class="admin-v16-badge">● Admin v24</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -6537,8 +6554,22 @@
             </a>
         `).join('');
 
-        if (homeGrid) homeGrid.innerHTML = html;
-        if (pageGrid) pageGrid.innerHTML = html;
+        function balancedServiceColumns(count) {
+            if (count <= 1) return 1;
+            if (count === 2) return 2;
+            if (count === 3) return 3;
+            if (count === 4) return 4;
+            if (count === 5 || count === 6) return 3;
+            if (count === 9) return 3;
+            return 4;
+        }
+        const cols = balancedServiceColumns(cards.length);
+        [homeGrid, pageGrid].forEach(grid => {
+            if (!grid) return;
+            grid.innerHTML = html;
+            grid.style.setProperty('--service-cols', String(cols));
+            grid.setAttribute('data-service-count', String(cards.length));
+        });
         if (empty) empty.hidden = cards.length > 0;
     }
 
