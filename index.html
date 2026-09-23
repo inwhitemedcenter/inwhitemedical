@@ -3221,6 +3221,98 @@
             }
             .admin-structured-emoji { width:46px !important; height:46px !important; }
         }
+
+        /* ===== HERO BACKGROUND CAROUSEL / ADMIN ===== */
+        .hero-bg-image {
+            transition: opacity .55s ease, transform .7s ease;
+            opacity: 1;
+        }
+        .hero-bg-image.hero-carousel-fade {
+            opacity: .18;
+            transform: scale(1.008);
+        }
+        .admin-hero-carousel-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .admin-file-button { cursor: pointer; }
+        .admin-hero-delay {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .82rem;
+            color: var(--graphite-light);
+        }
+        .admin-hero-delay select {
+            border: 1px solid var(--beige-dark);
+            border-radius: 12px;
+            padding: 10px 34px 10px 12px;
+            background: white;
+            color: var(--dark);
+        }
+        .admin-hero-carousel-editor {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .admin-hero-slide-card {
+            border: 1px solid var(--beige);
+            border-radius: 18px;
+            background: white;
+            overflow: hidden;
+            box-shadow: 0 8px 28px rgba(0,0,0,.04);
+        }
+        .admin-hero-slide-preview {
+            aspect-ratio: 16 / 9;
+            background: #f2ede6;
+            overflow: hidden;
+        }
+        .admin-hero-slide-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .admin-hero-slide-meta {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .admin-hero-slide-meta small {
+            color: var(--graphite-light);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        .admin-hero-slide-actions { display:flex; gap:6px; flex-shrink:0; }
+        .admin-hero-slide-actions button {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid var(--beige);
+            background: var(--white);
+            cursor: pointer;
+        }
+        .admin-hero-slide-actions button:hover { border-color: var(--gold); color: var(--gold); }
+        .admin-hero-empty {
+            grid-column: 1 / -1;
+            border: 1px dashed var(--beige-dark);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            color: var(--graphite-light);
+        }
+        @media (max-width: 700px) {
+            .admin-hero-carousel-editor { grid-template-columns: 1fr; }
+            .admin-hero-delay { width:100%; justify-content:space-between; }
+        }
 </style>
 </head>
 <body>
@@ -3795,9 +3887,17 @@
                                 <label for="adminHeroLogoImage">Лого/картинка на головній</label>
                                 <input id="adminHeroLogoImage" placeholder="assets/logo.png або https://...">
                             </div>
-                            <div class="bpr-field bpr-full">
-                                <label for="adminHeroBackgroundImage">Фонова картинка головної</label>
-                                <input id="adminHeroBackgroundImage" placeholder="assets/clinic-interior.jpg або https://...">
+                            <div class="bpr-field bpr-full" id="adminHeroBackgroundField">
+                                <label>Фото першого екрану</label>
+                                <p class="bpr-note" style="margin:0 0 12px;">Додайте одне фото або кілька — тоді вони автоматично змінюватимуться як карусель.</p>
+                                <input id="adminHeroBackgroundImage" hidden aria-hidden="true" tabindex="-1">
+                                <div class="admin-hero-carousel-toolbar">
+                                    <label class="bpr-btn bpr-btn-secondary admin-file-button">+ Додати фото
+                                        <input type="file" accept="image/*" multiple onchange="adminHeroAddBackgroundFiles(event)" hidden>
+                                    </label>
+                                    <label class="admin-hero-delay"><span>Зміна фото кожні</span><select id="adminHeroBackgroundInterval" onchange="adminHeroSetInterval(this.value)"><option value="2000">2 с</option><option value="3000">3 с</option><option value="4000">4 с</option><option value="5000">5 с</option><option value="7000">7 с</option><option value="10000">10 с</option></select></label>
+                                </div>
+                                <div id="adminHeroCarouselEditor" class="admin-hero-carousel-editor"></div>
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="adminHeroPsychologyImage">Верхня картинка сторінки “Психологія”</label>
@@ -5261,6 +5361,8 @@
             heroSubtitle: 'Сучасний медичний центр первинної допомоги. Вже зараз — психологічна підтримка онлайн для вас та вашої родини.',
             heroLogoImage: 'assets/logo.png',
             heroBackgroundImage: 'assets/clinic-interior.jpg',
+            heroBackgroundImages: ['assets/clinic-interior.jpg'],
+            heroBackgroundInterval: 3000,
             declarationButtonLabel: 'Задекларуватись',
             announcementText: '🧠 <strong>Вже зараз доступно:</strong> Психологічна допомога онлайн — конфіденційно та безпечно',
             servicesTag: 'Наші послуги',
@@ -5507,6 +5609,10 @@
             ...defaults,
             ...source,
             heroLogoImage: normalizedHeroLogo,
+            heroBackgroundImages: Array.isArray(source.heroBackgroundImages) && source.heroBackgroundImages.length
+                ? source.heroBackgroundImages.filter(Boolean)
+                : [source.heroBackgroundImage || defaults.heroBackgroundImage].filter(Boolean),
+            heroBackgroundInterval: Math.max(1500, Math.min(20000, parseInt(source.heroBackgroundInterval, 10) || defaults.heroBackgroundInterval)),
             pages: {
                 ...defaults.pages,
                 ...(source.pages ? source.pages : {})
@@ -9406,6 +9512,206 @@
         }, 0);
     });
 
+
+
+    // ===== V26 MAIN HERO IMAGE UPLOAD + CAROUSEL =====
+    let heroBackgroundCarouselTimer = null;
+    let heroBackgroundCarouselIndex = 0;
+
+    function heroBackgroundList() {
+        const defaults = adminDefaultSiteConfig();
+        const source = Array.isArray(siteConfig.heroBackgroundImages) && siteConfig.heroBackgroundImages.length
+            ? siteConfig.heroBackgroundImages
+            : [siteConfig.heroBackgroundImage || defaults.heroBackgroundImage];
+        return source.map(adminNormalizeImageValue).filter(Boolean);
+    }
+
+    function heroSyncLegacyBackgroundField() {
+        const images = heroBackgroundList();
+        const legacy = document.getElementById('adminHeroBackgroundImage');
+        if (legacy) legacy.value = images[0] || '';
+        siteConfig.heroBackgroundImages = images;
+        siteConfig.heroBackgroundImage = images[0] || adminDefaultSiteConfig().heroBackgroundImage;
+    }
+
+    function heroStopBackgroundCarousel() {
+        if (heroBackgroundCarouselTimer) {
+            clearInterval(heroBackgroundCarouselTimer);
+            heroBackgroundCarouselTimer = null;
+        }
+    }
+
+    function heroShowBackground(index, animate = true) {
+        const hero = document.querySelector('.hero-bg-image');
+        const images = heroBackgroundList();
+        if (!hero || !images.length) return;
+        heroBackgroundCarouselIndex = ((index % images.length) + images.length) % images.length;
+        const apply = () => {
+            const image = images[heroBackgroundCarouselIndex];
+            hero.style.backgroundImage = 'url("' + String(image).replace(/"/g, '\\"') + '")';
+            requestAnimationFrame(() => hero.classList.remove('hero-carousel-fade'));
+        };
+        if (!animate) {
+            hero.classList.remove('hero-carousel-fade');
+            apply();
+            return;
+        }
+        hero.classList.add('hero-carousel-fade');
+        setTimeout(apply, 260);
+    }
+
+    function heroStartBackgroundCarousel() {
+        heroStopBackgroundCarousel();
+        const images = heroBackgroundList();
+        if (!images.length) return;
+        if (heroBackgroundCarouselIndex >= images.length) heroBackgroundCarouselIndex = 0;
+        heroShowBackground(heroBackgroundCarouselIndex, false);
+        if (images.length < 2) return;
+        const delay = Math.max(1500, Math.min(20000, parseInt(siteConfig.heroBackgroundInterval, 10) || 3000));
+        heroBackgroundCarouselTimer = setInterval(() => {
+            heroShowBackground(heroBackgroundCarouselIndex + 1, true);
+        }, delay);
+    }
+
+    function adminHeroCompressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('Не вдалося прочитати файл'));
+            reader.onload = () => {
+                const image = new Image();
+                image.onerror = () => reject(new Error('Не вдалося відкрити зображення'));
+                image.onload = () => {
+                    const maxSide = 1600;
+                    const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+                    const width = Math.max(1, Math.round(image.width * scale));
+                    const height = Math.max(1, Math.round(image.height * scale));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(image, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.78));
+                };
+                image.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function adminHeroAddBackgroundFiles(event) {
+        const files = Array.from(event.target.files || []).filter(file => file.type && file.type.startsWith('image/'));
+        event.target.value = '';
+        if (!files.length) return;
+        let images = heroBackgroundList();
+        // A small limit keeps localStorage/Supabase payloads manageable.
+        const available = Math.max(0, 8 - images.length);
+        if (!available) {
+            alert('Для каруселі можна зберегти до 8 фото. Видаліть одне з наявних, щоб додати нове.');
+            return;
+        }
+        try {
+            for (const file of files.slice(0, available)) {
+                images.push(await adminHeroCompressImage(file));
+            }
+            siteConfig.heroBackgroundImages = images;
+            siteConfig.heroBackgroundImage = images[0] || adminDefaultSiteConfig().heroBackgroundImage;
+            heroSyncLegacyBackgroundField();
+            adminSaveSiteState();
+            adminRenderHeroCarouselEditor();
+            heroStartBackgroundCarousel();
+        } catch (error) {
+            alert(error?.message || 'Не вдалося додати фото.');
+        }
+    }
+
+    function adminHeroDeleteBackground(index) {
+        const images = heroBackgroundList();
+        images.splice(index, 1);
+        siteConfig.heroBackgroundImages = images.length ? images : [adminDefaultSiteConfig().heroBackgroundImage];
+        heroBackgroundCarouselIndex = Math.min(heroBackgroundCarouselIndex, siteConfig.heroBackgroundImages.length - 1);
+        heroSyncLegacyBackgroundField();
+        adminSaveSiteState();
+        adminRenderHeroCarouselEditor();
+        heroStartBackgroundCarousel();
+    }
+
+    function adminHeroMoveBackground(index, direction) {
+        const images = heroBackgroundList();
+        const next = index + direction;
+        if (next < 0 || next >= images.length) return;
+        [images[index], images[next]] = [images[next], images[index]];
+        siteConfig.heroBackgroundImages = images;
+        heroBackgroundCarouselIndex = 0;
+        heroSyncLegacyBackgroundField();
+        adminSaveSiteState();
+        adminRenderHeroCarouselEditor();
+        heroStartBackgroundCarousel();
+    }
+
+    function adminHeroSetInterval(value) {
+        siteConfig.heroBackgroundInterval = Math.max(1500, Math.min(20000, parseInt(value, 10) || 3000));
+        adminSaveSiteState();
+        heroStartBackgroundCarousel();
+    }
+
+    function adminRenderHeroCarouselEditor() {
+        const editor = document.getElementById('adminHeroCarouselEditor');
+        const delay = document.getElementById('adminHeroBackgroundInterval');
+        if (delay) delay.value = String(Math.max(1500, Math.min(20000, parseInt(siteConfig.heroBackgroundInterval, 10) || 3000)));
+        if (!editor) return;
+        const images = heroBackgroundList();
+        if (!images.length) {
+            editor.innerHTML = '<div class="admin-hero-empty">Фото ще не додані.</div>';
+            return;
+        }
+        editor.innerHTML = images.map((image, index) => {
+            const label = String(image).startsWith('data:image/') ? `Фото ${index + 1}` : String(image).split('/').pop();
+            return `<div class="admin-hero-slide-card">
+                <div class="admin-hero-slide-preview"><img src="${bprEscapeText(image)}" alt="Фонове фото ${index + 1}"></div>
+                <div class="admin-hero-slide-meta">
+                    <small>${bprEscapeText(label)}</small>
+                    <div class="admin-hero-slide-actions">
+                        <button type="button" title="Перемістити вище" onclick="adminHeroMoveBackground(${index}, -1)" ${index === 0 ? 'disabled' : ''}>↑</button>
+                        <button type="button" title="Перемістити нижче" onclick="adminHeroMoveBackground(${index}, 1)" ${index === images.length - 1 ? 'disabled' : ''}>↓</button>
+                        <button type="button" title="Видалити" onclick="adminHeroDeleteBackground(${index})">×</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    const adminRenderSiteV26Original = adminRenderSite;
+    adminRenderSite = function() {
+        const result = adminRenderSiteV26Original.apply(this, arguments);
+        heroStartBackgroundCarousel();
+        return result;
+    };
+
+    const adminFillFormsV26Original = adminFillForms;
+    adminFillForms = function() {
+        const result = adminFillFormsV26Original.apply(this, arguments);
+        siteConfig = adminNormalizeSiteConfig(siteConfig);
+        heroSyncLegacyBackgroundField();
+        adminRenderHeroCarouselEditor();
+        return result;
+    };
+
+    const adminSubmitSiteFormV26Original = adminSubmitSiteForm;
+    adminSubmitSiteForm = async function() {
+        heroSyncLegacyBackgroundField();
+        const delay = document.getElementById('adminHeroBackgroundInterval');
+        if (delay) siteConfig.heroBackgroundInterval = Math.max(1500, Math.min(20000, parseInt(delay.value, 10) || 3000));
+        return adminSubmitSiteFormV26Original.apply(this, arguments);
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        siteConfig = adminNormalizeSiteConfig(siteConfig);
+        setTimeout(() => {
+            heroSyncLegacyBackgroundField();
+            adminRenderHeroCarouselEditor();
+            heroStartBackgroundCarousel();
+        }, 0);
+    });
 </script>
 </body>
 </html>
