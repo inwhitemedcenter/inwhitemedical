@@ -3912,7 +3912,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v30</div>
+                        <div class="admin-v16-badge">● Admin v31</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -10039,18 +10039,36 @@
                 // DOCX raw-text tables are often exported as one cell per line.
                 // Recognize the 4-column program table even if the last row is incomplete.
                 if(normLabel(line)==='програма'){
-                    const maybeHeaders=sourceLines.slice(i,i+4).map(normLabel);
                     const expected=canonicalHeaders.map(normLabel);
+                    // DOCX/Mammoth often inserts empty lines between table cells.
+                    // Read the next 4 NON-EMPTY lines instead of requiring 4 consecutive lines.
+                    const headerIndexes=[];
+                    let scan=i;
+                    while(scan<sourceLines.length && headerIndexes.length<4){
+                        if(sourceLines[scan]) headerIndexes.push(scan);
+                        scan++;
+                    }
+                    const maybeHeaders=headerIndexes.map(idx=>normLabel(sourceLines[idx]));
                     if(maybeHeaders.length===4 && maybeHeaders.every((v,idx)=>v===expected[idx])){
                         flushParagraph();
-                        i+=4;
+                        i=(headerIndexes[3]||i)+1;
                         const values=[];
                         while(i<sourceLines.length){
                             const v=sourceLines[i];
                             if(!v){ i++; continue; }
                             if(isSectionHeading(v)) break;
-                            // If a new copy of the header appears, finish this table and let the next loop process it.
-                            if(normLabel(v)==='програма' && sourceLines.slice(i,i+4).map(normLabel).every((x,idx)=>x===expected[idx])) break;
+
+                            // Detect another copy of the same 4 headers, also ignoring blank lines.
+                            if(normLabel(v)==='програма'){
+                                const nextHeaderIndexes=[];
+                                let scan2=i;
+                                while(scan2<sourceLines.length && nextHeaderIndexes.length<4){
+                                    if(sourceLines[scan2]) nextHeaderIndexes.push(scan2);
+                                    scan2++;
+                                }
+                                const nextHeaders=nextHeaderIndexes.map(idx=>normLabel(sourceLines[idx]));
+                                if(nextHeaders.length===4 && nextHeaders.every((x,idx)=>x===expected[idx])) break;
+                            }
                             values.push(v);
                             i++;
                         }
