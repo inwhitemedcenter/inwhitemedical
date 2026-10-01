@@ -2593,6 +2593,38 @@
             white-space: nowrap;
         }
 
+        .price-export-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 0 0 22px;
+            padding: 16px 18px;
+            border: 1px solid var(--beige);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.78);
+        }
+        .price-export-copy strong { display:block; color:var(--dark); font-size:.95rem; margin-bottom:3px; }
+        .price-export-copy span { color:var(--graphite-light); font-size:.8rem; line-height:1.45; }
+        .price-export-btn {
+            border: 1px solid rgba(201,169,110,.55);
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: #fff;
+            border-radius: 999px;
+            padding: 12px 20px;
+            font: inherit;
+            font-size: .82rem;
+            font-weight: 600;
+            letter-spacing: .03em;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(201,169,110,.2);
+        }
+        .price-export-btn:hover { transform: translateY(-1px); box-shadow:0 11px 28px rgba(201,169,110,.27); }
+        @media (max-width: 640px) {
+            .price-export-btn { width:100%; }
+        }
+
         .team-photo img {
             width: 100%;
             height: 100%;
@@ -3759,6 +3791,13 @@
             Актуальні ціни на послуги клініки. Остаточна вартість може залежати від обсягу консультації,
             матеріалів або індивідуального плану обстеження.
         </p>
+        <div class="price-export-bar">
+            <div class="price-export-copy">
+                <strong>Прайс для рецепції</strong>
+                <span>Сформувати чисту версію з логотипом, реквізитами та актуальною датою для друку або збереження у PDF.</span>
+            </div>
+            <button type="button" class="price-export-btn" onclick="printReceptionPrice()">Друк / зберегти PDF</button>
+        </div>
         <div class="price-tools" aria-label="Пошук і фільтри прайсу">
             <div class="price-search"><input id="priceSearchInput" type="search" placeholder="Знайти послугу…" autocomplete="off" oninput="setPriceSearch(this.value)"></div>
             <div id="priceFilters" class="price-filters"></div>
@@ -3912,7 +3951,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v31</div>
+                        <div class="admin-v16-badge">● Admin v33</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -10001,7 +10040,7 @@
 
             function isSectionHeading(line){
                 const t=String(line||'').trim();
-                return /^(розділ|стаття)\b/i.test(t) || /^\d+\.\s+/.test(t) || /^[IVX]+\.\s+/i.test(t);
+                return /^(розділ|стаття)\b/i.test(t) || /^\d+(?:\.\d+)*\.\s+/.test(t) || /^[IVX]+\.\s+/i.test(t);
             }
             function normLabel(line){
                 return String(line||'').trim().toLowerCase().replace(/[.:;]+$/,'').replace(/\s+/g,' ');
@@ -10312,6 +10351,67 @@
         adminSaveSiteState();
     }
     migrateV29();
+    function receptionPriceEscape(value){
+        return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+
+    function receptionPriceLogoUrl(){
+        const raw = String((siteConfig && (siteConfig.heroLogoImage || siteConfig.logoImage)) || 'assets/logo.png').trim();
+        if (!raw) return '';
+        if (/^data:/i.test(raw) || /^https?:/i.test(raw)) return raw;
+        try { return new URL(raw, window.location.href).href; } catch (_) { return raw; }
+    }
+
+    window.printReceptionPrice = function(){
+        const visible = (sitePrices || []).filter(item => item && item.visible !== false && String(item.name || '').trim());
+        const orderedCategories = typeof priceCategoriesInOrder === 'function'
+            ? priceCategoriesInOrder(visible)
+            : [...new Set(visible.map(x => x.category || 'Інше'))];
+        const groups = {};
+        visible.forEach(item => { const cat = String(item.category || 'Інше').trim() || 'Інше'; (groups[cat] ||= []).push(item); });
+        const dateText = new Intl.DateTimeFormat('uk-UA', {day:'2-digit', month:'2-digit', year:'numeric'}).format(new Date());
+        const phoneParts = [siteConfig?.phone, siteConfig?.phone2].filter(Boolean).map(String);
+        const contactLine = phoneParts.join(' · ');
+        const logo = receptionPriceLogoUrl();
+        const offerBlock = (typeof offerVisible === 'function' && offerVisible()) ? `
+            <section class="featured">
+                <div>
+                    <div class="eyebrow">ПРОГРАМА МЕДИЧНОГО ОБСЛУГОВУВАННЯ</div>
+                    <h2>${receptionPriceEscape(siteConfig.offerTitle || 'Договір про надання медичних послуг та приєднання до публічної оферти')}</h2>
+                    <p>${receptionPriceEscape(siteConfig.offerDescription || 'Умови програми та актуальна редакція публічної оферти доступні на сайті медичного центру.')}</p>
+                </div>
+                <div class="featured-price">${receptionPriceEscape(siteConfig.offerPrice || 'Див. умови оферти')}</div>
+            </section>` : '';
+        const categoriesHtml = orderedCategories.filter(cat => groups[cat]?.length).map(cat => `
+            <section class="category">
+                <h2>${receptionPriceEscape(cat)}</h2>
+                <table><tbody>${groups[cat].map(item => `
+                    <tr>
+                        <td><strong>${receptionPriceEscape(item.name)}</strong>${item.description ? `<small>${receptionPriceEscape(item.description)}</small>` : ''}</td>
+                        <td class="price">${receptionPriceEscape(item.price || '')}</td>
+                    </tr>`).join('')}</tbody></table>
+            </section>`).join('');
+        const html = `<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Прайс INWHITE MEDICAL — ${dateText}</title>
+        <style>
+            @page{size:A4;margin:13mm 12mm 14mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#292929;background:#fff;font-size:10.5pt;line-height:1.35}
+            .sheet{max-width:190mm;margin:0 auto}.head{display:grid;grid-template-columns:70px 1fr;gap:14px;align-items:center;border-bottom:2px solid #c9a96e;padding-bottom:12px;margin-bottom:14px}.logo{width:68px;height:68px;object-fit:contain}.brand h1{margin:0;font-family:Georgia,serif;font-size:22pt;font-weight:500;letter-spacing:.06em}.brand .sub{margin-top:4px;color:#777;font-size:9pt}.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;margin:11px 0 16px;padding:10px 12px;border:1px solid #e5d9c9;border-radius:10px;background:#fbf8f3}.meta div{font-size:8.7pt}.meta b{color:#6f5933}.date{font-weight:700}.featured{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:14px 16px;margin:0 0 16px;border:1.5px solid #c9a96e;border-radius:12px;background:#fbf5e9}.featured h2{font-family:Georgia,serif;font-size:14pt;margin:3px 0 5px}.featured p{margin:0;color:#666;font-size:9pt}.featured-price{font-weight:700;font-size:12pt;color:#9b742f;white-space:nowrap}.eyebrow{font-size:7.5pt;letter-spacing:.1em;color:#a17b38;font-weight:700}.category{break-inside:avoid;margin:0 0 13px}.category h2{margin:0;padding:7px 10px;background:#f5efe6;border-left:4px solid #c9a96e;font-family:Georgia,serif;font-size:13pt;font-weight:600}.category table{width:100%;border-collapse:collapse}.category tr{border-bottom:1px solid #eadfD1}.category td{padding:7px 9px;vertical-align:top}.category td:first-child{width:80%}.category strong{font-weight:600}.category small{display:block;margin-top:2px;color:#777;font-size:7.9pt;line-height:1.35}.price{text-align:right;font-weight:700;color:#8d692b;white-space:nowrap}.foot{margin-top:20px;border-top:1px solid #d8cab8;padding-top:12px;display:grid;grid-template-columns:1fr 70mm;gap:20px;align-items:end}.legal{font-size:7.8pt;color:#666;line-height:1.45}.signature{text-align:center;padding-top:26px}.signature .line{border-top:1px solid #555;padding-top:5px;font-size:8pt}.note{margin-top:10px;font-size:7.5pt;color:#777;text-align:center}.screen-actions{position:fixed;right:18px;top:18px;display:flex;gap:8px}.screen-actions button{border:0;border-radius:999px;padding:10px 14px;background:#c9a96e;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 6px 18px #0002}@media print{.screen-actions{display:none}.sheet{max-width:none}}
+        </style></head><body><div class="screen-actions"><button onclick="window.print()">Друк / PDF</button><button onclick="window.close()">Закрити</button></div><main class="sheet">
+            <header class="head">${logo ? `<img class="logo" src="${receptionPriceEscape(logo)}" alt="INWHITE MEDICAL">` : '<div></div>'}<div class="brand"><h1>INWHITE MEDICAL</h1><div class="sub">ПРЕЙСКУРАНТ МЕДИЧНИХ ПОСЛУГ</div></div></header>
+            <div class="meta">
+                <div><b>Сформовано:</b> <span class="date">${dateText}</span></div><div><b>ЄДРПОУ:</b> 46270554</div>
+                <div><b>Адреса:</b> ${receptionPriceEscape(siteConfig?.address || 'м. Чоп, Закарпатська обл., вул. Берег, 18/4')}</div><div><b>Телефон:</b> ${receptionPriceEscape(contactLine || '+380 75 967 47 42')}</div>
+                <div><b>Email:</b> ${receptionPriceEscape(siteConfig?.email || 'inwhite.medcenter@gmail.com')}</div><div><b>Сайт:</b> inwhitemedical.com.ua</div>
+            </div>
+            ${offerBlock}${categoriesHtml || '<p>Прайс тимчасово не заповнений.</p>'}
+            <footer class="foot"><div class="legal"><strong>ТОВ «ІНВАЙТ МЕДІКАЛ»</strong><br>IBAN UA193220010000026003700014989 · АТ «УНІВЕРСАЛ БАНК» · МФО 322001<br>Ліцензія МОЗ: наказ МОЗ України від 17.09.2026 № 1370.<br>Актуальність цін підтверджується датою формування цього документа. Перед оплатою уточнюйте остаточну вартість послуги на рецепції.</div><div class="signature"><div class="line">Директор Юрій СІЧ / підпис</div></div></footer>
+            <div class="note">INWHITE MEDICAL · Прайс сформовано автоматично ${dateText}</div>
+        </main><script>setTimeout(()=>{try{window.focus()}catch(e){}},150)<\/script></body></html>`;
+        const popup = window.open('', '_blank');
+        if (!popup) { alert('Браузер заблокував нове вікно. Дозвольте спливаючі вікна для сайту та повторіть.'); return; }
+        popup.document.open(); popup.document.write(html); popup.document.close();
+        setTimeout(()=>{ try { popup.focus(); popup.print(); } catch(_){} }, 650);
+    };
+
     window.addEventListener('DOMContentLoaded',()=>{ setTimeout(()=>{ migrateV29(); fillOfferAdmin(); renderOfferPage(); renderSecondPhone(); adminRenderPriceEditor(); adminRenderPrices(); },0); });
 })();
 </script>
