@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -3391,6 +3392,20 @@
             .admin-hero-carousel-editor { grid-template-columns: 1fr; }
             .admin-hero-delay { width:100%; justify-content:space-between; }
         }
+
+        .price-export-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+        .price-export-btn {
+            appearance:none; border:0; border-radius:999px; padding:11px 17px; cursor:pointer;
+            background:var(--dark); color:#fff; font:inherit; font-weight:700;
+            box-shadow:0 8px 22px rgba(31,35,39,.10); transition:.2s ease;
+        }
+        .price-export-btn:hover { transform:translateY(-1px); opacity:.94; }
+        .price-export-btn-secondary { background:#f1ece4; color:var(--dark); border:1px solid var(--beige-dark); box-shadow:none; }
+        @media(max-width:640px){
+            .price-export-actions { width:100%; }
+            .price-export-btn { flex:1 1 100%; }
+        }
+
 </style>
 </head>
 <body>
@@ -3762,6 +3777,10 @@
         <div class="price-tools" aria-label="Пошук і фільтри прайсу">
             <div class="price-search"><input id="priceSearchInput" type="search" placeholder="Знайти послугу…" autocomplete="off" oninput="setPriceSearch(this.value)"></div>
             <div id="priceFilters" class="price-filters"></div>
+            <div class="price-export-actions" aria-label="Експорт прайсу">
+                <button type="button" class="price-export-btn" onclick="downloadPricePdf()">⬇ Завантажити PDF</button>
+                <button type="button" class="price-export-btn price-export-btn-secondary" onclick="printPriceList()">🖨 Друкувати</button>
+            </div>
         </div>
         <div id="sitePriceList" class="price-list"></div>
         <div id="sitePriceEmpty" class="bpr-empty" hidden>Прайс тимчасово не заповнений.</div>
@@ -10305,6 +10324,180 @@
     }
     migrateV29();
     window.addEventListener('DOMContentLoaded',()=>{ setTimeout(()=>{ migrateV29(); fillOfferAdmin(); renderOfferPage(); renderSecondPhone(); adminRenderPriceEditor(); adminRenderPrices(); },0); });
+})();
+</script>
+
+
+<script>
+// ===== V32 PRINTABLE / DOWNLOADABLE PRICE LIST =====
+(function(){
+    const PRICE_PRINT_REQUISITES = {
+        company: 'ТОВ «ІНВАЙТ МЕДІКАЛ»',
+        edrpou: '46270554',
+        legalAddress: '89221, Україна, Закарпатська обл., Ужгородський р-н, с. Тур’ї Ремети, вул. Фекети Ф., буд. 3',
+        practiceAddress: 'Закарпатська обл., Ужгородський район, м. Чоп, вул. Берег, 18',
+        license: 'Наказ МОЗ України від 17.09.2026 № 1370',
+        iban: 'UA193220010000026003700014989',
+        bank: 'АТ «УНІВЕРСАЛ БАНК»',
+        mfo: '322001',
+        bankEdrpou: '21133352',
+        director: 'Юрій СІЧ'
+    };
+
+    function ppEsc(v){
+        return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    }
+    function ppDate(){
+        return new Intl.DateTimeFormat('uk-UA',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date());
+    }
+    function ppFileDate(){
+        const d=new Date(), p=n=>String(n).padStart(2,'0');
+        return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+    }
+    function ppLogo(){
+        const raw=String(siteConfig?.heroLogoImage||'assets/logo.png').trim();
+        if(raw.startsWith('data:')||raw.startsWith('blob:')) return raw;
+        try{return new URL(raw,window.location.href).href}catch(e){return new URL('assets/logo.png',window.location.href).href}
+    }
+    function ppGroups(){
+        const prices=(window.sitePrices||sitePrices||[]).filter(x=>x&&x.visible!==false&&String(x.name||'').trim());
+        const order=['Консультації','УЗД','Діагностика','Лабораторна діагностика','Вакцинація','Швидкі тести','Психологія','Інше'];
+        const groups={};
+        prices.forEach(x=>{const c=String(x.category||'Інше').trim()||'Інше';(groups[c]||=[]).push(x)});
+        return Object.keys(groups).sort((a,b)=>{
+            const ai=order.indexOf(a),bi=order.indexOf(b);
+            if(ai<0&&bi<0)return a.localeCompare(b,'uk');
+            if(ai<0)return 1;if(bi<0)return-1;return ai-bi;
+        }).map(category=>({category,items:groups[category]}));
+    }
+    function ppCss(){
+        return `
+        *{box-sizing:border-box}
+        body{margin:0;background:#fff;color:#222;font-family:Arial,Helvetica,sans-serif}
+        .print-price-document{width:190mm;margin:0 auto;background:#fff;color:#222;font-size:10.3pt;line-height:1.4}
+        .pp-head{border-bottom:2px solid #222;padding-bottom:7mm;margin-bottom:7mm}
+        .pp-brand{display:flex;align-items:center;gap:7mm;margin-bottom:5mm}
+        .pp-logo{width:31mm;max-height:22mm;object-fit:contain}
+        .pp-brand-copy{flex:1}
+        .pp-brand-name{font-size:15pt;font-weight:800;letter-spacing:.04em;margin-bottom:1.5mm}
+        .pp-title{font-size:19pt;font-weight:800;margin:0 0 2mm;text-transform:uppercase}
+        .pp-date{display:inline-block;padding:2.1mm 4mm;border:1.3px solid #222;border-radius:2mm;font-weight:800}
+        .pp-reqs{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-top:5mm}
+        .pp-card{border:1px solid #cfcfcf;border-radius:2mm;padding:4mm;break-inside:avoid}
+        .pp-card-title{font-size:9.8pt;text-transform:uppercase;font-weight:800;margin-bottom:2.5mm}
+        .pp-row{display:grid;grid-template-columns:32mm 1fr;gap:2mm;margin:1.2mm 0}
+        .pp-key{font-weight:700;color:#444}
+        .pp-sign{display:grid;grid-template-columns:1fr auto;align-items:end;gap:7mm;margin-top:7mm;padding-top:4mm;border-top:1px solid #ddd;break-inside:avoid}
+        .pp-note{font-size:8.5pt;color:#555;max-width:105mm}
+        .pp-signline{white-space:nowrap;font-weight:700;text-align:right}
+        .pp-line{display:inline-block;width:34mm;border-bottom:1px solid #222;margin:0 2.5mm .8mm}
+        .pp-category{margin:0 0 7mm}
+        .pp-category h2{font-size:15pt;font-weight:800;margin:0 0 3mm;padding-bottom:1.7mm;border-bottom:1.5px solid #222;break-after:avoid}
+        .pp-table{width:100%;border-collapse:collapse;table-layout:fixed}
+        .pp-table thead{display:table-header-group}
+        .pp-table tr{break-inside:avoid;page-break-inside:avoid}
+        .pp-table th,.pp-table td{border:1px solid #cfcfcf;padding:2.5mm 3mm;vertical-align:top;text-align:left}
+        .pp-table th{background:#f1f1f1;font-size:9.1pt;text-transform:uppercase}
+        .pp-table th:nth-child(1),.pp-table td:nth-child(1){width:31%}
+        .pp-table th:nth-child(2),.pp-table td:nth-child(2){width:52%}
+        .pp-table th:nth-child(3),.pp-table td:nth-child(3){width:17%;text-align:right;font-weight:800}
+        .pp-desc{color:#444;font-size:9pt}
+        .pp-prep{display:block;margin-top:1.3mm;color:#333}
+        .pp-foot{margin-top:5mm;padding-top:3mm;border-top:1px solid #ddd;color:#555;font-size:8.5pt}
+        @media print{
+            @page{size:A4 portrait;margin:10mm}
+            body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+            .print-price-document{width:auto;margin:0}
+        }`;
+    }
+    function buildPricePrint(){
+        const date=ppDate();
+        const phone=String(siteConfig?.phone||'').trim();
+        const email=String(siteConfig?.email||'inwhite.medcenter@gmail.com').trim();
+        const groups=ppGroups();
+        const root=document.createElement('div');
+        root.className='print-price-document';
+        root.innerHTML=`
+        <header class="pp-head">
+            <div class="pp-brand">
+                <img class="pp-logo" src="${ppEsc(ppLogo())}" alt="INWHITE MEDICAL">
+                <div class="pp-brand-copy">
+                    <div class="pp-brand-name">INWHITE MEDICAL</div>
+                    <h1 class="pp-title">Прайс на медичні послуги</h1>
+                    <span class="pp-date">Актуально станом на ${ppEsc(date)}</span>
+                </div>
+            </div>
+            <div class="pp-reqs">
+                <div class="pp-card">
+                    <div class="pp-card-title">Реквізити медичного центру</div>
+                    <div class="pp-row"><div class="pp-key">Найменування</div><div>${PRICE_PRINT_REQUISITES.company}</div></div>
+                    <div class="pp-row"><div class="pp-key">ЄДРПОУ</div><div>${PRICE_PRINT_REQUISITES.edrpou}</div></div>
+                    <div class="pp-row"><div class="pp-key">Юр. адреса</div><div>${PRICE_PRINT_REQUISITES.legalAddress}</div></div>
+                    <div class="pp-row"><div class="pp-key">Місце практики</div><div>${PRICE_PRINT_REQUISITES.practiceAddress}</div></div>
+                    <div class="pp-row"><div class="pp-key">Ліцензія</div><div>${PRICE_PRINT_REQUISITES.license}</div></div>
+                </div>
+                <div class="pp-card">
+                    <div class="pp-card-title">Розрахункові реквізити</div>
+                    <div class="pp-row"><div class="pp-key">Отримувач</div><div>${PRICE_PRINT_REQUISITES.company}</div></div>
+                    <div class="pp-row"><div class="pp-key">IBAN</div><div>${PRICE_PRINT_REQUISITES.iban}</div></div>
+                    <div class="pp-row"><div class="pp-key">Банк</div><div>${PRICE_PRINT_REQUISITES.bank}</div></div>
+                    <div class="pp-row"><div class="pp-key">МФО</div><div>${PRICE_PRINT_REQUISITES.mfo}</div></div>
+                    <div class="pp-row"><div class="pp-key">ЄДРПОУ банку</div><div>${PRICE_PRINT_REQUISITES.bankEdrpou}</div></div>
+                    <div class="pp-row"><div class="pp-key">Контакти</div><div>${ppEsc(phone||'—')}<br>${ppEsc(email)}<br>https://inwhitemedical.com.ua/</div></div>
+                </div>
+            </div>
+            <div class="pp-sign">
+                <div class="pp-note">Ціни у цьому примірнику є актуальними на дату формування, зазначену вище. Для уникнення непорозумінь актуальну вартість слід звіряти з прайсом на офіційному сайті Медичного центру.</div>
+                <div class="pp-signline">Директор <span class="pp-line"></span> ${PRICE_PRINT_REQUISITES.director}</div>
+            </div>
+        </header>
+        ${groups.length?groups.map(g=>`
+            <section class="pp-category">
+                <h2>${ppEsc(g.category)}</h2>
+                <table class="pp-table">
+                    <thead><tr><th>Послуга</th><th>Опис / підготовка</th><th>Вартість</th></tr></thead>
+                    <tbody>${g.items.map(item=>`
+                        <tr>
+                            <td><strong>${ppEsc(item.name)}</strong></td>
+                            <td class="pp-desc">${ppEsc(item.description||'')}${item.preparation?`<span class="pp-prep"><strong>Підготовка:</strong> ${ppEsc(item.preparation)}</span>`:''}</td>
+                            <td>${ppEsc(item.price||'')}</td>
+                        </tr>`).join('')}</tbody>
+                </table>
+            </section>`).join(''):'<p>Прайс тимчасово не заповнений.</p>'}
+        <div class="pp-foot">Сформовано автоматично з актуального прайсу сайту INWHITE MEDICAL — ${ppEsc(date)}.</div>`;
+        return root;
+    }
+    async function ppWaitImages(root){
+        await Promise.all([...root.querySelectorAll('img')].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{
+            img.onload=resolve;img.onerror=resolve;setTimeout(resolve,2500);
+        })));
+    }
+    window.downloadPricePdf=async function(){
+        if(typeof html2pdf==='undefined'){alert('Модуль PDF не завантажився. Скористайтесь кнопкою «Друкувати».');return;}
+        const root=buildPricePrint(), holder=document.createElement('div'), style=document.createElement('style');
+        holder.style.cssText='position:fixed;left:-10000px;top:0;width:210mm;background:#fff;z-index:-1;';
+        style.textContent=ppCss(); holder.appendChild(style); holder.appendChild(root); document.body.appendChild(holder);
+        try{
+            await ppWaitImages(root);
+            await html2pdf().set({
+                margin:[10,10,10,10],
+                filename:`INWHITE_Price_${ppFileDate()}.pdf`,
+                image:{type:'jpeg',quality:.98},
+                html2canvas:{scale:2,useCORS:true,backgroundColor:'#fff',logging:false},
+                jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+                pagebreak:{mode:['css','legacy'],avoid:['tr','.pp-sign','.pp-card']}
+            }).from(root).save();
+        }finally{holder.remove();}
+    };
+    window.printPriceList=function(){
+        const root=buildPricePrint(), popup=window.open('','_blank');
+        if(!popup){alert('Браузер заблокував вікно друку. Дозвольте спливаючі вікна для цього сайту.');return;}
+        popup.document.open();
+        popup.document.write(`<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>INWHITE MEDICAL — Прайс ${ppDate()}</title><style>${ppCss()}</style></head><body>${root.outerHTML}</body></html>`);
+        popup.document.close();
+        const run=()=>{popup.focus();popup.print();};
+        if(popup.document.readyState==='complete')setTimeout(run,400);else popup.onload=()=>setTimeout(run,400);
+    };
 })();
 </script>
 
