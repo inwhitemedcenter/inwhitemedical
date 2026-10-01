@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INWHITE MEDICAL — Медичний центр</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -3424,6 +3426,7 @@
         <li data-nav-page="psychology"><a href="#" onclick="showPage('psychology'); return false;">Психологія</a></li>
         <li data-nav-page="services"><a href="#" onclick="showPage('services'); return false;">Послуги</a></li>
         <li data-nav-page="prices"><a href="#" onclick="showPage('prices'); return false;">Прайс</a></li>
+        <li data-nav-page="offer"><a href="#" onclick="showPage('offer'); return false;">Публічна оферта</a></li>
         <li data-nav-page="team"><a href="#" onclick="showPage('team'); return false;">Команда</a></li>
         <li data-nav-page="training"><a href="#" onclick="showPage('training'); return false;">Навчання</a></li>
         <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
@@ -3541,6 +3544,13 @@
                         <div class="contact-text">
                             <small>Телефон</small>
                             <strong>+380 XX XXX XX XX</strong>
+                        </div>
+                    </a>
+                    <a id="bookingContactPhone2" href="#" class="contact-item" hidden>
+                        <div class="contact-icon">📞</div>
+                        <div class="contact-text">
+                            <small>Додатковий телефон</small>
+                            <strong></strong>
                         </div>
                     </a>
                     <a id="bookingContactInstagram" href="https://instagram.com/inwhitemedical" target="_blank" class="contact-item">
@@ -3758,6 +3768,33 @@
     </div>
 </div>
 
+
+<!-- ==================== PUBLIC OFFER PAGE ==================== -->
+<div id="page-offer" class="page">
+    <div class="page-hero offer-page-hero">
+        <div>
+            <div id="offerPageTag" class="section-tag">Публічна оферта</div>
+            <h1 id="offerPageTitle">Договір про надання медичних послуг</h1>
+        </div>
+    </div>
+    <div class="page-content offer-page-content">
+        <div class="offer-document-card">
+            <div class="offer-document-top">
+                <div>
+                    <div class="section-tag">Документ для ознайомлення</div>
+                    <h2 id="offerDocumentTitle">Договір про надання медичних послуг та приєднання до публічної оферти</h2>
+                    <p id="offerPageIntro">Ознайомтесь з умовами перед приєднанням до публічної оферти.</p>
+                </div>
+                <div class="offer-document-actions">
+                    <button type="button" class="btn-primary" onclick="openBookingForOffer()">Залишити заявку</button>
+                    <button type="button" class="btn-secondary" onclick="showPage('prices')">Переглянути прайс</button>
+                </div>
+            </div>
+            <article id="offerFullText" class="offer-full-text"></article>
+        </div>
+    </div>
+</div>
+
 <!-- ==================== ABOUT PAGE ==================== -->
 <div id="page-about" class="page">
     <div class="page-hero" data-page-hero="about">
@@ -3875,7 +3912,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v24</div>
+                        <div class="admin-v16-badge">● Admin v29</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -3900,6 +3937,7 @@
                         <button class="admin-tab" type="button" data-admin-tab="database" onclick="adminShowPanel('database')">База</button>
                         <button class="admin-tab" type="button" data-admin-tab="team" onclick="adminShowPanel('team')">Команда</button>
                         <button class="admin-tab" type="button" data-admin-tab="prices" onclick="adminShowPanel('prices')">Прайс</button>
+                        <button class="admin-tab" type="button" data-admin-tab="offer" onclick="adminShowPanel('offer')">Оферта</button>
                         <button class="admin-tab" type="button" data-admin-tab="about" onclick="adminShowPanel('about')">Про нас</button>
                         <button class="admin-tab" type="button" data-admin-tab="training" onclick="adminShowPanel('training')">Навчання</button>
                     </div>
@@ -3914,6 +3952,7 @@
                             <label class="bpr-field bpr-checkbox"><input id="adminPagePsychology" type="checkbox"> Психологія</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageServices" type="checkbox"> Послуги</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPagePrices" type="checkbox"> Прайс</label>
+                            <label class="bpr-field bpr-checkbox" style="display:none;"><input id="adminPageOffer" type="checkbox"> Публічна оферта</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageTeam" type="checkbox"> Команда</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageAbout" type="checkbox"> Про нас</label>
                             <label class="bpr-field bpr-checkbox"><input id="adminPageTraining" type="checkbox"> Навчання</label>
@@ -4219,6 +4258,11 @@
                                 <input id="adminContactPhone" placeholder="+380 XX XXX XX XX">
                             </div>
                             <div class="bpr-field">
+                                <label for="adminContactPhone2">Другий контактний номер <small style="font-weight:400;text-transform:none;letter-spacing:0;">(необов’язково)</small></label>
+                                <input id="adminContactPhone2" placeholder="+380 XX XXX XX XX">
+                                <div class="admin-help">Якщо поле порожнє — другий номер ніде на сайті не показується.</div>
+                            </div>
+                            <div class="bpr-field">
                                 <label for="adminContactWhatsapp">WhatsApp без +</label>
                                 <input id="adminContactWhatsapp" placeholder="380XXXXXXXXX">
                             </div>
@@ -4237,6 +4281,49 @@
                         </div>
                         <div class="bpr-inline-actions">
                             
+                        </div>
+                    </form>
+                </div>
+
+
+                <div class="admin-section" data-admin-panel="offer">
+                    <div class="admin-panel-intro">
+                        <strong>Публічна оферта</strong>
+                        <span>Текст договору, короткий опис і пріоритетна пропозиція в прайсі.</span>
+                    </div>
+                    <form id="adminOfferForm" onsubmit="adminSaveOffer(event)">
+                        <div class="admin-friendly-card open">
+                            <div class="admin-friendly-card-head" onclick="this.parentElement.classList.toggle('open')">
+                                <div class="admin-friendly-card-title"><strong>Відображення та назви</strong><small>Керує вкладкою у верхньому меню та пріоритетною карткою в прайсі.</small></div>
+                                <div class="admin-friendly-card-actions"><button type="button" class="admin-friendly-toggle">⌄</button></div>
+                            </div>
+                            <div class="admin-friendly-card-body">
+                                <div class="admin-friendly-field-grid">
+                                    <label class="bpr-field bpr-checkbox"><input id="adminOfferVisible" type="checkbox"> Показувати «Публічну оферту» на сайті</label>
+                                    <div class="bpr-field"><label for="adminOfferTag">Плашка сторінки</label><input id="adminOfferTag" placeholder="Публічна оферта"></div>
+                                    <div class="bpr-field bpr-full"><label for="adminOfferTitle">Назва договору</label><input id="adminOfferTitle"></div>
+                                    <div class="bpr-field bpr-full"><label for="adminOfferShortDescription">Короткий опис для прайсу</label><textarea id="adminOfferShortDescription" style="min-height:90px;"></textarea></div>
+                                    <div class="bpr-field"><label for="adminOfferPrice">Вартість / ціна</label><input id="adminOfferPrice" placeholder="Наприклад: 1 500 грн або За договором"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-friendly-card">
+                            <div class="admin-friendly-card-head" onclick="this.parentElement.classList.toggle('open')">
+                                <div class="admin-friendly-card-title"><strong>Повний текст оферти</strong><small>Вставте текст або завантажте TXT, MD чи DOCX.</small></div>
+                                <div class="admin-friendly-card-actions"><button type="button" class="admin-friendly-toggle">⌄</button></div>
+                            </div>
+                            <div class="admin-friendly-card-body">
+                                <div class="bpr-field bpr-full">
+                                    <label for="adminOfferFullText">Текст документа</label>
+                                    <textarea id="adminOfferFullText" style="min-height:420px; line-height:1.6;"></textarea>
+                                    <div class="bpr-inline-actions" style="margin-top:12px;">
+                                        <label class="bpr-btn bpr-btn-secondary" style="cursor:pointer;">Завантажити файл
+                                            <input id="adminOfferFile" type="file" accept=".txt,.md,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="adminOfferLoadFile(event)">
+                                        </label>
+                                        <span id="adminOfferFileStatus" class="bpr-note"></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -4318,6 +4405,20 @@
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Прайс для пацієнтів</h3>
                     <p class="bpr-panel-subtitle">Ці позиції показуються на сторінці “Прайс”.</p>
                     <form onsubmit="adminSavePrices(event)">
+                        
+                        <div class="admin-price-import-box">
+                            <div>
+                                <strong>Масове завантаження прайсу з Excel</strong>
+                                <p>Підтримуються .xlsx, .xls і .csv. Сайт шукає колонки «Рубрика/Категорія», «Назва/Послуга», «Опис», «Ціна/Вартість», «Показувати» та «Підготовка».</p>
+                            </div>
+                            <div class="bpr-inline-actions">
+                                <label class="bpr-btn bpr-btn-secondary" style="cursor:pointer;">Обрати Excel
+                                    <input id="adminPriceExcelFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden onchange="adminPriceImportExcel(event)">
+                                </label>
+                                <button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminDownloadPriceTemplate()">Шаблон Excel</button>
+                            </div>
+                            <div id="adminPriceImportPreview" class="admin-price-import-preview" hidden></div>
+                        </div>
                         <div id="adminPriceCards" class="admin-price-editor-list"></div>
                         <div class="bpr-inline-actions" style="margin-top: 18px;">
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminAddPriceItem()">Додати позицію</button>
@@ -4623,6 +4724,7 @@
             <ul>
                 <li data-nav-page="team"><a href="#" onclick="showPage('team'); return false;">Команда</a></li>
                 <li data-nav-page="prices"><a href="#" onclick="showPage('prices'); return false;">Прайс</a></li>
+        <li data-nav-page="offer"><a href="#" onclick="showPage('offer'); return false;">Публічна оферта</a></li>
                 <li data-nav-page="training"><a href="#" onclick="showPage('training'); return false;">Навчання</a></li>
                 <li data-nav-page="about"><a href="#" onclick="showPage('about'); return false;">Про нас</a></li>
                 <li data-nav-page="home"><a href="#" onclick="showPage('home'); return false;">Новини</a></li>
@@ -4633,6 +4735,7 @@
             <h4>Контакти</h4>
             <ul>
                 <li><a id="siteFooterPhone" href="tel:+380XXXXXXXXX">📞 +380 XX XXX XX XX</a></li>
+                <li id="siteFooterPhone2Item" hidden><a id="siteFooterPhone2" href="#"></a></li>
                 <li><a id="siteFooterEmail" href="mailto:info@inwhitemedical.ua">✉️ info@inwhitemedical.ua</a></li>
                 <li><a id="siteFooterAddress" href="#">📍 м. Чоп, Закарпаття</a></li>
                 <li><a id="siteFooterHours" href="#">🕐 Пн–Пт: 08:00–18:00</a></li>
@@ -4792,7 +4895,7 @@
         }
     });
 
-    const SITE_PAGE_ORDER = ['home', 'psychology', 'services', 'prices', 'team', 'training', 'about'];
+    const SITE_PAGE_ORDER = ['home', 'psychology', 'services', 'prices', 'offer', 'team', 'training', 'about'];
     let currentPageName = 'home';
 
     // ===== PAGE NAVIGATION =====
@@ -5430,7 +5533,8 @@
                 prices: true,
                 team: true,
                 about: true,
-                training: true
+                training: true,
+                offer: true
             },
             heroBadge: 'Медичний центр · Чоп, Закарпаття',
             heroTitle: 'Медицина,<br>що <em>турбується</em><br>про вас',
@@ -5608,6 +5712,11 @@
             pricesPageTag: 'Прайс',
             pricesPageTitle: 'Вартість<br>послуг',
             pricesPageIntro: 'Актуальні ціни на послуги клініки. Остаточна вартість може залежати від обсягу консультації, матеріалів або індивідуального плану обстеження.',
+            offerTag: 'Публічна оферта',
+            offerTitle: 'Договір про надання медичних послуг та приєднання до публічної оферти',
+            offerShortDescription: 'Ознайомтесь з умовами договору та залиште заявку на приєднання до публічної оферти.',
+            offerPrice: '',
+            offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.',
             trainingPageTag: 'Провайдер БПР 2817',
             trainingPageTitle: 'Навчання лікарів',
             trainingPageDescription: 'Оберіть онлайн-курс із записом та сертифікатом або офлайн-захід із реєстрацією через форму. Усі картки та посилання змінюються в адмін-панелі.',
@@ -5627,6 +5736,7 @@
                 { title: '🔒 Конфіденційність', description: 'Повна приватність та захист даних пацієнтів', visible: true }
             ],
             phone: '+380 XX XXX XX XX',
+            phone2: '',
             whatsapp: '380XXXXXXXXX',
             email: 'info@inwhitemedical.ua',
             address: 'м. Чоп, Закарпаття',
@@ -7468,6 +7578,8 @@
         document.getElementById('adminAboutValuesTitle').value = siteConfig.aboutValuesTitle || '';
         document.getElementById('adminAboutValues').value = adminAboutValuesToText(siteConfig.aboutValues || []);
         document.getElementById('adminContactPhone').value = siteConfig.phone || '';
+        if (document.getElementById('adminContactPhone2')) document.getElementById('adminContactPhone2').value = siteConfig.phone2 || '';
+        if (document.getElementById('adminPageOffer')) document.getElementById('adminPageOffer').checked = siteConfig.pages?.offer !== false;
         document.getElementById('adminContactWhatsapp').value = siteConfig.whatsapp || '';
         document.getElementById('adminContactEmail').value = siteConfig.email || '';
         document.getElementById('adminContactAddress').value = siteConfig.address || '';
@@ -7492,6 +7604,7 @@
             psychology: document.getElementById('adminPagePsychology').checked,
             services: document.getElementById('adminPageServices').checked,
             prices: document.getElementById('adminPagePrices').checked,
+            offer: document.getElementById('adminPageOffer') ? document.getElementById('adminPageOffer').checked : (siteConfig.pages?.offer !== false),
             team: document.getElementById('adminPageTeam').checked,
             about: document.getElementById('adminPageAbout').checked,
             training: document.getElementById('adminPageTraining').checked
@@ -7554,6 +7667,7 @@
         siteConfig.trainingPageTitle = document.getElementById('adminTrainingPageTitle').value.trim();
         siteConfig.trainingPageDescription = document.getElementById('adminTrainingPageDescription').value.trim();
         siteConfig.phone = document.getElementById('adminContactPhone').value.trim();
+        siteConfig.phone2 = document.getElementById('adminContactPhone2')?.value.trim() || '';
         siteConfig.whatsapp = document.getElementById('adminContactWhatsapp').value.trim();
         siteConfig.email = document.getElementById('adminContactEmail').value.trim();
         siteConfig.address = document.getElementById('adminContactAddress').value.trim();
@@ -8432,7 +8546,7 @@
 
 
     // ===== UX / CONTENT MANAGEMENT EXTENSIONS =====
-    const PRICE_CATEGORY_ORDER = ['Консультації', 'Діагностика', 'Вакцинація', 'Швидкі тести', 'Психологія'];
+    const PRICE_CATEGORY_ORDER = ['Публічна оферта', 'Консультації', 'УЗД', 'Діагностика', 'Лабораторна діагностика', 'Вакцинація', 'Швидкі тести', 'Психологія', 'Інше'];
 
     function updateActiveNavigation(pageName) {
         document.querySelectorAll('.nav-links li[data-nav-page] > a').forEach(link => link.classList.remove('active-page'));
@@ -9312,7 +9426,7 @@
                 ['Перший екран', 'Головний заголовок, опис, оголошення та зображення.', ['adminHeroBadge','adminHeroTitle','adminHeroSubtitle','adminAnnouncementText','adminHeroLogoImage','adminHeroBackgroundImage']],
                 ['Декларація', 'Налаштування кнопки для укладення декларації на головній сторінці.', ['adminDeclarationButtonLabel']],
                 ['Запис на прийом', 'Тексти блоку запису, доступні послуги та формати.', ['adminBookingTag','adminBookingTitle','adminBookingDescription','adminAppointmentServices','adminClinicFormatLabel','adminOnlineFormatLabel']],
-                ['Контакти', 'Телефон, WhatsApp, email, графік та адреса.', ['adminContactPhone','adminContactWhatsapp','adminContactEmail','adminContactHours','adminContactAddress']],
+                ['Контакти', 'Основний і додатковий телефон, WhatsApp, email, графік та адреса.', ['adminContactPhone','adminContactPhone2','adminContactWhatsapp','adminContactEmail','adminContactHours','adminContactAddress']],
                 ['Соціальні мережі', 'Instagram, Facebook, WhatsApp та інші посилання. Назви, адреси й видимість редагуються тут.', ['adminInstagram','adminSocialLinks']]
             ]
         },
@@ -9789,5 +9903,313 @@
         }, 0);
     });
 </script>
+
+<style>
+    /* ===== V29 OFFER + PRICE ADMIN ===== */
+    .offer-page-hero { min-height: 36vh; }
+    .offer-page-content { max-width: 1050px; }
+    .offer-document-card { background:#fff; border:1px solid var(--beige); border-radius:28px; padding:clamp(24px,4vw,48px); box-shadow:0 20px 55px rgba(74,74,74,.07); }
+    .offer-document-top { display:flex; justify-content:space-between; align-items:flex-start; gap:28px; padding-bottom:28px; border-bottom:1px solid var(--beige); margin-bottom:32px; }
+    .offer-document-top h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(1.7rem,3.5vw,2.8rem); font-weight:500; color:var(--dark); line-height:1.12; max-width:720px; }
+    .offer-document-top p { color:var(--graphite-light); line-height:1.7; margin-top:12px; }
+    .offer-document-actions { display:flex; gap:10px; flex-wrap:wrap; flex:0 0 auto; }
+    .offer-full-text { color:var(--graphite); line-height:1.8; font-size:.96rem; white-space:normal; }
+    .offer-full-text p { margin:0 0 1.05em; }
+    .offer-full-text h3 { font-family:'Cormorant Garamond',serif; color:var(--dark); font-size:1.45rem; margin:1.4em 0 .5em; }
+    .price-featured-offer { border:1.5px solid rgba(201,169,110,.65); background:linear-gradient(135deg,rgba(201,169,110,.12),#fff 52%,rgba(168,181,160,.10)); box-shadow:0 18px 45px rgba(201,169,110,.12); }
+    .price-featured-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; background:var(--gold); color:#fff; font-size:.7rem; letter-spacing:.09em; text-transform:uppercase; font-weight:600; margin-bottom:9px; }
+    .admin-price-import-box { border:1px dashed var(--beige-dark); background:rgba(250,248,244,.75); border-radius:20px; padding:18px; margin-bottom:18px; }
+    .admin-price-import-box strong { color:var(--dark); display:block; margin-bottom:5px; }
+    .admin-price-import-box p { color:var(--graphite-light); line-height:1.55; font-size:.85rem; margin-bottom:12px; }
+    .admin-price-import-preview { margin-top:16px; background:#fff; border:1px solid var(--beige); border-radius:16px; padding:14px; overflow:auto; }
+    .admin-price-import-preview table { width:100%; border-collapse:collapse; font-size:.8rem; min-width:650px; }
+    .admin-price-import-preview th,.admin-price-import-preview td { text-align:left; padding:8px 10px; border-bottom:1px solid #eee7de; vertical-align:top; }
+    .admin-price-category-group { border:1px solid var(--beige); border-radius:20px; background:#fff; overflow:hidden; margin-bottom:14px; }
+    .admin-price-category-group > summary { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:17px 18px; font-weight:700; color:var(--dark); }
+    .admin-price-category-group > summary::-webkit-details-marker { display:none; }
+    .admin-price-category-meta { display:flex; align-items:center; gap:8px; color:var(--graphite-light); font-size:.8rem; font-weight:500; }
+    .admin-price-category-body { padding:0 14px 14px; display:grid; gap:10px; }
+    .admin-price-item-details { border:1px solid rgba(232,221,208,.85); border-radius:16px; background:#fcfbf9; overflow:hidden; }
+    .admin-price-item-details > summary { list-style:none; cursor:pointer; display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:12px; padding:14px 15px; }
+    .admin-price-item-details > summary::-webkit-details-marker { display:none; }
+    .admin-price-item-name { font-weight:650; color:var(--dark); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .admin-price-item-price { color:var(--gold); font-weight:650; white-space:nowrap; }
+    .admin-price-item-status { font-size:.72rem; padding:5px 9px; border-radius:99px; background:#eef4eb; color:#56704f; white-space:nowrap; }
+    .admin-price-item-status.hidden-item { background:#fbefed; color:#923e36; }
+    .admin-price-item-body { padding:0 15px 15px; }
+    .admin-price-item-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap; }
+    .offer-admin-note { border-left:3px solid var(--gold); padding:10px 12px; background:rgba(201,169,110,.08); border-radius:10px; color:var(--graphite); font-size:.84rem; line-height:1.5; }
+    @media(max-width:760px){
+        .offer-document-top { flex-direction:column; }
+        .offer-document-actions { width:100%; }
+        .offer-document-actions .btn-primary,.offer-document-actions .btn-secondary { width:100%; justify-content:center; }
+        .admin-price-item-details > summary { grid-template-columns:minmax(0,1fr) auto; }
+        .admin-price-item-status { grid-column:1 / -1; justify-self:start; }
+    }
+</style>
+<script>
+// ===== V29 PUBLIC OFFER, SECOND PHONE, GROUPED PRICE EDITOR + EXCEL IMPORT =====
+(function(){
+    const V29_DEFAULTS = {
+        offerTag: 'Публічна оферта',
+        offerTitle: 'Договір про надання медичних послуг та приєднання до публічної оферти',
+        offerShortDescription: 'Ознайомтесь з умовами договору та залиште заявку на приєднання до публічної оферти.',
+        offerPrice: '',
+        offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.'
+    };
+    window._priceExcelPending = [];
+
+    function esc(v){ return typeof bprEscapeText === 'function' ? bprEscapeText(String(v ?? '')) : String(v ?? '').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;',"'":'&#39;'}[c])); }
+    function normalizePhone(v){ return String(v||'').replace(/[^\d+]/g,''); }
+    function offerVisible(){ return siteConfig?.pages?.offer !== false; }
+
+    function normalizePriceCategory(item){
+        const name = String(item?.name||'').toLowerCase();
+        let category = String(item?.category||'').trim();
+        if (!category) category = 'Інше';
+        if (/узд|ультразв/.test(name) && (!item.category || /^діагностика$/i.test(category))) category = 'УЗД';
+        if (/вакцин/.test(name) && (!item.category || /діагностика|інше/i.test(category))) category = 'Вакцинація';
+        if (/швидк.*тест|експрес.*тест|crp|h\.?pylori/.test(name) && (!item.category || /діагностика|інше/i.test(category))) category = 'Швидкі тести';
+        if (/лаборатор|аналіз кров|аналіз сеч/.test(name) && (!item.category || /діагностика|інше/i.test(category))) category = 'Лабораторна діагностика';
+        if (/психолог/.test(name) && (!item.category || /консультації|інше/i.test(category))) category = 'Психологія';
+        return {...item, category};
+    }
+
+    function normalizeAllPrices(){
+        sitePrices = (sitePrices || []).map(normalizePriceCategory);
+    }
+
+    function renderOfferPage(){
+        const tag = document.getElementById('offerPageTag');
+        const title = document.getElementById('offerPageTitle');
+        const docTitle = document.getElementById('offerDocumentTitle');
+        const intro = document.getElementById('offerPageIntro');
+        const full = document.getElementById('offerFullText');
+        if(tag) tag.textContent = siteConfig.offerTag || V29_DEFAULTS.offerTag;
+        if(title) title.textContent = siteConfig.offerTitle || V29_DEFAULTS.offerTitle;
+        if(docTitle) docTitle.textContent = siteConfig.offerTitle || V29_DEFAULTS.offerTitle;
+        if(intro) intro.textContent = siteConfig.offerShortDescription || V29_DEFAULTS.offerShortDescription;
+        if(full){
+            const raw = String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
+            const blocks = raw.split(/\n\s*\n+/).filter(Boolean);
+            full.innerHTML = blocks.map(block => {
+                const lines = block.split('\n').map(x=>x.trim()).filter(Boolean);
+                const first = lines[0] || '';
+                if (/^(розділ|стаття|\d+\.|[IVX]+\.)\s/i.test(first) && first.length < 120) {
+                    return '<h3>'+esc(first)+'</h3>' + (lines.slice(1).length ? '<p>'+lines.slice(1).map(esc).join('<br>')+'</p>' : '');
+                }
+                return '<p>'+lines.map(esc).join('<br>')+'</p>';
+            }).join('');
+        }
+    }
+
+    window.openBookingForOffer = function(){
+        if (typeof openBookingForPrice === 'function') return openBookingForPrice(siteConfig.offerTitle || V29_DEFAULTS.offerTitle, 'Публічна оферта');
+        if (typeof openModal === 'function') openModal();
+    };
+
+    function renderSecondPhone(){
+        const phone2 = String(siteConfig.phone2 || '').trim();
+        const clean = normalizePhone(phone2);
+        const booking = document.getElementById('bookingContactPhone2');
+        if(booking){
+            booking.hidden = !phone2;
+            booking.href = phone2 ? 'tel:'+clean : '#';
+            const strong = booking.querySelector('strong'); if(strong) strong.textContent = phone2;
+        }
+        const footerItem = document.getElementById('siteFooterPhone2Item');
+        const footer = document.getElementById('siteFooterPhone2');
+        if(footerItem) footerItem.hidden = !phone2;
+        if(footer){ footer.href = phone2 ? 'tel:'+clean : '#'; footer.textContent = phone2 ? '📞 '+phone2 : ''; }
+    }
+
+    function renderFeaturedOfferInPrice(){
+        if(!offerVisible()) return '';
+        const title = siteConfig.offerTitle || V29_DEFAULTS.offerTitle;
+        const description = siteConfig.offerShortDescription || V29_DEFAULTS.offerShortDescription;
+        const price = siteConfig.offerPrice || '';
+        return '<section class="price-category-section price-featured-offer">'+
+            '<div class="price-category-header"><div><span class="price-featured-badge">★ Рекомендовано</span><h2>Публічна оферта</h2></div><span class="price-category-count">пріоритетна пропозиція</span></div>'+
+            '<div class="price-category-list"><div class="price-row"><div><h3>'+esc(title)+'</h3><p>'+esc(description)+'</p></div><div class="price-row-actions">'+
+            (price?'<div class="price-value">'+esc(price)+'</div>':'')+
+            '<button type="button" class="price-book-btn" onclick="showPage(\'offer\')">Ознайомитись</button><button type="button" class="price-book-btn" onclick="openBookingForOffer()">Залишити заявку</button></div></div></div></section>';
+    }
+
+    // Override price public render, preserving search/filter behavior and placing the offer first.
+    window.adminRenderPrices = function(){
+        normalizeAllPrices();
+        const list=document.getElementById('sitePriceList'), empty=document.getElementById('sitePriceEmpty'), filters=document.getElementById('priceFilters');
+        if(!list||!empty)return;
+        const allVisible=sitePrices.filter(item=>item.visible!==false&&item.name);
+        const order = Array.isArray(window.PRICE_CATEGORY_ORDER) ? window.PRICE_CATEGORY_ORDER : ['Консультації','УЗД','Діагностика','Лабораторна діагностика','Вакцинація','Швидкі тести','Психологія','Інше'];
+        const categories=[...new Set(allVisible.map(item=>(item.category||'Інше').trim()||'Інше'))].sort((a,b)=>{const ai=order.indexOf(a),bi=order.indexOf(b);if(ai===-1&&bi===-1)return a.localeCompare(b,'uk');if(ai===-1)return 1;if(bi===-1)return-1;return ai-bi;});
+        if(priceActiveCategory!=='Всі'&&!categories.includes(priceActiveCategory)) priceActiveCategory='Всі';
+        if(filters) filters.innerHTML=['Всі',...categories].map(cat=>'<button type="button" class="price-filter '+(priceActiveCategory===cat?'active':'')+'" onclick="setPriceCategory(this.dataset.category)" data-category="'+esc(cat)+'">'+esc(cat)+'</button>').join('');
+        const visible=allVisible.filter(item=>{ const cat=(item.category||'Інше').trim()||'Інше'; if(priceActiveCategory!=='Всі'&&cat!==priceActiveCategory)return false; if(!priceSearchTerm)return true; return [item.name,item.description,item.category,item.price,item.preparation].join(' ').toLocaleLowerCase('uk').includes(priceSearchTerm); });
+        const showOffer = priceActiveCategory==='Всі' && !priceSearchTerm && offerVisible();
+        empty.hidden = visible.length>0 || showOffer;
+        const groups={}; visible.forEach(item=>{const cat=(item.category||'Інше').trim()||'Інше';(groups[cat] ||= []).push(item);});
+        const ordered=Object.keys(groups).sort((a,b)=>categories.indexOf(a)-categories.indexOf(b));
+        const regular=ordered.map(category=>'<section class="price-category-section"><div class="price-category-header"><h2>'+esc(category)+'</h2><span class="price-category-count">'+groups[category].length+' '+(groups[category].length===1?'послуга':'послуг')+'</span></div><div class="price-category-list">'+groups[category].map(item=>'<div class="price-row"><div><h3>'+esc(item.name)+'</h3><p>'+esc(item.description||'')+'</p>'+(item.preparation?'<p style="margin-top:6px;"><strong>Підготовка:</strong> '+esc(item.preparation)+'</p>':'')+'</div><div class="price-row-actions"><div class="price-value">'+esc(item.price||'')+'</div><button type="button" class="price-book-btn" data-service="'+esc(item.name)+'" data-category="'+esc(category)+'" onclick="openBookingForPrice(this.dataset.service,this.dataset.category)">Записатись</button></div></div>').join('')+'</div></section>').join('');
+        list.innerHTML=(showOffer?renderFeaturedOfferInPrice():'')+regular;
+        if(!visible.length&&!showOffer){list.innerHTML='';empty.textContent=allVisible.length?'За вашим запитом нічого не знайдено.':'Прайс тимчасово не заповнений.';}
+    };
+
+    function priceCategoriesInOrder(items){
+        const order = ['Публічна оферта','Консультації','УЗД','Діагностика','Лабораторна діагностика','Вакцинація','Швидкі тести','Психологія','Інше'];
+        return [...new Set(items.map(x=>x.category||'Інше'))].sort((a,b)=>{const ai=order.indexOf(a),bi=order.indexOf(b); if(ai<0&&bi<0)return a.localeCompare(b,'uk'); if(ai<0)return 1;if(bi<0)return-1;return ai-bi;});
+    }
+
+    window.adminRenderPriceEditor = function(){
+        const list=document.getElementById('adminPriceCards'); if(!list)return;
+        normalizeAllPrices();
+        const groups={}; (sitePrices||[]).forEach((item,index)=>{ const cat=item.category||'Інше'; (groups[cat] ||= []).push({item,index}); });
+        const cats=priceCategoriesInOrder(sitePrices||[]);
+        const offerShell = '<details class="admin-price-category-group"><summary><span>Публічна оферта</span><span class="admin-price-category-meta"><span>керується у вкладці «Оферта»</span></span></summary><div class="admin-price-category-body"><div class="offer-admin-note">Ця пропозиція завжди показується першою в прайсі. Для редагування назви, ціни й тексту відкрийте вкладку <button type="button" class="bpr-btn bpr-btn-quiet" onclick="adminShowPanel(\'offer\')">Оферта</button>.</div></div></details>';
+        const html=cats.map(cat=>{
+            const rows=groups[cat]||[]; const visibleCount=rows.filter(x=>x.item.visible!==false).length;
+            return '<details class="admin-price-category-group"><summary><span>'+esc(cat)+'</span><span class="admin-price-category-meta"><span>'+rows.length+' позицій · '+visibleCount+' показуються</span><button type="button" class="bpr-btn bpr-btn-quiet" onclick="event.preventDefault();event.stopPropagation();adminAddPriceItemToCategory(this.dataset.category)" data-category="'+esc(cat)+'">+ Додати</button></span></summary><div class="admin-price-category-body">'+rows.map(({item,index})=>{
+                return '<details class="admin-price-item-details" data-price-index="'+index+'"><summary><span class="admin-price-item-name">'+esc(item.name||'Без назви')+'</span><span class="admin-price-item-price">'+esc(item.price||'')+'</span><span class="admin-price-item-status '+(item.visible===false?'hidden-item':'')+'">'+(item.visible===false?'Приховано':'Показується')+'</span></summary><div class="admin-price-item-body"><div class="admin-price-grid">'+
+                    '<label class="bpr-field"><span>Рубрика</span><input data-price-field="category" list="priceCategoryOptions" value="'+esc(item.category||'')+'"></label>'+
+                    '<label class="bpr-field"><span>Ціна</span><input data-price-field="price" value="'+esc(item.price||'')+'"></label>'+
+                    '<label class="bpr-field bpr-full"><span>Назва послуги</span><input data-price-field="name" value="'+esc(item.name||'')+'"></label>'+
+                    '<label class="bpr-field bpr-full"><span>Короткий опис</span><textarea data-price-field="description" style="min-height:86px;">'+esc(item.description||'')+'</textarea></label>'+
+                    '<label class="bpr-field bpr-full"><span>Підготовка (необов’язково)</span><textarea data-price-field="preparation" style="min-height:70px;">'+esc(item.preparation||'')+'</textarea></label>'+
+                    '<label class="bpr-field bpr-checkbox bpr-full"><input data-price-field="visible" type="checkbox" '+(item.visible===false?'':'checked')+'> Показувати на сайті</label></div><div class="admin-price-item-actions"><button class="bpr-btn bpr-btn-danger" type="button" onclick="adminRemovePriceItem('+index+')">Видалити позицію</button></div></div></details>';
+            }).join('')+'</div></details>';
+        }).join('');
+        list.innerHTML=offerShell+html+'<datalist id="priceCategoryOptions">'+['Консультації','УЗД','Діагностика','Лабораторна діагностика','Вакцинація','Швидкі тести','Психологія','Інше'].map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist>';
+    };
+
+    window.adminCollectPriceEditor = function(){
+        const cards=document.querySelectorAll('#adminPriceCards [data-price-index]');
+        if(!cards.length) return sitePrices || [];
+        const result=[];
+        cards.forEach(card=>{ const f=n=>card.querySelector('[data-price-field="'+n+'"]'); const index=parseInt(card.dataset.priceIndex,10); const base=(sitePrices||[])[index]||{}; result.push(normalizePriceCategory({...base, category:f('category')?.value.trim()||'Інше', name:f('name')?.value.trim()||'', description:f('description')?.value.trim()||'', preparation:f('preparation')?.value.trim()||'', price:f('price')?.value.trim()||'', visible:f('visible')?f('visible').checked:true})); });
+        return result.filter(x=>x.name||x.description||x.price);
+    };
+
+    window.adminAddPriceItemToCategory = function(category){
+        sitePrices=adminCollectPriceEditor(); sitePrices.push({category:category||'Консультації',name:'Нова послуга',description:'',preparation:'',price:'',visible:true}); adminRenderPriceEditor();
+        setTimeout(()=>{const all=document.querySelectorAll('#adminPriceCards .admin-price-category-group'); [...all].find(d=>d.querySelector('summary')?.textContent.includes(category))?.setAttribute('open','');},0);
+    };
+    window.adminAddPriceItem = function(){ adminAddPriceItemToCategory('Консультації'); };
+    window.adminRemovePriceItem = function(index){ sitePrices=adminCollectPriceEditor(); sitePrices.splice(index,1); adminRenderPriceEditor(); };
+
+    function headerKey(value){ return String(value||'').trim().toLowerCase().replace(/[’'"()]/g,'').replace(/\s+/g,' '); }
+    const HEADER_MAP = {
+        category:['категорія','рубрика','category','розділ','група'],
+        name:['назва','послуга','найменування','дослідження','name','service'],
+        description:['опис','description','коментар','примітка'],
+        price:['ціна','вартість','price','сума'],
+        visible:['показувати','видимість','visible','активна','активність'],
+        preparation:['підготовка','підготовка до дослідження','preparation']
+    };
+    function resolveHeader(v){ const key=headerKey(v); for(const [field,aliases] of Object.entries(HEADER_MAP)) if(aliases.some(a=>key===a||key.includes(a))) return field; return ''; }
+    function visibleFromCell(v){ const s=String(v??'').trim().toLowerCase(); if(!s) return true; return !['0','ні','нет','false','hidden','приховано','не показувати'].includes(s); }
+    function rowsFromWorksheet(ws){
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+        if(!rows.length) return [];
+        let headerRow=-1, mapping={};
+        for(let r=0;r<Math.min(rows.length,20);r++){
+            const m={}; rows[r].forEach((cell,i)=>{const f=resolveHeader(cell); if(f&&!m[f])m[f]=i;});
+            if(Object.keys(m).filter(k=>['name','price','category'].includes(k)).length>=2 || (m.name!==undefined && m.price!==undefined)){ headerRow=r; mapping=m; break; }
+        }
+        const out=[];
+        if(headerRow>=0){
+            let currentCategory='';
+            for(let r=headerRow+1;r<rows.length;r++){
+                const row=rows[r]; if(!row.some(x=>String(x).trim())) continue;
+                const name=String(row[mapping.name]??'').trim(); const price=String(row[mapping.price]??'').trim(); const explicitCat=mapping.category!==undefined?String(row[mapping.category]??'').trim():'';
+                const nonEmpty=row.filter(x=>String(x).trim()).length;
+                if(!name && explicitCat){ currentCategory=explicitCat; continue; }
+                if(!name && nonEmpty===1){ currentCategory=String(row.find(x=>String(x).trim())||'').trim(); continue; }
+                if(!name) continue;
+                const item={category:explicitCat||currentCategory||'Інше',name,description:mapping.description!==undefined?String(row[mapping.description]??'').trim():'',price,preparation:mapping.preparation!==undefined?String(row[mapping.preparation]??'').trim():'',visible:mapping.visible!==undefined?visibleFromCell(row[mapping.visible]):true}; out.push(normalizePriceCategory(item));
+            }
+            return out;
+        }
+        let currentCategory='Інше';
+        rows.forEach(row=>{
+            const cells=row.map(x=>String(x??'').trim()); const non=cells.filter(Boolean); if(!non.length)return;
+            if(non.length===1 && !/\d/.test(non[0])){ currentCategory=non[0]; return; }
+            const name=non[0]; const price=non.length>1?non[non.length-1]:''; const description=non.length>2?non.slice(1,-1).join(' · '):'';
+            if(name) out.push(normalizePriceCategory({category:currentCategory,name,description,price,preparation:'',visible:true}));
+        });
+        return out;
+    }
+
+    window.adminPriceImportExcel = async function(event){
+        const file=event.target.files?.[0]; event.target.value=''; if(!file)return;
+        const box=document.getElementById('adminPriceImportPreview');
+        try{
+            if(typeof XLSX==='undefined') throw new Error('Модуль Excel не завантажився. Перевірте інтернет і оновіть сторінку.');
+            const data=await file.arrayBuffer(); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const items=rowsFromWorksheet(ws);
+            if(!items.length) throw new Error('Не вдалося знайти позиції прайсу. Перевірте заголовки колонок або скористайтесь шаблоном.');
+            window._priceExcelPending=items;
+            if(box){ box.hidden=false; box.innerHTML='<strong>Знайдено '+items.length+' позицій</strong><p style="margin:6px 0 12px;color:var(--graphite-light);">Перегляньте перші рядки й оберіть спосіб імпорту.</p><table><thead><tr><th>Рубрика</th><th>Назва</th><th>Опис</th><th>Ціна</th></tr></thead><tbody>'+items.slice(0,12).map(i=>'<tr><td>'+esc(i.category)+'</td><td>'+esc(i.name)+'</td><td>'+esc(i.description)+'</td><td>'+esc(i.price)+'</td></tr>').join('')+'</tbody></table><div class="bpr-inline-actions" style="margin-top:12px;"><button class="bpr-btn bpr-btn-primary" type="button" onclick="adminApplyExcelImport(\'replace\')">Замінити поточний прайс</button><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminApplyExcelImport(\'append\')">Додати до поточного</button><button class="bpr-btn bpr-btn-quiet" type="button" onclick="adminCancelExcelImport()">Скасувати</button></div>'; }
+        }catch(err){ if(box){box.hidden=false;box.innerHTML='<div class="bpr-note" style="color:#9c3b34;">'+esc(err.message||'Помилка імпорту')+'</div>';} }
+    };
+    window.adminApplyExcelImport = function(mode){ const pending=window._priceExcelPending||[]; if(!pending.length)return; const current=adminCollectPriceEditor(); sitePrices=mode==='append'?[...current,...pending]:pending; normalizeAllPrices(); adminRenderPriceEditor(); adminRenderPrices(); adminSaveSiteState(); adminCancelExcelImport(); };
+    window.adminCancelExcelImport = function(){ window._priceExcelPending=[]; const box=document.getElementById('adminPriceImportPreview'); if(box){box.hidden=true;box.innerHTML='';} };
+    window.adminDownloadPriceTemplate = function(){
+        if(typeof XLSX==='undefined'){ alert('Модуль Excel ще не завантажився. Оновіть сторінку та спробуйте ще раз.'); return; }
+        const data=[['Рубрика','Назва','Опис','Ціна','Показувати','Підготовка'],['Консультації','Консультація сімейного лікаря','Первинний прийом','600 грн','так',''],['УЗД','УЗД органів черевної порожнини','Ультразвукове дослідження','700 грн','так','Натще 6–8 годин']];
+        const ws=XLSX.utils.aoa_to_sheet(data); ws['!cols']=[{wch:24},{wch:38},{wch:55},{wch:16},{wch:14},{wch:45}]; const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Прайс'); XLSX.writeFile(wb,'INWHITE_PRICE_TEMPLATE.xlsx');
+    };
+
+    window.adminOfferLoadFile = async function(event){
+        const file=event.target.files?.[0]; event.target.value=''; if(!file)return;
+        const status=document.getElementById('adminOfferFileStatus'); if(status)status.textContent='Читаю файл…';
+        try{
+            let raw='';
+            if(/\.docx$/i.test(file.name)){
+                if(typeof mammoth==='undefined') throw new Error('Модуль DOCX не завантажився. Оновіть сторінку та спробуйте ще раз.');
+                const result=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()}); raw=result.value||'';
+            } else raw=await file.text();
+            document.getElementById('adminOfferFullText').value=raw.trim();
+            if(status)status.textContent='Файл завантажено: '+file.name;
+        }catch(err){ if(status)status.textContent=err.message||'Не вдалося прочитати файл.'; }
+    };
+
+    function fillOfferAdmin(){
+        const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??'';};
+        const vis=document.getElementById('adminOfferVisible'); if(vis)vis.checked=offerVisible();
+        set('adminOfferTag',siteConfig.offerTag||V29_DEFAULTS.offerTag); set('adminOfferTitle',siteConfig.offerTitle||V29_DEFAULTS.offerTitle); set('adminOfferShortDescription',siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription); set('adminOfferPrice',siteConfig.offerPrice||''); set('adminOfferFullText',siteConfig.offerFullText||V29_DEFAULTS.offerFullText);
+    }
+    function collectOfferAdmin(){
+        const get=id=>document.getElementById(id)?.value.trim()||'';
+        siteConfig.pages={...(siteConfig.pages||{}),offer:document.getElementById('adminOfferVisible')?.checked!==false};
+        siteConfig.offerTag=get('adminOfferTag')||V29_DEFAULTS.offerTag; siteConfig.offerTitle=get('adminOfferTitle')||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=get('adminOfferShortDescription')||V29_DEFAULTS.offerShortDescription; siteConfig.offerPrice=get('adminOfferPrice'); siteConfig.offerFullText=get('adminOfferFullText')||V29_DEFAULTS.offerFullText;
+        const legacy=document.getElementById('adminPageOffer'); if(legacy)legacy.checked=siteConfig.pages.offer;
+    }
+    window.adminSaveOffer = function(event){event?.preventDefault?.();collectOfferAdmin();adminSaveSiteState();renderOfferPage();adminRenderPrices();if(supabaseAccessToken)supabaseSaveSiteState();};
+
+    // Main save must include the offer fields too.
+    const collectAllV29 = window.adminCollectAllVisibleEditors;
+    if(typeof collectAllV29==='function') window.adminCollectAllVisibleEditors=function(){ collectAllV29.apply(this,arguments); collectOfferAdmin(); };
+
+    const fillV29 = window.adminFillForms;
+    window.adminFillForms=function(){ const result=fillV29.apply(this,arguments); const p2=document.getElementById('adminContactPhone2'); if(p2)p2.value=siteConfig.phone2||''; fillOfferAdmin(); return result; };
+
+    const renderSiteV29 = window.adminRenderSite;
+    window.adminRenderSite=function(){ const result=renderSiteV29.apply(this,arguments); renderSecondPhone(); renderOfferPage(); return result; };
+
+    // Keep admin panel state clean and show the offer tab only as its own section.
+    const showPanelV29=window.adminShowPanel;
+    window.adminShowPanel=function(panelName){ const result=showPanelV29.apply(this,arguments); if(panelName==='offer')fillOfferAdmin(); return result; };
+
+    // Migrate current stored data without deleting anything.
+    function migrateV29(){
+        siteConfig=adminNormalizeSiteConfig(siteConfig||{}); siteConfig.pages={...(siteConfig.pages||{}),offer:siteConfig.pages?.offer!==false};
+        siteConfig.offerTag=siteConfig.offerTag||V29_DEFAULTS.offerTag; siteConfig.offerTitle=siteConfig.offerTitle||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription; siteConfig.offerFullText=siteConfig.offerFullText||V29_DEFAULTS.offerFullText; siteConfig.phone2=siteConfig.phone2||'';
+        normalizeAllPrices();
+        adminSaveSiteState();
+    }
+    migrateV29();
+    window.addEventListener('DOMContentLoaded',()=>{ setTimeout(()=>{ migrateV29(); fillOfferAdmin(); renderOfferPage(); renderSecondPhone(); adminRenderPriceEditor(); adminRenderPrices(); },0); });
+})();
+</script>
+
 </body>
 </html>
