@@ -4316,6 +4316,7 @@
                                 <div class="bpr-field bpr-full">
                                     <label for="adminOfferFullText">Текст документа</label>
                                     <textarea id="adminOfferFullText" style="min-height:420px; line-height:1.6;"></textarea>
+                                    <textarea id="adminOfferFullHtml" hidden></textarea>
                                     <div class="bpr-inline-actions" style="margin-top:12px;">
                                         <label class="bpr-btn bpr-btn-secondary" style="cursor:pointer;">Завантажити файл
                                             <input id="adminOfferFile" type="file" accept=".txt,.md,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="adminOfferLoadFile(event)">
@@ -9916,6 +9917,22 @@
     .offer-full-text { color:var(--graphite); line-height:1.8; font-size:.96rem; white-space:normal; }
     .offer-full-text p { margin:0 0 1.05em; }
     .offer-full-text h3 { font-family:'Cormorant Garamond',serif; color:var(--dark); font-size:1.45rem; margin:1.4em 0 .5em; }
+    .offer-full-text h1,.offer-full-text h2 { font-family:'Cormorant Garamond',serif; color:var(--dark); line-height:1.2; margin:1.45em 0 .55em; }
+    .offer-full-text h1 { font-size:1.8rem; }
+    .offer-full-text h2 { font-size:1.6rem; }
+    .offer-full-text ul,.offer-full-text ol { margin:.45em 0 1.1em 1.35em; padding:0; }
+    .offer-full-text li { margin:.28em 0; }
+    .offer-full-text .offer-table-wrap { width:100%; overflow-x:auto; margin:1.1em 0 1.5em; border-radius:16px; border:1px solid var(--beige); }
+    .offer-full-text table { width:100%; border-collapse:collapse; min-width:680px; background:#fff; font-size:.92rem; }
+    .offer-full-text th,.offer-full-text td { border:1px solid #e7ded2; padding:12px 14px; text-align:left; vertical-align:top; line-height:1.5; }
+    .offer-full-text th { background:#f6f1e9; color:var(--dark); font-weight:700; }
+    .offer-full-text tr:nth-child(even) td { background:#fcfbf9; }
+    .offer-full-text strong { color:var(--dark); }
+    @media(max-width:760px){
+        .offer-full-text { font-size:.93rem; line-height:1.7; }
+        .offer-full-text table { min-width:620px; font-size:.86rem; }
+        .offer-full-text th,.offer-full-text td { padding:10px 11px; }
+    }
     .price-featured-offer { border:1.5px solid rgba(201,169,110,.65); background:linear-gradient(135deg,rgba(201,169,110,.12),#fff 52%,rgba(168,181,160,.10)); box-shadow:0 18px 45px rgba(201,169,110,.12); }
     .price-featured-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; background:var(--gold); color:#fff; font-size:.7rem; letter-spacing:.09em; text-transform:uppercase; font-weight:600; margin-bottom:9px; }
     .admin-price-import-box { border:1px dashed var(--beige-dark); background:rgba(250,248,244,.75); border-radius:20px; padding:18px; margin-bottom:18px; }
@@ -9948,14 +9965,15 @@
     }
 </style>
 <script>
-// ===== V29 PUBLIC OFFER, SECOND PHONE, GROUPED PRICE EDITOR + EXCEL IMPORT =====
+// ===== V30 PUBLIC OFFER WITH DOCX TABLE PRESERVATION + V29 FEATURES =====
 (function(){
     const V29_DEFAULTS = {
         offerTag: 'Публічна оферта',
         offerTitle: 'Договір про надання медичних послуг та приєднання до публічної оферти',
         offerShortDescription: 'Ознайомтесь з умовами договору та залиште заявку на приєднання до публічної оферти.',
         offerPrice: '',
-        offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.'
+        offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.',
+        offerFullHtml: ''
     };
     window._priceExcelPending = [];
 
@@ -9979,6 +9997,50 @@
         sitePrices = (sitePrices || []).map(normalizePriceCategory);
     }
 
+    function sanitizeOfferHtml(input){
+        const parser = new DOMParser();
+        const doc = parser.parseFromString('<div id="offer-root">'+String(input||'')+'</div>', 'text/html');
+        const root = doc.getElementById('offer-root');
+        if(!root) return '';
+        const allowed = new Set(['P','BR','H1','H2','H3','H4','STRONG','B','EM','I','UL','OL','LI','TABLE','THEAD','TBODY','TFOOT','TR','TH','TD']);
+        const safeAttrs = new Set(['rowspan','colspan']);
+        [...root.querySelectorAll('*')].forEach(el=>{
+            if(!allowed.has(el.tagName)){
+                const frag = doc.createDocumentFragment();
+                while(el.firstChild) frag.appendChild(el.firstChild);
+                el.replaceWith(frag);
+                return;
+            }
+            [...el.attributes].forEach(attr=>{
+                if(!safeAttrs.has(attr.name.toLowerCase())) el.removeAttribute(attr.name);
+            });
+        });
+        return root.innerHTML;
+    }
+
+    function wrapOfferTables(container){
+        if(!container) return;
+        container.querySelectorAll('table').forEach(table=>{
+            if(table.parentElement?.classList?.contains('offer-table-wrap')) return;
+            const wrap=document.createElement('div');
+            wrap.className='offer-table-wrap';
+            table.parentNode.insertBefore(wrap,table);
+            wrap.appendChild(table);
+        });
+    }
+
+    function renderOfferPlainText(raw){
+        const blocks = String(raw||'').trim().split(/\n\s*\n+/).filter(Boolean);
+        return blocks.map(block => {
+            const lines = block.split('\n').map(x=>x.trim()).filter(Boolean);
+            const first = lines[0] || '';
+            if (/^(розділ|стаття|\d+\.|[IVX]+\.)\s/i.test(first) && first.length < 120) {
+                return '<h3>'+esc(first)+'</h3>' + (lines.slice(1).length ? '<p>'+lines.slice(1).map(esc).join('<br>')+'</p>' : '');
+            }
+            return '<p>'+lines.map(esc).join('<br>')+'</p>';
+        }).join('');
+    }
+
     function renderOfferPage(){
         const tag = document.getElementById('offerPageTag');
         const title = document.getElementById('offerPageTitle');
@@ -9990,16 +10052,14 @@
         if(docTitle) docTitle.textContent = siteConfig.offerTitle || V29_DEFAULTS.offerTitle;
         if(intro) intro.textContent = siteConfig.offerShortDescription || V29_DEFAULTS.offerShortDescription;
         if(full){
-            const raw = String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
-            const blocks = raw.split(/\n\s*\n+/).filter(Boolean);
-            full.innerHTML = blocks.map(block => {
-                const lines = block.split('\n').map(x=>x.trim()).filter(Boolean);
-                const first = lines[0] || '';
-                if (/^(розділ|стаття|\d+\.|[IVX]+\.)\s/i.test(first) && first.length < 120) {
-                    return '<h3>'+esc(first)+'</h3>' + (lines.slice(1).length ? '<p>'+lines.slice(1).map(esc).join('<br>')+'</p>' : '');
-                }
-                return '<p>'+lines.map(esc).join('<br>')+'</p>';
-            }).join('');
+            const structured = String(siteConfig.offerFullHtml || '').trim();
+            if(structured){
+                full.innerHTML = sanitizeOfferHtml(structured);
+                wrapOfferTables(full);
+            } else {
+                const raw = String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
+                full.innerHTML = renderOfferPlainText(raw);
+            }
         }
     }
 
@@ -10162,28 +10222,49 @@
         const file=event.target.files?.[0]; event.target.value=''; if(!file)return;
         const status=document.getElementById('adminOfferFileStatus'); if(status)status.textContent='Читаю файл…';
         try{
-            let raw='';
+            let raw='', structured='';
             if(/\.docx$/i.test(file.name)){
                 if(typeof mammoth==='undefined') throw new Error('Модуль DOCX не завантажився. Оновіть сторінку та спробуйте ще раз.');
-                const result=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()}); raw=result.value||'';
-            } else raw=await file.text();
-            document.getElementById('adminOfferFullText').value=raw.trim();
-            if(status)status.textContent='Файл завантажено: '+file.name;
+                const buffer=await file.arrayBuffer();
+                const [htmlResult,textResult]=await Promise.all([
+                    mammoth.convertToHtml({arrayBuffer:buffer}),
+                    mammoth.extractRawText({arrayBuffer:buffer})
+                ]);
+                structured=htmlResult.value||'';
+                raw=textResult.value||'';
+            } else {
+                raw=await file.text();
+            }
+            const textEl=document.getElementById('adminOfferFullText');
+            const htmlEl=document.getElementById('adminOfferFullHtml');
+            if(textEl) textEl.value=raw.trim();
+            if(htmlEl) htmlEl.value=structured.trim();
+            if(status) status.textContent=structured
+                ? 'Файл завантажено зі збереженням таблиць: '+file.name
+                : 'Файл завантажено: '+file.name;
         }catch(err){ if(status)status.textContent=err.message||'Не вдалося прочитати файл.'; }
     };
 
     function fillOfferAdmin(){
         const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??'';};
         const vis=document.getElementById('adminOfferVisible'); if(vis)vis.checked=offerVisible();
-        set('adminOfferTag',siteConfig.offerTag||V29_DEFAULTS.offerTag); set('adminOfferTitle',siteConfig.offerTitle||V29_DEFAULTS.offerTitle); set('adminOfferShortDescription',siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription); set('adminOfferPrice',siteConfig.offerPrice||''); set('adminOfferFullText',siteConfig.offerFullText||V29_DEFAULTS.offerFullText);
+        set('adminOfferTag',siteConfig.offerTag||V29_DEFAULTS.offerTag); set('adminOfferTitle',siteConfig.offerTitle||V29_DEFAULTS.offerTitle); set('adminOfferShortDescription',siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription); set('adminOfferPrice',siteConfig.offerPrice||''); set('adminOfferFullText',siteConfig.offerFullText||V29_DEFAULTS.offerFullText); set('adminOfferFullHtml',siteConfig.offerFullHtml||'');
     }
     function collectOfferAdmin(){
         const get=id=>document.getElementById(id)?.value.trim()||'';
         siteConfig.pages={...(siteConfig.pages||{}),offer:document.getElementById('adminOfferVisible')?.checked!==false};
-        siteConfig.offerTag=get('adminOfferTag')||V29_DEFAULTS.offerTag; siteConfig.offerTitle=get('adminOfferTitle')||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=get('adminOfferShortDescription')||V29_DEFAULTS.offerShortDescription; siteConfig.offerPrice=get('adminOfferPrice'); siteConfig.offerFullText=get('adminOfferFullText')||V29_DEFAULTS.offerFullText;
+        siteConfig.offerTag=get('adminOfferTag')||V29_DEFAULTS.offerTag; siteConfig.offerTitle=get('adminOfferTitle')||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=get('adminOfferShortDescription')||V29_DEFAULTS.offerShortDescription; siteConfig.offerPrice=get('adminOfferPrice'); siteConfig.offerFullText=get('adminOfferFullText')||V29_DEFAULTS.offerFullText; siteConfig.offerFullHtml=get('adminOfferFullHtml');
         const legacy=document.getElementById('adminPageOffer'); if(legacy)legacy.checked=siteConfig.pages.offer;
     }
     window.adminSaveOffer = function(event){event?.preventDefault?.();collectOfferAdmin();adminSaveSiteState();renderOfferPage();adminRenderPrices();if(supabaseAccessToken)supabaseSaveSiteState();};
+    const offerPlainEditor=document.getElementById('adminOfferFullText');
+    if(offerPlainEditor){
+        offerPlainEditor.addEventListener('input',()=>{
+            const htmlEl=document.getElementById('adminOfferFullHtml');
+            if(htmlEl && htmlEl.value) htmlEl.value='';
+        });
+    }
+
 
     // Main save must include the offer fields too.
     const collectAllV29 = window.adminCollectAllVisibleEditors;
@@ -10202,7 +10283,7 @@
     // Migrate current stored data without deleting anything.
     function migrateV29(){
         siteConfig=adminNormalizeSiteConfig(siteConfig||{}); siteConfig.pages={...(siteConfig.pages||{}),offer:siteConfig.pages?.offer!==false};
-        siteConfig.offerTag=siteConfig.offerTag||V29_DEFAULTS.offerTag; siteConfig.offerTitle=siteConfig.offerTitle||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription; siteConfig.offerFullText=siteConfig.offerFullText||V29_DEFAULTS.offerFullText; siteConfig.phone2=siteConfig.phone2||'';
+        siteConfig.offerTag=siteConfig.offerTag||V29_DEFAULTS.offerTag; siteConfig.offerTitle=siteConfig.offerTitle||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription; siteConfig.offerFullText=siteConfig.offerFullText||V29_DEFAULTS.offerFullText; siteConfig.offerFullHtml=siteConfig.offerFullHtml||''; siteConfig.phone2=siteConfig.phone2||'';
         normalizeAllPrices();
         adminSaveSiteState();
     }
