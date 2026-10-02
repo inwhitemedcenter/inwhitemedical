@@ -3953,7 +3953,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v35</div>
+                        <div class="admin-v16-badge">● Admin v36</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -9971,7 +9971,7 @@
 <style>
     /* ===== V29 OFFER + PRICE ADMIN ===== */
     .offer-page-hero { min-height: 36vh; }
-    .offer-page-content { max-width: 1050px; }
+    .offer-page-content { max-width: 1240px; }
     .offer-document-card { background:#fff; border:1px solid var(--beige); border-radius:28px; padding:clamp(24px,4vw,48px); box-shadow:0 20px 55px rgba(74,74,74,.07); }
     .offer-document-top { display:flex; justify-content:space-between; align-items:flex-start; gap:28px; padding-bottom:28px; border-bottom:1px solid var(--beige); margin-bottom:32px; }
     .offer-document-top h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(1.7rem,3.5vw,2.8rem); font-weight:500; color:var(--dark); line-height:1.12; max-width:720px; }
@@ -9981,12 +9981,33 @@
     .offer-full-text p { margin:0 0 1.05em; }
     .offer-full-text h3 { font-family:'Cormorant Garamond',serif; color:var(--dark); font-size:1.45rem; margin:1.4em 0 .5em; }
     .offer-data-table-wrap { width:100%; overflow-x:auto; margin:1.1em 0 1.7em; border:1px solid var(--beige); border-radius:16px; background:#fff; }
-    .offer-data-table { width:100%; min-width:680px; border-collapse:collapse; font-size:.94rem; line-height:1.55; }
-    .offer-data-table th, .offer-data-table td { padding:14px 16px; border-bottom:1px solid rgba(232,221,208,.9); border-right:1px solid rgba(232,221,208,.75); text-align:left; vertical-align:top; }
+    .offer-data-table { width:100%; min-width:760px; border-collapse:collapse; font-size:.94rem; line-height:1.55; table-layout:auto; }
+    .offer-data-table th, .offer-data-table td { padding:14px 16px; border-bottom:1px solid rgba(232,221,208,.9); border-right:1px solid rgba(232,221,208,.75); text-align:left; vertical-align:top; word-break:normal; overflow-wrap:normal; hyphens:none; }
     .offer-data-table th:last-child, .offer-data-table td:last-child { border-right:none; }
     .offer-data-table tr:last-child td { border-bottom:none; }
     .offer-data-table thead th { background:rgba(201,169,110,.10); color:var(--dark); font-weight:600; white-space:nowrap; }
     .offer-data-table td:empty::after { content:'—'; color:var(--beige-dark); }
+
+    .offer-data-table.offer-programs-table { min-width:860px; }
+    .offer-data-table.offer-programs-table th:nth-child(1), .offer-data-table.offer-programs-table td:nth-child(1) { width:24%; }
+    .offer-data-table.offer-programs-table th:nth-child(2), .offer-data-table.offer-programs-table td:nth-child(2) { width:28%; }
+    .offer-data-table.offer-programs-table th:nth-child(3), .offer-data-table.offer-programs-table td:nth-child(3) { width:18%; white-space:nowrap; }
+    .offer-data-table.offer-programs-table th:nth-child(4), .offer-data-table.offer-programs-table td:nth-child(4) { width:30%; }
+    .offer-data-table.offer-packages-table { min-width:1080px; }
+    .offer-data-table.offer-packages-table th:nth-child(1), .offer-data-table.offer-packages-table td:nth-child(1) { width:18%; }
+    .offer-data-table.offer-packages-table th:nth-child(2), .offer-data-table.offer-packages-table td:nth-child(2) { width:12%; white-space:nowrap; }
+    .offer-data-table.offer-packages-table th:nth-child(3), .offer-data-table.offer-packages-table td:nth-child(3) { width:42%; }
+    .offer-data-table.offer-packages-table th:nth-child(4), .offer-data-table.offer-packages-table td:nth-child(4) { width:28%; }
+    .offer-requisites-table { min-width:0; }
+    .offer-requisites-table th:first-child, .offer-requisites-table td:first-child { width:34%; font-weight:600; color:var(--dark); background:rgba(201,169,110,.055); }
+    .offer-requisites-table th:last-child, .offer-requisites-table td:last-child { width:66%; }
+    .offer-requisites-table td:last-child { overflow-wrap:anywhere; }
+    @media (max-width:760px){
+        .offer-data-table.offer-packages-table{min-width:940px;}
+        .offer-data-table.offer-programs-table{min-width:760px;}
+        .offer-requisites-table{min-width:620px;}
+    }
+
     .price-featured-offer { border:1.5px solid rgba(201,169,110,.65); background:linear-gradient(135deg,rgba(201,169,110,.12),#fff 52%,rgba(168,181,160,.10)); box-shadow:0 18px 45px rgba(201,169,110,.12); }
     .price-featured-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; background:var(--gold); color:#fff; font-size:.7rem; letter-spacing:.09em; text-transform:uppercase; font-weight:600; margin-bottom:9px; }
     .admin-price-import-box { border:1px dashed var(--beige-dark); background:rgba(250,248,244,.75); border-radius:20px; padding:18px; margin-bottom:18px; }
@@ -10052,7 +10073,7 @@
         sitePrices = (sitePrices || []).map(normalizePriceCategory);
     }
 
-    function parseExplicitOfferTable(raw, fallbackHeaders){
+    function parseExplicitOfferTable(raw, fallbackHeaders, tableClass=''){
         const text=String(raw||'').trim();
         if(!text) return '';
         const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -10073,7 +10094,7 @@
             rows.push(row.slice(0,width));
         }
         const esc=v=>bprEscapeText(String(v??''));
-        return '<div class="offer-data-table-wrap"><table class="offer-data-table"><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+        return '<div class="offer-data-table-wrap"><table class="offer-data-table '+tableClass+'"><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
     }
 
     function renderOfferPage(){
@@ -10089,8 +10110,50 @@
         if(!full) return;
 
         let raw=String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
-        const programsTable=parseExplicitOfferTable(siteConfig.offerProgramsTable || V29_DEFAULTS.offerProgramsTable,['Програма','Отримувач послуг','Вартість','Строк']);
-        const packagesTable=parseExplicitOfferTable(siteConfig.offerPackagesTable || V29_DEFAULTS.offerPackagesTable,['Пакет','Ціна','Основне','Не включено']);
+        const programsTable=parseExplicitOfferTable(siteConfig.offerProgramsTable || V29_DEFAULTS.offerProgramsTable,['Програма','Отримувач послуг','Вартість','Строк'],'offer-programs-table');
+        const packagesTable=parseExplicitOfferTable(siteConfig.offerPackagesTable || V29_DEFAULTS.offerPackagesTable,['Пакет','Ціна','Основне','Не включено'],'offer-packages-table');
+
+        const buildRequisitesTable = (source) => {
+            const labels = [
+                'Повне найменування',
+                'Код ЄДРПОУ',
+                'Керівник',
+                'Місце провадження медичної практики',
+                'Ліцензія МОЗ',
+                'Телефон / e-mail',
+                'Сайт'
+            ];
+            const lines = String(source || '').split(/\r?\n/);
+            const start = lines.findIndex(l => /^13\.\s*РЕКВІЗИТИ/i.test(String(l||'').trim()));
+            if (start < 0) return { source, table:'' };
+            let end = lines.findIndex((l,idx) => idx > start && /^ДОДАТОК\s*1$/i.test(String(l||'').trim()));
+            if (end < 0) end = lines.length;
+            const section = lines.slice(start+1,end);
+            const rows=[];
+            let currentLabel=null, values=[];
+            const flush=()=>{
+                if(!currentLabel) return;
+                const value=values.map(v=>String(v||'').trim()).filter(Boolean).join(' ');
+                rows.push([currentLabel,value]); currentLabel=null; values=[];
+            };
+            for(const rawLine of section){
+                const t=String(rawLine||'').trim();
+                if(!t) continue;
+                const found=labels.find(label => t.toLowerCase()===label.toLowerCase());
+                if(found){ flush(); currentLabel=found; continue; }
+                if(currentLabel) values.push(t);
+            }
+            flush();
+            if(!rows.length) return { source, table:'' };
+            const esc=v=>bprEscapeText(String(v??''));
+            const table='<div class="offer-data-table-wrap"><table class="offer-data-table offer-requisites-table"><tbody>'+rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join('')+'</tbody></table></div>';
+            const out=[...lines.slice(0,start+1),'','[[REQUISITES_TABLE]]','',...lines.slice(end)].join('\n');
+            return { source:out, table };
+        };
+
+        const requisitesResult = buildRequisitesTable(raw);
+        raw = requisitesResult.source;
+        const requisitesTable = requisitesResult.table;
 
         // If an uploaded DOCX does not contain our technical markers, place the
         // explicit admin tables automatically in the correct legal sections.
@@ -10168,6 +10231,7 @@
             const line=lineRaw.trim();
             if(line==='[[PROGRAMS_TABLE]]'){flush(); html.push(programsTable); continue;}
             if(line==='[[PACKAGES_TABLE]]'){flush(); html.push(packagesTable); continue;}
+            if(line==='[[REQUISITES_TABLE]]'){flush(); if(requisitesTable) html.push(requisitesTable); continue;}
             if(!line){flush(); continue;}
             paragraph.push(line);
         }
