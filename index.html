@@ -3953,7 +3953,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v34</div>
+                        <div class="admin-v16-badge">● Admin v35</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -10088,9 +10088,71 @@
         if(intro) intro.textContent = siteConfig.offerShortDescription || V29_DEFAULTS.offerShortDescription;
         if(!full) return;
 
-        const raw=String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
+        let raw=String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
         const programsTable=parseExplicitOfferTable(siteConfig.offerProgramsTable || V29_DEFAULTS.offerProgramsTable,['Програма','Отримувач послуг','Вартість','Строк']);
         const packagesTable=parseExplicitOfferTable(siteConfig.offerPackagesTable || V29_DEFAULTS.offerPackagesTable,['Пакет','Ціна','Основне','Не включено']);
+
+        // If an uploaded DOCX does not contain our technical markers, place the
+        // explicit admin tables automatically in the correct legal sections.
+        // At the same time remove the old plain-text table rows so the content
+        // is not duplicated and table recognition never depends on DOCX parsing.
+        const autoPlaceOfferTables = (source) => {
+            if (!source) return source;
+            const lines = source.split(/\r?\n/);
+            const out = [];
+            let i = 0;
+            const hasProgramsMarker = source.includes('[[PROGRAMS_TABLE]]');
+            const hasPackagesMarker = source.includes('[[PACKAGES_TABLE]]');
+            while (i < lines.length) {
+                const trimmed = String(lines[i] || '').trim();
+
+                // Section 3: preserve the heading, replace any extracted/raw table
+                // content with the dedicated Programs table, and resume from 3.1.
+                if (!hasProgramsMarker && /^3\.\s*ПРОГРАМИ\s+ТА\s+ВАРТІСТЬ/i.test(trimmed)) {
+                    out.push(lines[i]);
+                    out.push('');
+                    out.push('[[PROGRAMS_TABLE]]');
+                    out.push('');
+                    i += 1;
+                    while (i < lines.length) {
+                        const t = String(lines[i] || '').trim();
+                        if (/^3\.1\./.test(t)) break;
+                        i += 1;
+                    }
+                    continue;
+                }
+
+                // Appendix 1: preserve heading/subheading and replace the parsed
+                // package rows with the dedicated Packages table. Stop before the
+                // reception note so it remains normal text.
+                if (!hasPackagesMarker && /^ДОДАТОК\s*1$/i.test(trimmed)) {
+                    out.push(lines[i]);
+                    i += 1;
+                    // Keep blank lines and the subtitle "Короткий опис базових пакетів".
+                    while (i < lines.length) {
+                        const t = String(lines[i] || '').trim();
+                        out.push(lines[i]);
+                        i += 1;
+                        if (/^Короткий\s+опис\s+базових\s+пакетів$/i.test(t)) break;
+                        if (t && !/^Короткий\s+опис/i.test(t)) break;
+                    }
+                    out.push('');
+                    out.push('[[PACKAGES_TABLE]]');
+                    out.push('');
+                    while (i < lines.length) {
+                        const t = String(lines[i] || '').trim();
+                        if (/^Для\s+рецепції\s*:/i.test(t)) break;
+                        i += 1;
+                    }
+                    continue;
+                }
+
+                out.push(lines[i]);
+                i += 1;
+            }
+            return out.join('\n');
+        };
+        raw = autoPlaceOfferTables(raw);
         const esc=v=>bprEscapeText(String(v??''));
         const html=[];
         let paragraph=[];
