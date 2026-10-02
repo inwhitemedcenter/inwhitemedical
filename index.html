@@ -9139,7 +9139,7 @@
             const teamField = document.getElementById('adminTeamEditor');
             if (teamField) teamField.value = adminTeamToText(siteTeam);
         }
-        if (document.getElementById('adminPricesCards')) {
+        if (document.getElementById('adminPriceCards')) {
             sitePrices = adminCollectPriceEditor();
             const priceField = document.getElementById('adminPricesEditor');
             if (priceField) priceField.value = adminPricesToText(sitePrices);
@@ -9159,7 +9159,7 @@
             // Team and price editors are intentionally collected after the shared form too,
             // because those sections have their own card-based editors.
             if (document.getElementById('adminTeamCards')) siteTeam = adminCollectTeamEditor();
-            if (document.getElementById('adminPricesCards')) sitePrices = adminCollectPriceEditor();
+            if (document.getElementById('adminPriceCards')) sitePrices = adminCollectPriceEditor();
             adminSaveSiteState();
             adminRenderSite();
             adminRenderTeam();
@@ -10327,22 +10327,80 @@
             }).join('')+'</div></details>';
         }).join('');
         list.innerHTML=offerShell+html+'<datalist id="priceCategoryOptions">'+['Консультації','УЗД','Діагностика','Лабораторна діагностика','Вакцинація','Швидкі тести','Психологія','Інше'].map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist>';
+        if(list.dataset.priceLiveBound!=='true'){
+            list.dataset.priceLiveBound='true';
+            const sync=()=>{
+                sitePrices=adminCollectPriceEditor();
+                const legacy=document.getElementById('adminPricesEditor');
+                if(legacy) legacy.value=adminPricesToText(sitePrices);
+                adminSaveSiteState();
+            };
+            list.addEventListener('input',sync);
+            list.addEventListener('change',sync);
+        }
     };
 
     window.adminCollectPriceEditor = function(){
         const cards=document.querySelectorAll('#adminPriceCards [data-price-index]');
-        if(!cards.length) return sitePrices || [];
-        const result=[];
-        cards.forEach(card=>{ const f=n=>card.querySelector('[data-price-field="'+n+'"]'); const index=parseInt(card.dataset.priceIndex,10); const base=(sitePrices||[])[index]||{}; result.push(normalizePriceCategory({...base, category:f('category')?.value.trim()||'Інше', name:f('name')?.value.trim()||'', description:f('description')?.value.trim()||'', preparation:f('preparation')?.value.trim()||'', price:f('price')?.value.trim()||'', visible:f('visible')?f('visible').checked:true})); });
-        return result.filter(x=>x.name||x.description||x.price);
+        if(!cards.length) return Array.isArray(sitePrices) ? [...sitePrices] : [];
+        // IMPORTANT: the editor is visually grouped by category, so DOM order is not
+        // guaranteed to match the original sitePrices array. Preserve each card by
+        // its real data-price-index instead of pushing in DOM order.
+        const result = Array.isArray(sitePrices) ? [...sitePrices] : [];
+        cards.forEach(card=>{
+            const f=n=>card.querySelector('[data-price-field="'+n+'"]');
+            const index=parseInt(card.dataset.priceIndex,10);
+            if(!Number.isFinite(index) || index < 0) return;
+            const base=(sitePrices||[])[index]||{};
+            result[index]=normalizePriceCategory({
+                ...base,
+                category:f('category')?.value.trim()||'Інше',
+                name:f('name')?.value.trim()||'',
+                description:f('description')?.value.trim()||'',
+                preparation:f('preparation')?.value.trim()||'',
+                price:f('price')?.value.trim()||'',
+                visible:f('visible')?f('visible').checked:true
+            });
+        });
+        return result.filter(Boolean);
     };
 
     window.adminAddPriceItemToCategory = function(category){
-        sitePrices=adminCollectPriceEditor(); sitePrices.push({category:category||'Консультації',name:'Нова послуга',description:'',preparation:'',price:'',visible:true}); adminRenderPriceEditor();
-        setTimeout(()=>{const all=document.querySelectorAll('#adminPriceCards .admin-price-category-group'); [...all].find(d=>d.querySelector('summary')?.textContent.includes(category))?.setAttribute('open','');},0);
+        sitePrices=adminCollectPriceEditor();
+        const targetCategory=category||'Консультації';
+        const newItem={category:targetCategory,name:'Нова послуга',description:'',preparation:'',price:'',visible:true};
+        sitePrices.push(newItem);
+        const newIndex=sitePrices.length-1;
+        const legacy=document.getElementById('adminPricesEditor');
+        if(legacy) legacy.value=adminPricesToText(sitePrices);
+        adminSaveSiteState();
+        adminRenderPriceEditor();
+        adminRenderPrices();
+        setTimeout(()=>{
+            const groups=[...document.querySelectorAll('#adminPriceCards .admin-price-category-group')];
+            const group=groups.find(d=>d.querySelector(':scope > summary')?.textContent.includes(targetCategory));
+            if(group) group.open=true;
+            const item=document.querySelector('#adminPriceCards [data-price-index="'+newIndex+'"]');
+            if(item){
+                item.open=true;
+                const nameInput=item.querySelector('[data-price-field="name"]');
+                if(nameInput){ nameInput.focus(); nameInput.select(); }
+                item.scrollIntoView({behavior:'smooth',block:'center'});
+            }
+        },50);
     };
     window.adminAddPriceItem = function(){ adminAddPriceItemToCategory('Консультації'); };
-    window.adminRemovePriceItem = function(index){ sitePrices=adminCollectPriceEditor(); sitePrices.splice(index,1); adminRenderPriceEditor(); };
+    window.adminRemovePriceItem = function(index){
+        const current=adminCollectPriceEditor();
+        if(!Number.isFinite(Number(index)) || Number(index)<0 || Number(index)>=current.length) return;
+        current.splice(Number(index),1);
+        sitePrices=current;
+        const legacy=document.getElementById('adminPricesEditor');
+        if(legacy) legacy.value=adminPricesToText(sitePrices);
+        adminSaveSiteState();
+        adminRenderPriceEditor();
+        adminRenderPrices();
+    };
 
     function headerKey(value){ return String(value||'').trim().toLowerCase().replace(/[’'"()]/g,'').replace(/\s+/g,' '); }
     const HEADER_MAP = {
