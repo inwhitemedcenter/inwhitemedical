@@ -3423,6 +3423,12 @@
             .admin-hero-carousel-editor { grid-template-columns: 1fr; }
             .admin-hero-delay { width:100%; justify-content:space-between; }
         }
+
+    .price-export-bar-simple { justify-content:flex-end; }
+    .offer-table-admin-grid { display:grid; gap:12px; }
+    .offer-table-admin-grid textarea { min-height:150px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.84rem; line-height:1.55; }
+    .offer-marker-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 12px; border:1px dashed var(--beige-dark); border-radius:12px; background:rgba(201,169,110,.055); }
+    .offer-marker-code { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight:700; color:var(--gold); }
 </style>
 </head>
 <body>
@@ -3791,12 +3797,8 @@
             Актуальні ціни на послуги клініки. Остаточна вартість може залежати від обсягу консультації,
             матеріалів або індивідуального плану обстеження.
         </p>
-        <div class="price-export-bar">
-            <div class="price-export-copy">
-                <strong>Прайс для рецепції</strong>
-                <span>Сформувати чисту версію з логотипом, реквізитами та актуальною датою для друку або збереження у PDF.</span>
-            </div>
-            <button type="button" class="price-export-btn" onclick="printReceptionPrice()">Друк / зберегти PDF</button>
+        <div class="price-export-bar price-export-bar-simple">
+            <button type="button" class="price-export-btn" onclick="printReceptionPrice()">Роздрукувати ціни</button>
         </div>
         <div class="price-tools" aria-label="Пошук і фільтри прайсу">
             <div class="price-search"><input id="priceSearchInput" type="search" placeholder="Знайти послугу…" autocomplete="off" oninput="setPriceSearch(this.value)"></div>
@@ -3951,7 +3953,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v33</div>
+                        <div class="admin-v16-badge">● Admin v34</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -4343,6 +4345,27 @@
                                     <div class="bpr-field bpr-full"><label for="adminOfferTitle">Назва договору</label><input id="adminOfferTitle"></div>
                                     <div class="bpr-field bpr-full"><label for="adminOfferShortDescription">Короткий опис для прайсу</label><textarea id="adminOfferShortDescription" style="min-height:90px;"></textarea></div>
                                     <div class="bpr-field"><label for="adminOfferPrice">Вартість / ціна</label><input id="adminOfferPrice" placeholder="Наприклад: 1 500 грн або За договором"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-friendly-card open">
+                            <div class="admin-friendly-card-head" onclick="this.parentElement.classList.toggle('open')">
+                                <div class="admin-friendly-card-title"><strong>Таблиці оферти</strong><small>Заповнюйте таблиці окремо й вставляйте їх у текст спеціальними маркерами.</small></div>
+                                <div class="admin-friendly-card-actions"><button type="button" class="admin-friendly-toggle">⌄</button></div>
+                            </div>
+                            <div class="admin-friendly-card-body">
+                                <div class="offer-table-admin-grid">
+                                    <div class="bpr-field bpr-full">
+                                        <label for="adminOfferProgramsTable">Таблиця 1 — Програми та вартість</label>
+                                        <textarea id="adminOfferProgramsTable" placeholder="Програма | Отримувач послуг | Вартість | Строк"></textarea>
+                                        <div class="offer-marker-row"><span>Місце вставки:</span><span class="offer-marker-code">[[PROGRAMS_TABLE]]</span><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminInsertOfferMarker('[[PROGRAMS_TABLE]]')">Вставити в текст у позицію курсора</button></div>
+                                    </div>
+                                    <div class="bpr-field bpr-full">
+                                        <label for="adminOfferPackagesTable">Таблиця 2 — Короткий опис пакетів</label>
+                                        <textarea id="adminOfferPackagesTable" placeholder="Пакет | Ціна | Основне | Не включено"></textarea>
+                                        <div class="offer-marker-row"><span>Місце вставки:</span><span class="offer-marker-code">[[PACKAGES_TABLE]]</span><button class="bpr-btn bpr-btn-secondary" type="button" onclick="adminInsertOfferMarker('[[PACKAGES_TABLE]]')">Вставити в текст у позицію курсора</button></div>
+                                    </div>
+                                    <p class="bpr-note">Один рядок = один рядок таблиці. Колонки розділяйте символом <strong>|</strong> або клавішею Tab. Автоматичне розпізнавання таблиць із суцільного тексту вимкнено.</p>
                                 </div>
                             </div>
                         </div>
@@ -5754,8 +5777,10 @@
             offerTag: 'Публічна оферта',
             offerTitle: 'Договір про надання медичних послуг та приєднання до публічної оферти',
             offerShortDescription: 'Ознайомтесь з умовами договору та залиште заявку на приєднання до публічної оферти.',
-            offerPrice: '',
-            offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.',
+            offerPrice: 'від 1 200 грн',
+            offerProgramsTable: 'Програма | Отримувач послуг | Вартість | Строк\nINWHITE Дорослий | 1 особа 18+ | 1 200 грн | до 31.01.2027 включно\nINWHITE Дитина | 1 особа 0–17 років | 1 500 грн | до 31.01.2027 включно\nINWHITE Сімейний 2 | 2 визначені учасники | 2 200 грн | до 31.01.2027 включно\nINWHITE Сімейний 3 | 3 визначені учасники | 3 000 грн | до 31.01.2027 включно\nINWHITE Сімейний 4 | 4 визначені учасники | 3 800 грн | до 31.01.2027 включно',
+            offerPackagesTable: 'Пакет | Ціна | Основне | Не включено\nINWHITE Дорослий 18+ | 1 200 грн | Консультації сімейного лікаря; ведення гострих/хронічних станів; профілактика; перегляд результатів; е-рецепти/е-направлення за підставами; короткий дистанційний супровід | Лабораторія, УЗД/ЕКГ, вакцини/ліки, процедури, спеціалісти, виїзди, спеціальні довідки\nINWHITE Дитина 0–17 | 1 500 грн | Консультації сімейного лікаря; гострі стани; профілактичне консультування; оцінка розвитку; супровід вакцинації; перегляд результатів | Вакцини, аналізи, УЗД/ЕКГ, процедури, виїзди, спеціальні довідки\nINWHITE Сімейний 2 | 2 200 грн | Базовий пакет для 2 визначених учасників відповідно до віку кожного | Ті самі виключення, що й для відповідної індивідуальної програми\nINWHITE Сімейний 3 | 3 000 грн | Базовий пакет для 3 визначених учасників відповідно до віку кожного | Ті самі виключення, що й для відповідної індивідуальної програми\nINWHITE Сімейний 4 | 3 800 грн | Базовий пакет для 4 визначених учасників відповідно до віку кожного | Ті самі виключення, що й для відповідної індивідуальної програми',
+            offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.\n\n[[PROGRAMS_TABLE]]\n\n[[PACKAGES_TABLE]]',
             trainingPageTag: 'Провайдер БПР 2817',
             trainingPageTitle: 'Навчання лікарів',
             trainingPageDescription: 'Оберіть онлайн-курс із записом та сертифікатом або офлайн-захід із реєстрацією через форму. Усі картки та посилання змінюються в адмін-панелі.',
@@ -10000,8 +10025,10 @@
         offerTag: 'Публічна оферта',
         offerTitle: 'Договір про надання медичних послуг та приєднання до публічної оферти',
         offerShortDescription: 'Ознайомтесь з умовами договору та залиште заявку на приєднання до публічної оферти.',
-        offerPrice: '',
-        offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.'
+        offerPrice: 'від 1 200 грн',
+        offerProgramsTable: 'Програма | Отримувач послуг | Вартість | Строк\nINWHITE Дорослий | 1 особа 18+ | 1 200 грн | до 31.01.2027 включно\nINWHITE Дитина | 1 особа 0–17 років | 1 500 грн | до 31.01.2027 включно\nINWHITE Сімейний 2 | 2 визначені учасники | 2 200 грн | до 31.01.2027 включно\nINWHITE Сімейний 3 | 3 визначені учасники | 3 000 грн | до 31.01.2027 включно\nINWHITE Сімейний 4 | 4 визначені учасники | 3 800 грн | до 31.01.2027 включно',
+        offerPackagesTable: 'Пакет | Ціна | Основне | Не включено\nINWHITE Дорослий 18+ | 1 200 грн | Консультації сімейного лікаря; ведення гострих/хронічних станів; профілактика; перегляд результатів; е-рецепти/е-направлення за підставами; короткий дистанційний супровід | Лабораторія, УЗД/ЕКГ, вакцини/ліки, процедури, спеціалісти, виїзди, спеціальні довідки\nINWHITE Дитина 0–17 | 1 500 грн | Консультації сімейного лікаря; гострі стани; профілактичне консультування; оцінка розвитку; супровід вакцинації; перегляд результатів | Вакцини, аналізи, УЗД/ЕКГ, процедури, виїзди, спеціальні довідки\nINWHITE Сімейний 2 | 2 200 грн | Базовий пакет для 2 визначених учасників відповідно до віку кожного | Ті самі виключення, що й для відповідної індивідуальної програми\nINWHITE Сімейний 3 | 3 000 грн | Базовий пакет для 3 визначених учасників відповідно до віку кожного | Ті самі виключення, що й для відповідної індивідуальної програми\nINWHITE Сімейний 4 | 3 800 грн | Базовий пакет для 4 визначених учасників відповідно до віку кожного | Ті самі виключення, що й для відповідної індивідуальної програми',
+        offerFullText: 'Повний текст публічної оферти буде оприлюднений тут.\n\n[[PROGRAMS_TABLE]]\n\n[[PACKAGES_TABLE]]'
     };
     window._priceExcelPending = [];
 
@@ -10025,6 +10052,30 @@
         sitePrices = (sitePrices || []).map(normalizePriceCategory);
     }
 
+    function parseExplicitOfferTable(raw, fallbackHeaders){
+        const text=String(raw||'').trim();
+        if(!text) return '';
+        const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+        if(!lines.length) return '';
+        const split=(line)=>{
+            if(line.includes('\t')) return line.split('\t').map(v=>v.trim());
+            return line.split('|').map(v=>v.trim()).filter((v,idx,arr)=>v || (idx>0&&idx<arr.length-1));
+        };
+        let headers=split(lines[0]);
+        if(headers.length<2) headers=fallbackHeaders || [];
+        const width=headers.length;
+        if(width<2) return '';
+        const rows=[];
+        const startIndex=split(lines[0]).length>=2?1:0;
+        for(let i=startIndex;i<lines.length;i++){
+            let row=split(lines[i]);
+            while(row.length<width) row.push('');
+            rows.push(row.slice(0,width));
+        }
+        const esc=v=>bprEscapeText(String(v??''));
+        return '<div class="offer-data-table-wrap"><table class="offer-data-table"><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+    }
+
     function renderOfferPage(){
         const tag = document.getElementById('offerPageTag');
         const title = document.getElementById('offerPageTitle');
@@ -10035,116 +10086,31 @@
         if(title) title.textContent = siteConfig.offerTitle || V29_DEFAULTS.offerTitle;
         if(docTitle) docTitle.textContent = siteConfig.offerTitle || V29_DEFAULTS.offerTitle;
         if(intro) intro.textContent = siteConfig.offerShortDescription || V29_DEFAULTS.offerShortDescription;
-        if(full){
-            const raw = String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
+        if(!full) return;
 
-            function isSectionHeading(line){
-                const t=String(line||'').trim();
-                return /^(розділ|стаття)\b/i.test(t) || /^\d+(?:\.\d+)*\.\s+/.test(t) || /^[IVX]+\.\s+/i.test(t);
-            }
-            function normLabel(line){
-                return String(line||'').trim().toLowerCase().replace(/[.:;]+$/,'').replace(/\s+/g,' ');
-            }
-            function renderTable(headers, values){
-                const width=headers.length;
-                const safeValues=values.slice();
-                while(safeValues.length % width !== 0) safeValues.push('');
-                if(!safeValues.length) safeValues.push(...Array(width).fill(''));
-                const rows=[];
-                for(let i=0;i<safeValues.length;i+=width) rows.push(safeValues.slice(i,i+width));
-                return '<div class=\"offer-data-table-wrap\"><table class=\"offer-data-table\"><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
-            }
-
-            const sourceLines=raw.split(/\r?\n/).map(x=>x.trim());
-            const html=[];
-            let paragraph=[];
-            const flushParagraph=()=>{
-                if(!paragraph.length) return;
-                const first=paragraph[0]||'';
-                if(isSectionHeading(first) && first.length<140){
-                    html.push('<h3>'+esc(first)+'</h3>');
-                    if(paragraph.length>1) html.push('<p>'+paragraph.slice(1).map(esc).join('<br>')+'</p>');
-                } else {
-                    html.push('<p>'+paragraph.map(esc).join('<br>')+'</p>');
-                }
-                paragraph=[];
-            };
-
-            const canonicalHeaders=['Програма','Отримувач послуг','Вартість','Строк'];
-            for(let i=0;i<sourceLines.length;){
-                const line=sourceLines[i];
-                if(!line){ flushParagraph(); i++; continue; }
-
-                // DOCX raw-text tables are often exported as one cell per line.
-                // Recognize the 4-column program table even if the last row is incomplete.
-                if(normLabel(line)==='програма'){
-                    const expected=canonicalHeaders.map(normLabel);
-                    // DOCX/Mammoth often inserts empty lines between table cells.
-                    // Read the next 4 NON-EMPTY lines instead of requiring 4 consecutive lines.
-                    const headerIndexes=[];
-                    let scan=i;
-                    while(scan<sourceLines.length && headerIndexes.length<4){
-                        if(sourceLines[scan]) headerIndexes.push(scan);
-                        scan++;
-                    }
-                    const maybeHeaders=headerIndexes.map(idx=>normLabel(sourceLines[idx]));
-                    if(maybeHeaders.length===4 && maybeHeaders.every((v,idx)=>v===expected[idx])){
-                        flushParagraph();
-                        i=(headerIndexes[3]||i)+1;
-                        const values=[];
-                        while(i<sourceLines.length){
-                            const v=sourceLines[i];
-                            if(!v){ i++; continue; }
-                            if(isSectionHeading(v)) break;
-
-                            // Detect another copy of the same 4 headers, also ignoring blank lines.
-                            if(normLabel(v)==='програма'){
-                                const nextHeaderIndexes=[];
-                                let scan2=i;
-                                while(scan2<sourceLines.length && nextHeaderIndexes.length<4){
-                                    if(sourceLines[scan2]) nextHeaderIndexes.push(scan2);
-                                    scan2++;
-                                }
-                                const nextHeaders=nextHeaderIndexes.map(idx=>normLabel(sourceLines[idx]));
-                                if(nextHeaders.length===4 && nextHeaders.every((x,idx)=>x===expected[idx])) break;
-                            }
-                            values.push(v);
-                            i++;
-                        }
-                        html.push(renderTable(canonicalHeaders,values));
-                        continue;
-                    }
-                }
-
-                // Support simple pipe/tab tables pasted manually as well.
-                if((line.includes('\t') || /^\s*\|.*\|\s*$/.test(line))){
-                    const delimiter=line.includes('\t')?'\t':'|';
-                    const splitRow=(x)=>x.split(delimiter).map(v=>v.trim()).filter((v,idx,arr)=>delimiter==='\t' || v || (idx>0&&idx<arr.length-1));
-                    const headers=splitRow(line);
-                    if(headers.length>=2){
-                        flushParagraph();
-                        i++;
-                        const rows=[];
-                        while(i<sourceLines.length && sourceLines[i] && (sourceLines[i].includes('\t') || /^\s*\|.*\|\s*$/.test(sourceLines[i]))){
-                            let row=splitRow(sourceLines[i]);
-                            // Ignore markdown separator rows like |---|---|
-                            if(!row.every(v=>/^:?-{3,}:?$/.test(v))){
-                                while(row.length<headers.length) row.push('');
-                                rows.push(...row.slice(0,headers.length));
-                            }
-                            i++;
-                        }
-                        html.push(renderTable(headers,rows));
-                        continue;
-                    }
-                }
-
-                paragraph.push(line);
-                i++;
-            }
-            flushParagraph();
-            full.innerHTML=html.join('');
+        const raw=String(siteConfig.offerFullText || V29_DEFAULTS.offerFullText).trim();
+        const programsTable=parseExplicitOfferTable(siteConfig.offerProgramsTable || V29_DEFAULTS.offerProgramsTable,['Програма','Отримувач послуг','Вартість','Строк']);
+        const packagesTable=parseExplicitOfferTable(siteConfig.offerPackagesTable || V29_DEFAULTS.offerPackagesTable,['Пакет','Ціна','Основне','Не включено']);
+        const esc=v=>bprEscapeText(String(v??''));
+        const html=[];
+        let paragraph=[];
+        const isHeading=t=>/^(розділ|стаття)\b/i.test(t)||/^\d+(?:\.\d+)*\.\s+/.test(t)||/^[IVX]+\.\s+/i.test(t)||/^ДОДАТОК\s+\d+/i.test(t);
+        const flush=()=>{
+            if(!paragraph.length)return;
+            const first=paragraph[0];
+            if(isHeading(first)&&first.length<150){html.push('<h3>'+esc(first)+'</h3>'); if(paragraph.length>1)html.push('<p>'+paragraph.slice(1).map(esc).join('<br>')+'</p>');}
+            else html.push('<p>'+paragraph.map(esc).join('<br>')+'</p>');
+            paragraph=[];
+        };
+        for(const lineRaw of raw.split(/\r?\n/)){
+            const line=lineRaw.trim();
+            if(line==='[[PROGRAMS_TABLE]]'){flush(); html.push(programsTable); continue;}
+            if(line==='[[PACKAGES_TABLE]]'){flush(); html.push(packagesTable); continue;}
+            if(!line){flush(); continue;}
+            paragraph.push(line);
         }
+        flush();
+        full.innerHTML=html.join('');
     }
 
     window.openBookingForOffer = function(){
@@ -10319,14 +10285,29 @@
     function fillOfferAdmin(){
         const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??'';};
         const vis=document.getElementById('adminOfferVisible'); if(vis)vis.checked=offerVisible();
-        set('adminOfferTag',siteConfig.offerTag||V29_DEFAULTS.offerTag); set('adminOfferTitle',siteConfig.offerTitle||V29_DEFAULTS.offerTitle); set('adminOfferShortDescription',siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription); set('adminOfferPrice',siteConfig.offerPrice||''); set('adminOfferFullText',siteConfig.offerFullText||V29_DEFAULTS.offerFullText);
+        set('adminOfferTag',siteConfig.offerTag||V29_DEFAULTS.offerTag); set('adminOfferTitle',siteConfig.offerTitle||V29_DEFAULTS.offerTitle); set('adminOfferShortDescription',siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription); set('adminOfferPrice',siteConfig.offerPrice||V29_DEFAULTS.offerPrice||''); set('adminOfferProgramsTable',siteConfig.offerProgramsTable||V29_DEFAULTS.offerProgramsTable); set('adminOfferPackagesTable',siteConfig.offerPackagesTable||V29_DEFAULTS.offerPackagesTable); set('adminOfferFullText',siteConfig.offerFullText||V29_DEFAULTS.offerFullText);
     }
     function collectOfferAdmin(){
         const get=id=>document.getElementById(id)?.value.trim()||'';
         siteConfig.pages={...(siteConfig.pages||{}),offer:document.getElementById('adminOfferVisible')?.checked!==false};
-        siteConfig.offerTag=get('adminOfferTag')||V29_DEFAULTS.offerTag; siteConfig.offerTitle=get('adminOfferTitle')||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=get('adminOfferShortDescription')||V29_DEFAULTS.offerShortDescription; siteConfig.offerPrice=get('adminOfferPrice'); siteConfig.offerFullText=get('adminOfferFullText')||V29_DEFAULTS.offerFullText;
+        siteConfig.offerTag=get('adminOfferTag')||V29_DEFAULTS.offerTag; siteConfig.offerTitle=get('adminOfferTitle')||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=get('adminOfferShortDescription')||V29_DEFAULTS.offerShortDescription; siteConfig.offerPrice=get('adminOfferPrice')||V29_DEFAULTS.offerPrice; siteConfig.offerProgramsTable=get('adminOfferProgramsTable')||V29_DEFAULTS.offerProgramsTable; siteConfig.offerPackagesTable=get('adminOfferPackagesTable')||V29_DEFAULTS.offerPackagesTable; siteConfig.offerFullText=get('adminOfferFullText')||V29_DEFAULTS.offerFullText;
         const legacy=document.getElementById('adminPageOffer'); if(legacy)legacy.checked=siteConfig.pages.offer;
     }
+    window.adminInsertOfferMarker = function(marker){
+        const ta=document.getElementById('adminOfferFullText');
+        if(!ta) return;
+        const start=Number.isFinite(ta.selectionStart)?ta.selectionStart:ta.value.length;
+        const end=Number.isFinite(ta.selectionEnd)?ta.selectionEnd:start;
+        const before=ta.value.slice(0,start);
+        const after=ta.value.slice(end);
+        const prefix=before && !before.endsWith('\n')?'\n':'';
+        const suffix=after && !after.startsWith('\n')?'\n':'';
+        ta.value=before+prefix+marker+suffix+after;
+        const pos=(before+prefix+marker).length;
+        ta.focus(); ta.setSelectionRange(pos,pos);
+        ta.dispatchEvent(new Event('input',{bubbles:true}));
+    };
+
     window.adminSaveOffer = function(event){event?.preventDefault?.();collectOfferAdmin();adminSaveSiteState();renderOfferPage();adminRenderPrices();if(supabaseAccessToken)supabaseSaveSiteState();};
 
     // Main save must include the offer fields too.
@@ -10346,7 +10327,7 @@
     // Migrate current stored data without deleting anything.
     function migrateV29(){
         siteConfig=adminNormalizeSiteConfig(siteConfig||{}); siteConfig.pages={...(siteConfig.pages||{}),offer:siteConfig.pages?.offer!==false};
-        siteConfig.offerTag=siteConfig.offerTag||V29_DEFAULTS.offerTag; siteConfig.offerTitle=siteConfig.offerTitle||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription; siteConfig.offerFullText=siteConfig.offerFullText||V29_DEFAULTS.offerFullText; siteConfig.phone2=siteConfig.phone2||'';
+        siteConfig.offerTag=siteConfig.offerTag||V29_DEFAULTS.offerTag; siteConfig.offerTitle=siteConfig.offerTitle||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription; siteConfig.offerFullText=siteConfig.offerFullText||V29_DEFAULTS.offerFullText; siteConfig.offerProgramsTable=siteConfig.offerProgramsTable||V29_DEFAULTS.offerProgramsTable; siteConfig.offerPackagesTable=siteConfig.offerPackagesTable||V29_DEFAULTS.offerPackagesTable; if(!siteConfig.offerPrice || /1\s?500/.test(siteConfig.offerPrice)) siteConfig.offerPrice=V29_DEFAULTS.offerPrice; siteConfig.phone2=siteConfig.phone2||'';
         normalizeAllPrices();
         adminSaveSiteState();
     }
