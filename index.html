@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="site-build" content="40">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>INWHITE MEDICAL — Медичний центр</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -3953,7 +3957,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v36</div>
+                        <div class="admin-v16-badge">● Admin v40</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -5562,6 +5566,9 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
+    const SITE_BUILD_VERSION = '40';
+    const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
+    const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
     const SUPABASE_TOKEN_STORAGE = 'inwhite_supabase_token_v1';
     const DEFAULT_SUPABASE_URL = 'https://ukfldbbsbyjkyussbyfq.supabase.co';
@@ -6241,7 +6248,10 @@
                 const remoteTime = Date.parse(rows[0].updated_at || '') || 0;
                 const localTime = Date.parse(localStorage.getItem(SITE_LOCAL_UPDATED_STORAGE) || '') || 0;
                 const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
-                if (!options.force && dirty && localTime && localTime > remoteTime) {
+                const localEditsBelongToAdmin = !!supabaseAccessToken || bprDeveloperUnlocked === true;
+                // Public visitors must always receive the newest cloud data.
+                // We only protect newer local edits while an administrator is actively working.
+                if (!options.force && localEditsBelongToAdmin && dirty && localTime && localTime > remoteTime) {
                     if (!options.silent) supabaseSetStatus('Локальні зміни новіші за базу. Вони не були перезаписані. Натисніть «Зберегти зміни» після входу адміністратора.');
                     adminRefreshSaveStatus();
                     return false;
@@ -7313,11 +7323,16 @@
         localStorage.setItem(SITE_PRICES_STORAGE, JSON.stringify(sitePrices));
         const timestamp = options.updatedAt || new Date().toISOString();
         localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, timestamp);
+
+        const isAdminEditing = options.markDirty === true || !!supabaseAccessToken || bprDeveloperUnlocked === true;
         if (options.fromCloud) {
             localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, timestamp);
             localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
-        } else {
+        } else if (isAdminEditing) {
             localStorage.setItem(SITE_DIRTY_STORAGE, 'true');
+        } else {
+            // Rendering/normalization on a visitor device is only a cache write, not an edit.
+            localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
         }
         adminRefreshSaveStatus();
     }
@@ -7326,8 +7341,62 @@
         const hasLocal = localStorage.getItem(SITE_CONFIG_STORAGE) || localStorage.getItem(SITE_TEAM_STORAGE) || localStorage.getItem(SITE_PRICES_STORAGE);
         if (hasLocal && !localStorage.getItem(SITE_LOCAL_UPDATED_STORAGE)) {
             localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, new Date().toISOString());
-            localStorage.setItem(SITE_DIRTY_STORAGE, 'true');
         }
+        if (!localStorage.getItem(SITE_DIRTY_STORAGE)) localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
+    }
+
+    function sitePrepareBuildCachePolicy() {
+        const previousBuild = localStorage.getItem(SITE_BUILD_STORAGE) || '';
+        if (previousBuild === SITE_BUILD_VERSION) return;
+
+        const wasDirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
+        if (wasDirty) {
+            // Never silently destroy an administrator's unsynchronised work. Keep one backup.
+            try {
+                localStorage.setItem(SITE_UNSYNCED_BACKUP_STORAGE, JSON.stringify({
+                    build: previousBuild || 'unknown',
+                    savedAt: localStorage.getItem(SITE_LOCAL_UPDATED_STORAGE) || new Date().toISOString(),
+                    siteConfig: JSON.parse(localStorage.getItem(SITE_CONFIG_STORAGE) || 'null'),
+                    siteTeam: JSON.parse(localStorage.getItem(SITE_TEAM_STORAGE) || 'null'),
+                    sitePrices: JSON.parse(localStorage.getItem(SITE_PRICES_STORAGE) || 'null')
+                }));
+            } catch (error) {}
+        }
+
+        // A new HTML build should not inherit stale public cache as authoritative content.
+        [SITE_CONFIG_STORAGE, SITE_TEAM_STORAGE, SITE_PRICES_STORAGE, SITE_LOCAL_UPDATED_STORAGE, SITE_SYNCED_UPDATED_STORAGE, SITE_DIRTY_STORAGE]
+            .forEach(key => localStorage.removeItem(key));
+        localStorage.setItem(SITE_BUILD_STORAGE, SITE_BUILD_VERSION);
+        localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
+    }
+
+    async function siteCheckForNewBuild() {
+        if (!/^https?:$/i.test(location.protocol)) return;
+        try {
+            const probeUrl = new URL('index.html', location.origin + location.pathname.replace(/[^/]*$/, ''));
+            probeUrl.searchParams.set('_buildcheck', String(Date.now()));
+            const response = await fetch(probeUrl.toString(), { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
+            if (!response.ok) return;
+            const html = await response.text();
+            const match = html.match(/<meta\s+name=["']site-build["']\s+content=["']([^"']+)["']/i) ||
+                          html.match(/<meta\s+content=["']([^"']+)["']\s+name=["']site-build["']/i);
+            const remoteBuild = match ? String(match[1]).trim() : '';
+            if (!remoteBuild || remoteBuild === SITE_BUILD_VERSION) return;
+
+            const nextUrl = new URL(location.href);
+            nextUrl.searchParams.set('v', remoteBuild);
+            location.replace(nextUrl.toString());
+        } catch (error) {
+            // The website remains usable when the version probe is unavailable.
+        }
+    }
+
+    let siteLastCloudRefresh = 0;
+    async function siteRefreshCloudData(force = true) {
+        const now = Date.now();
+        if (!force && now - siteLastCloudRefresh < 30000) return;
+        siteLastCloudRefresh = now;
+        await supabaseLoadSiteState({ silent: true, force: !bprDeveloperUnlocked });
     }
 
     function adminSetSaveStatus(message, state = 'local') {
@@ -9666,11 +9735,24 @@
     initTrainingAdminUX();
     initBackToTop();
 
+    // Build cache migration must run before reading cached site data.
+    sitePrepareBuildCachePolicy();
     bprInitTrainingModule();
     adminEnsureLocalVersionMarker();
     adminRefreshSaveStatus();
-    supabaseLoadSiteState({ silent: true });
+    // Public pages are remote-first: Supabase is the source of truth.
+    siteRefreshCloudData(true);
+    siteCheckForNewBuild();
     supabaseOpenRecoveryModal();
+
+    // If a tab was left open while the clinic data changed, refresh when the user returns.
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            siteCheckForNewBuild();
+            siteRefreshCloudData(false);
+        }
+    });
+    window.addEventListener('focus', () => siteRefreshCloudData(false));
 
 
     // ===== V16 ROBUST ADMIN INITIALIZATION + LEGACY ICON REPAIR =====
