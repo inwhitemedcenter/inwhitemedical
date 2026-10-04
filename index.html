@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="40">
+    <meta name="site-build" content="41">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3832,6 +3832,7 @@
                 </div>
                 <div class="offer-document-actions">
                     <button type="button" class="btn-primary" onclick="openBookingForOffer()">Залишити заявку</button>
+                    <button type="button" class="btn-secondary" onclick="printPublicOffer()">Завантажити оферту</button>
                     <button type="button" class="btn-secondary" onclick="showPage('prices')">Переглянути прайс</button>
                 </div>
             </div>
@@ -3957,7 +3958,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v40</div>
+                        <div class="admin-v16-badge">● Admin v41</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -10062,6 +10063,9 @@
     .offer-full-text { color:var(--graphite); line-height:1.8; font-size:.96rem; white-space:normal; }
     .offer-full-text p { margin:0 0 1.05em; }
     .offer-full-text h3 { font-family:'Cormorant Garamond',serif; color:var(--dark); font-size:1.45rem; margin:1.4em 0 .5em; }
+    .offer-full-text .offer-clause { margin:0 0 1.05em; font:inherit; color:inherit; line-height:inherit; }
+    .offer-full-text ul.offer-list { margin:.15em 0 1.15em 1.45em; padding:0; }
+    .offer-full-text ul.offer-list li { margin:.34em 0; padding-left:.15em; font:inherit; color:inherit; line-height:inherit; }
     .offer-data-table-wrap { width:100%; overflow-x:auto; margin:1.1em 0 1.7em; border:1px solid var(--beige); border-radius:16px; background:#fff; }
     .offer-data-table { width:100%; min-width:760px; border-collapse:collapse; font-size:.94rem; line-height:1.55; table-layout:auto; }
     .offer-data-table th, .offer-data-table td { padding:14px 16px; border-bottom:1px solid rgba(232,221,208,.9); border-right:1px solid rgba(232,221,208,.75); text-align:left; vertical-align:top; word-break:normal; overflow-wrap:normal; hyphens:none; }
@@ -10313,23 +10317,72 @@
         const esc=v=>bprEscapeText(String(v??''));
         const html=[];
         let paragraph=[];
-        const isHeading=t=>/^(розділ|стаття)\b/i.test(t)||/^\d+(?:\.\d+)*\.\s+/.test(t)||/^[IVX]+\.\s+/i.test(t)||/^ДОДАТОК\s+\d+/i.test(t);
-        const flush=()=>{
-            if(!paragraph.length)return;
-            const first=paragraph[0];
-            if(isHeading(first)&&first.length<150){html.push('<h3>'+esc(first)+'</h3>'); if(paragraph.length>1)html.push('<p>'+paragraph.slice(1).map(esc).join('<br>')+'</p>');}
-            else html.push('<p>'+paragraph.map(esc).join('<br>')+'</p>');
+        let listItems=[];
+
+        // IMPORTANT: only whole numbered sections such as "4. ..." are headings.
+        // Clauses such as "4.1.", "4.4.", "10.2." must always remain normal body text.
+        const isSectionHeading=t =>
+            /^(?:розділ|стаття)\b/i.test(t) ||
+            /^\d+\.\s+\S/.test(t) ||
+            /^[IVX]+\.\s+\S/i.test(t) ||
+            /^ДОДАТОК\s+\d+\b/i.test(t) ||
+            /^ПУБЛІЧНА\s+ОФЕРТА$/i.test(t);
+        const isClause=t => /^\d+\.\d+(?:\.\d+)*\.\s+\S/.test(t);
+        const bulletMatch=t => t.match(/^[•●▪◦]\s*(.+)$/);
+
+        const flushParagraph=()=>{
+            if(!paragraph.length) return;
+            html.push('<p>'+paragraph.map(esc).join('<br>')+'</p>');
             paragraph=[];
         };
+        const flushList=()=>{
+            if(!listItems.length) return;
+            html.push('<ul class="offer-list">'+listItems.map(item=>'<li>'+esc(item)+'</li>').join('')+'</ul>');
+            listItems=[];
+        };
+        const flushAll=()=>{ flushParagraph(); flushList(); };
+
         for(const lineRaw of raw.split(/\r?\n/)){
-            const line=lineRaw.trim();
-            if(line==='[[PROGRAMS_TABLE]]'){flush(); html.push(programsTable); continue;}
-            if(line==='[[PACKAGES_TABLE]]'){flush(); html.push(packagesTable); continue;}
-            if(line==='[[REQUISITES_TABLE]]'){flush(); if(requisitesTable) html.push(requisitesTable); continue;}
-            if(!line){flush(); continue;}
+            const line=String(lineRaw||'')
+                .replace(/\u00a0/g,' ')
+                .replace(/\u2007|\u202f/g,' ')
+                .replace(/[ \t]+/g,' ')
+                .trim();
+
+            if(line==='[[PROGRAMS_TABLE]]'){flushAll(); html.push(programsTable); continue;}
+            if(line==='[[PACKAGES_TABLE]]'){flushAll(); html.push(packagesTable); continue;}
+            if(line==='[[REQUISITES_TABLE]]'){flushAll(); if(requisitesTable) html.push(requisitesTable); continue;}
+            if(!line){flushAll(); continue;}
+
+            if(isSectionHeading(line) && line.length < 170){
+                flushAll();
+                html.push('<h3>'+esc(line)+'</h3>');
+                continue;
+            }
+
+            const bullet=bulletMatch(line);
+            if(bullet){
+                flushParagraph();
+                listItems.push(bullet[1].trim());
+                continue;
+            }
+
+            if(isClause(line)){
+                flushAll();
+                html.push('<p class="offer-clause">'+esc(line)+'</p>');
+                continue;
+            }
+
+            // If a wrapped line follows an existing bullet, append it to that bullet.
+            // This keeps DOCX bullet items visually intact after raw-text extraction.
+            if(listItems.length){
+                listItems[listItems.length-1] += ' ' + line;
+                continue;
+            }
+
             paragraph.push(line);
         }
-        flush();
+        flushAll();
         full.innerHTML=html.join('');
     }
 
@@ -10555,6 +10608,11 @@
                 if(typeof mammoth==='undefined') throw new Error('Модуль DOCX не завантажився. Оновіть сторінку та спробуйте ще раз.');
                 const result=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()}); raw=result.value||'';
             } else raw=await file.text();
+            raw = String(raw || '')
+                .replace(/\u00a0/g,' ')
+                .replace(/\r\n?/g,'\n')
+                .replace(/[ \t]+\n/g,'\n')
+                .replace(/\n{3,}/g,'\n\n');
             document.getElementById('adminOfferFullText').value=raw.trim();
             if(status)status.textContent='Файл завантажено: '+file.name;
         }catch(err){ if(status)status.textContent=err.message||'Не вдалося прочитати файл.'; }
@@ -10669,6 +10727,83 @@
         if (!popup) { alert('Браузер заблокував нове вікно. Дозвольте спливаючі вікна для сайту та повторіть.'); return; }
         popup.document.open(); popup.document.write(html); popup.document.close();
         setTimeout(()=>{ try { popup.focus(); popup.print(); } catch(_){} }, 650);
+    };
+
+
+    window.printPublicOffer = function(){
+        try { renderOfferPage(); } catch(_) {}
+        const article = document.getElementById('offerFullText');
+        if(!article){ alert('Не вдалося сформувати оферту. Оновіть сторінку та спробуйте ще раз.'); return; }
+
+        const logo = receptionPriceLogoUrl();
+        const esc = receptionPriceEscape;
+        const dateText = new Intl.DateTimeFormat('uk-UA', {day:'2-digit', month:'2-digit', year:'numeric'}).format(new Date());
+        const phones = [siteConfig?.phone, siteConfig?.phone2].filter(Boolean).map(String).join(' · ');
+        const sourceText = typeof effectiveOfferText === 'function' ? effectiveOfferText() : '';
+        const revisionMatch = String(sourceText || '').match(/Редакція\s+[^\n]+/i);
+        const revision = revisionMatch ? revisionMatch[0].trim() : '';
+        const offerTitle = siteConfig?.offerTitle || 'ПУБЛІЧНА ОФЕРТА про надання платних медичних послуг';
+
+        const printable = `<!doctype html><html lang="uk"><head><meta charset="utf-8">
+        <title>${esc(offerTitle)} — INWHITE MEDICAL</title>
+        <style>
+            @page{size:A4;margin:14mm 13mm 16mm}
+            *{box-sizing:border-box}
+            body{margin:0;background:#fff;color:#2e2e2e;font-family:Arial,Helvetica,sans-serif;font-size:10.3pt;line-height:1.56}
+            .sheet{max-width:190mm;margin:0 auto}
+            .head{display:grid;grid-template-columns:70px 1fr;gap:15px;align-items:center;padding-bottom:12px;border-bottom:2px solid #c9a96e}
+            .logo{width:68px;height:68px;object-fit:contain}
+            .brand h1{margin:0;font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:20pt;letter-spacing:.045em}
+            .brand .sub{margin-top:4px;color:#8e6a2d;font-size:8.5pt;font-weight:700;letter-spacing:.08em}
+            .meta{margin:12px 0 18px;display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;padding:10px 12px;border:1px solid #e5d9c9;border-radius:10px;background:#fbf8f3}
+            .meta div{font-size:8.6pt}.meta b{color:#6f5933}
+            .doc-title{margin:0 0 14px;text-align:center;font-family:Georgia,'Times New Roman',serif;font-size:16.5pt;font-weight:600}
+            .offer-body{font-size:10.2pt;line-height:1.6}
+            .offer-body p,.offer-body .offer-clause{margin:0 0 .82em;font:inherit;color:inherit;line-height:inherit}
+            .offer-body h3{font-family:Georgia,'Times New Roman',serif;font-size:13pt;margin:1.25em 0 .45em;page-break-after:avoid}
+            .offer-body ul.offer-list{margin:.15em 0 1em 1.4em;padding:0}
+            .offer-body li{margin:.25em 0}
+            .offer-data-table-wrap{width:100%;overflow:visible;margin:1em 0 1.4em;border:1px solid #e3d7c6;border-radius:8px}
+            .offer-data-table{width:100%;border-collapse:collapse;font-size:8.8pt;line-height:1.38;table-layout:auto}
+            .offer-data-table th,.offer-data-table td{padding:7px 8px;border-bottom:1px solid #eadfd1;border-right:1px solid #eadfd1;text-align:left;vertical-align:top}
+            .offer-data-table th:last-child,.offer-data-table td:last-child{border-right:0}
+            .offer-data-table tr:last-child td{border-bottom:0}
+            .offer-data-table th{background:#f7f1e7;font-weight:700}
+            .offer-programs-table td:nth-child(3),.offer-packages-table td:nth-child(2){white-space:nowrap}
+            .offer-requisites-table td:first-child{width:34%;font-weight:700;background:#fbf8f3}
+            .foot{margin-top:18px;padding-top:10px;border-top:1px solid #d8cab8;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end}
+            .legal{font-size:8pt;color:#666;line-height:1.45}.signature{min-width:65mm;text-align:center;padding-top:24px}.signature .line{border-top:1px solid #555;padding-top:5px;font-size:8pt}
+            .screen-actions{position:fixed;right:18px;top:18px;display:flex;gap:8px;z-index:5}.screen-actions button{border:0;border-radius:999px;padding:10px 14px;background:#c9a96e;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 6px 18px #0002}
+            @media print{.screen-actions{display:none}.sheet{max-width:none}.offer-data-table-wrap{break-inside:auto}.offer-data-table tr{break-inside:avoid}}
+        </style></head><body>
+        <div class="screen-actions"><button onclick="window.print()">Зберегти PDF / друк</button><button onclick="window.close()">Закрити</button></div>
+        <main class="sheet">
+            <header class="head">
+                ${logo ? `<img class="logo" src="${esc(logo)}" alt="INWHITE MEDICAL">` : '<div></div>'}
+                <div class="brand"><h1>INWHITE MEDICAL</h1><div class="sub">ПУБЛІЧНА ОФЕРТА · ПЛАТНІ МЕДИЧНІ ПОСЛУГИ</div></div>
+            </header>
+            <div class="meta">
+                <div><b>ЄДРПОУ:</b> 46270554</div>
+                <div><b>Керівник:</b> Січ Юрій Станіславович</div>
+                <div><b>Телефон:</b> ${esc(phones || '+380 75 967 47 42')}</div>
+                <div><b>Email:</b> ${esc(siteConfig?.email || 'inwhite.medcenter@gmail.com')}</div>
+                <div><b>Сайт:</b> inwhitemedical.com.ua</div>
+                <div><b>Ліцензія МОЗ:</b> наказ МОЗ України від 17.09.2026 № 1370</div>
+                ${revision ? `<div><b>Редакція:</b> ${esc(revision.replace(/^Редакція\s*/i,''))}</div>` : ''}
+                <div><b>Сформовано:</b> ${dateText}</div>
+            </div>
+            <h2 class="doc-title">${esc(offerTitle)}</h2>
+            <article class="offer-body">${article.innerHTML}</article>
+            <footer class="foot">
+                <div class="legal"><strong>ТОВ «ІНВАЙТ МЕДІКАЛ»</strong><br>Публічна оферта сформована з актуальної редакції, опублікованої на сайті INWHITE MEDICAL.</div>
+                <div class="signature"><div class="line">Директор Юрій СІЧ / підпис</div></div>
+            </footer>
+        </main>
+        <script>setTimeout(()=>{try{window.focus();window.print()}catch(e){}},650)<\/script></body></html>`;
+
+        const popup = window.open('', '_blank');
+        if(!popup){ alert('Браузер заблокував нове вікно. Дозвольте спливаючі вікна для сайту та повторіть.'); return; }
+        popup.document.open(); popup.document.write(printable); popup.document.close();
     };
 
     window.addEventListener('DOMContentLoaded',()=>{ setTimeout(()=>{ migrateV29(); fillOfferAdmin(); renderOfferPage(); renderSecondPhone(); adminRenderPriceEditor(); adminRenderPrices(); },0); });
