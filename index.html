@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="42">
+    <meta name="site-build" content="43">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3500,6 +3500,40 @@
         }
     }
 
+
+    /* v43 — offer actions: lower, calmer, more compact */
+    #page-offer .offer-document-actions{
+        top:52px !important;
+        gap:10px !important;
+        width:auto !important;
+        max-width:760px;
+    }
+    #page-offer .offer-document-actions .btn-primary,
+    #page-offer .offer-document-actions .btn-secondary{
+        min-width:168px !important;
+        min-height:44px;
+        padding:10px 20px !important;
+        font-size:.92rem !important;
+        border-radius:999px;
+        box-shadow:none !important;
+    }
+    #page-offer .offer-document-actions .btn-primary{
+        min-width:180px !important;
+    }
+    @media (max-width:1100px){
+        #page-offer .offer-document-actions{
+            position:static !important;
+            margin:24px 0 10px !important;
+            justify-content:flex-start !important;
+            max-width:none;
+        }
+    }
+    @media (max-width:620px){
+        #page-offer .offer-document-actions{
+            margin-top:18px !important;
+        }
+    }
+
 </style>
 </head>
 <body>
@@ -4025,7 +4059,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v42</div>
+                        <div class="admin-v16-badge">● Admin v43</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
