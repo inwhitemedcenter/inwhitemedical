@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="41">
+    <meta name="site-build" content="42">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3433,6 +3433,73 @@
     .offer-table-admin-grid textarea { min-height:150px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.84rem; line-height:1.55; }
     .offer-marker-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 12px; border:1px dashed var(--beige-dark); border-radius:12px; background:rgba(201,169,110,.055); }
     .offer-marker-code { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight:700; color:var(--gold); }
+
+    /* v42 — Public offer hero: actions sit above/right and never squeeze the title */
+    #page-offer .offer-document-hero{
+        position:relative;
+        display:block !important;
+        min-height:0;
+    }
+    #page-offer .offer-document-hero > .offer-document-copy{
+        width:100% !important;
+        max-width:none !important;
+        padding-right:min(58%, 760px);
+    }
+    #page-offer .offer-document-actions{
+        position:absolute;
+        top:0;
+        right:0;
+        display:flex;
+        align-items:center;
+        justify-content:flex-end;
+        flex-wrap:wrap;
+        gap:12px;
+        width:min(58%, 760px);
+        margin:0 !important;
+    }
+    #page-offer .offer-document-actions .btn-primary,
+    #page-offer .offer-document-actions .btn-secondary{
+        width:auto !important;
+        min-width:190px;
+        white-space:nowrap;
+    }
+    #page-offer .offer-document-title,
+    #page-offer .offer-document-copy h1{
+        max-width:760px;
+        text-wrap:balance;
+    }
+    #page-offer .offer-document-copy > p,
+    #page-offer .offer-document-description{
+        max-width:660px;
+    }
+    @media (max-width:1100px){
+        #page-offer .offer-document-hero > .offer-document-copy{
+            padding-right:0;
+        }
+        #page-offer .offer-document-actions{
+            position:static;
+            width:100%;
+            justify-content:flex-start;
+            margin:18px 0 8px !important;
+        }
+    }
+    @media (max-width:620px){
+        #page-offer .offer-document-actions{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:10px;
+        }
+        #page-offer .offer-document-actions .btn-primary,
+        #page-offer .offer-document-actions .btn-secondary{
+            width:100% !important;
+            min-width:0;
+        }
+        #page-offer .offer-document-title,
+        #page-offer .offer-document-copy h1{
+            text-wrap:pretty;
+        }
+    }
+
 </style>
 </head>
 <body>
@@ -3958,7 +4025,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v41</div>
+                        <div class="admin-v16-badge">● Admin v42</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
