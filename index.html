@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="43">
+    <meta name="site-build" content="44">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>INWHITE MEDICAL — Медичний центр</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -3535,6 +3535,7 @@
     }
 
 </style>
+    <!-- INWHITE build 44: non-blocking startup + safe update check -->
 </head>
 <body>
 
@@ -4059,7 +4060,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v43</div>
+                        <div class="admin-v16-badge">● Admin v44</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -5047,11 +5048,19 @@
 
 <script>
     // ===== LOADER =====
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            document.getElementById('loader').classList.add('hidden');
-        }, 1500);
-    });
+    // Never block the whole site while fonts/CDN libraries/network requests are still loading.
+    // The HTML itself is enough to show the public site.
+    function hideSiteLoader() {
+        const loader = document.getElementById('loader');
+        if (loader) loader.classList.add('hidden');
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => setTimeout(hideSiteLoader, 250), { once: true });
+    } else {
+        setTimeout(hideSiteLoader, 250);
+    }
+    // Emergency fallback for unusual browsers/network conditions.
+    setTimeout(hideSiteLoader, 3500);
 
     // ===== NAVIGATION SCROLL =====
     window.addEventListener('scroll', () => {
@@ -7477,19 +7486,42 @@
         try {
             const probeUrl = new URL('index.html', location.origin + location.pathname.replace(/[^/]*$/, ''));
             probeUrl.searchParams.set('_buildcheck', String(Date.now()));
-            const response = await fetch(probeUrl.toString(), { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
-            if (!response.ok) return;
-            const html = await response.text();
-            const match = html.match(/<meta\s+name=["']site-build["']\s+content=["']([^"']+)["']/i) ||
-                          html.match(/<meta\s+content=["']([^"']+)["']\s+name=["']site-build["']/i);
+
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 4500);
+            let response;
+            try {
+                response = await fetch(probeUrl.toString(), {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+                    signal: controller.signal
+                });
+            } finally {
+                clearTimeout(timeout);
+            }
+            if (!response || !response.ok) return;
+
+            const latestHtml = await response.text();
+            const match = latestHtml.match(/<meta\s+name=["']site-build["']\s+content=["']([^"']+)["']/i) ||
+                          latestHtml.match(/<meta\s+content=["']([^"']+)["']\s+name=["']site-build["']/i);
             const remoteBuild = match ? String(match[1]).trim() : '';
-            if (!remoteBuild || remoteBuild === SITE_BUILD_VERSION) return;
+            if (!remoteBuild) return;
+
+            const localNumber = parseInt(SITE_BUILD_VERSION, 10);
+            const remoteNumber = parseInt(remoteBuild, 10);
+
+            // Never downgrade or reload merely because a CDN edge returned an older cached HTML.
+            if (!Number.isFinite(localNumber) || !Number.isFinite(remoteNumber) || remoteNumber <= localNumber) return;
+
+            const guardKey = 'inwhite_reload_for_build_' + remoteBuild;
+            if (sessionStorage.getItem(guardKey) === '1') return;
+            sessionStorage.setItem(guardKey, '1');
 
             const nextUrl = new URL(location.href);
             nextUrl.searchParams.set('v', remoteBuild);
             location.replace(nextUrl.toString());
         } catch (error) {
-            // The website remains usable when the version probe is unavailable.
+            // Version probing is optional. A failure must never block the website.
         }
     }
 
