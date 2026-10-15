@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="44">
+    <meta name="site-build" content="45">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3535,7 +3535,7 @@
     }
 
 </style>
-    <!-- INWHITE build 44: non-blocking startup + safe update check -->
+    <!-- INWHITE build 45: non-blocking startup + safe update check -->
 </head>
 <body>
 
@@ -4060,7 +4060,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v44</div>
+                        <div class="admin-v16-badge">● Admin v45</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -4201,12 +4201,12 @@
                             <div class="bpr-field">
                                 <label for="adminClinicFormatLabel">Назва очного формату</label>
                                 <input id="adminClinicFormatLabel" placeholder="Наприклад: У клініці">
-                                <div class="admin-help">Цей текст бачить пацієнт для очного прийому.</div>
+                                <div class="admin-help">Цей текст використовується для очного прийому. Для звичайних послуг поле формату пацієнту не показується.</div>
                             </div>
                             <div class="bpr-field">
                                 <label for="adminOnlineFormatLabel">Назва онлайн-формату</label>
                                 <input id="adminOnlineFormatLabel" placeholder="Наприклад: Онлайн-консультація">
-                                <div class="admin-help">Цей текст бачить пацієнт для дистанційної консультації.</div>
+                                <div class="admin-help">Цей варіант показується тільки для психологічної консультації.</div>
                             </div>
                             <textarea id="adminAppointmentFormats" hidden></textarea>
                             <div class="bpr-field">
@@ -5290,12 +5290,32 @@
 
     function getClinicFormatLabel() {
         const formats = Array.isArray(siteConfig.appointmentFormats) ? siteConfig.appointmentFormats : [];
-        return String(formats[0] || 'У клініці').trim() || 'У клініці';
+        const configured = String(formats[0] || '').trim();
+        // Legacy protection: the old admin field could accidentally contain an online label.
+        // Physical services must never become "online" because of that stale value.
+        if (!configured || /онлайн|дистанц|відео/i.test(configured)) return 'У клініці';
+        return configured;
     }
 
     function getOnlineFormatLabel() {
         const formats = Array.isArray(siteConfig.appointmentFormats) ? siteConfig.appointmentFormats : [];
         return String(formats[1] || 'Онлайн-консультація').trim() || 'Онлайн-консультація';
+    }
+
+    function repairLegacyAppointmentFormatLabels() {
+        if (!siteConfig) return;
+        const formats = Array.isArray(siteConfig.appointmentFormats) ? [...siteConfig.appointmentFormats] : [];
+        const first = String(formats[0] || '').trim();
+        if (!first || /онлайн|дистанц|відео/i.test(first)) formats[0] = 'У клініці';
+        if (!String(formats[1] || '').trim()) formats[1] = 'Онлайн-консультація';
+        siteConfig.appointmentFormats = formats;
+
+        const clinicInput = document.getElementById('adminClinicFormatLabel');
+        if (clinicInput && (!clinicInput.value.trim() || /онлайн|дистанц|відео/i.test(clinicInput.value))) {
+            clinicInput.value = 'У клініці';
+        }
+        const onlineInput = document.getElementById('adminOnlineFormatLabel');
+        if (onlineInput && !onlineInput.value.trim()) onlineInput.value = 'Онлайн-консультація';
     }
 
     function resolveAppointmentFormats(form) {
@@ -5305,27 +5325,28 @@
 
         if (text.includes('декларац')) return { formats: [], hide: true, fixedValue: '' };
 
-        const physicalPatterns = [
-            'узд', 'ультразв', 'екг', 'електрокарді', 'вакцинац', 'щеплен',
-            'швидк', 'тест', 'аналіз', 'лаборатор', 'діагност', 'процедур',
-            'інʼєкц', 'ін\'єкц', 'маніпуляц', 'забір', 'перев\'яз'
-        ];
-        if (physicalPatterns.some(pattern => text.includes(pattern))) {
-            return { formats: [getClinicFormatLabel()], hide: false, fixedValue: getClinicFormatLabel() };
+        // ONLY psychological consultation may be selected as online.
+        // Everything else is an in-clinic service and the format field stays hidden.
+        const isPsychologicalConsultation =
+            (text.includes('психолог') || text.includes('психотерап') ||
+             text.includes('птср') || text.includes('тривог') ||
+             text.includes('депрес') || text.includes('стрес')) &&
+            !text.includes('тест') &&
+            !text.includes('діагност');
+
+        if (isPsychologicalConsultation) {
+            return {
+                formats: [getClinicFormatLabel(), getOnlineFormatLabel()],
+                hide: false,
+                fixedValue: ''
+            };
         }
 
-        if (text.includes('психолог') || text.includes('птср') || text.includes('стрес') || text.includes('тривог') || text.includes('депрес')) {
-            return { formats: [getClinicFormatLabel(), getOnlineFormatLabel()], hide: false, fixedValue: '' };
-        }
-
-        if (text.includes('сімейн') || text.includes('консультац')) {
-            return { formats: [getClinicFormatLabel(), getOnlineFormatLabel()], hide: false, fixedValue: '' };
-        }
-
-        const configured = Array.isArray(siteConfig.appointmentFormats) && siteConfig.appointmentFormats.length
-            ? siteConfig.appointmentFormats
-            : [getClinicFormatLabel()];
-        return { formats: configured, hide: configured.length <= 1, fixedValue: configured[0] || getClinicFormatLabel() };
+        return {
+            formats: [getClinicFormatLabel()],
+            hide: true,
+            fixedValue: getClinicFormatLabel()
+        };
     }
 
     function updateDeclarationFields(form) {
@@ -9974,6 +9995,7 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
+        repairLegacyAppointmentFormatLabels();
         adminRepairLegacyServiceIcons();
         setTimeout(() => {
             adminRenderServiceCards();
