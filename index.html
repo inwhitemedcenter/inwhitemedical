@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="46">
+    <meta name="site-build" content="47">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3555,8 +3555,30 @@
         }
     }
 
+
+    /* v47 — enlarge the actual header logo icon */
+    #navbar .nav-logo-icon {
+        width: 60px !important;
+        height: 60px !important;
+        transform: none !important;
+    }
+
+    @media (min-width: 769px) and (max-width: 1180px) {
+        #navbar .nav-logo-icon {
+            width: 50px !important;
+            height: 50px !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #navbar .nav-logo-icon {
+            width: 46px !important;
+            height: 46px !important;
+        }
+    }
+
 </style>
-    <!-- INWHITE build 46: non-blocking startup + safe update check -->
+    <!-- INWHITE build 47: non-blocking startup + safe update check -->
 </head>
 <body>
 
@@ -4081,7 +4103,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v46</div>
+                        <div class="admin-v16-badge">● Admin v47</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
