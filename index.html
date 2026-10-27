@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="56">
+    <meta name="site-build" content="57">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5215,6 +5215,13 @@
         if (!targetPage) return;
         targetPage.classList.add(directionClass, 'active');
         currentPageName = pageName;
+        if (pageName === 'training' && typeof bprTrainings !== 'undefined') {
+            const visible = bprTrainings.filter(t => t && t.visible === true);
+            const available = visible.some(t => (t.category || 'online') === bprActiveTrainingCategory);
+            if (!available && visible.length && typeof bprSetTrainingCategory === 'function') {
+                bprSetTrainingCategory(visible[0].category || 'online');
+            }
+        }
         closeMobileMenu();
         const developerPanel = document.getElementById('bprDevPanel');
         if (developerPanel && (pageName !== 'training' || !bprOpeningDeveloperPanel)) {
@@ -5820,7 +5827,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '56';
+    const SITE_BUILD_VERSION = '57';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6480,6 +6487,18 @@
 
     function supabaseApplySitePayload(row) {
         if (!row) return;
+        try {
+            const oldConfig = localStorage.getItem(SITE_CONFIG_STORAGE);
+            const oldTeam = localStorage.getItem(SITE_TEAM_STORAGE);
+            const oldPrices = localStorage.getItem(SITE_PRICES_STORAGE);
+            const oldTrainings = localStorage.getItem(BPR_TRAININGS_STORAGE);
+            if (oldConfig && oldConfig !== JSON.stringify(row.site_config)) {
+                localStorage.setItem('inwhite_backup_before_cloud_sync', JSON.stringify({
+                    savedAt: new Date().toISOString(), siteConfig: oldConfig,
+                    siteTeam: oldTeam, sitePrices: oldPrices, trainings: oldTrainings
+                }));
+            }
+        } catch (e) { console.warn('Site backup failed before cloud refresh', e); }
         siteConfig = adminNormalizeSiteConfig(row.site_config || adminDefaultSiteConfig());
         siteTeam = Array.isArray(row.site_team) ? row.site_team : adminDefaultTeam();
         sitePrices = Array.isArray(row.site_prices) ? row.site_prices : adminDefaultPrices();
@@ -6488,6 +6507,12 @@
         bprSaveState();
         adminRenderSite();
         adminFillForms();
+        if (currentPageName === 'training') {
+            const visible = bprTrainings.filter(t => t && t.visible === true);
+            if (visible.length && !visible.some(t => (t.category || 'online') === bprActiveTrainingCategory)) {
+                bprSetTrainingCategory(visible[0].category || 'online');
+            }
+        }
         bprRenderTrainingCards();
         bprRenderDeveloperTrainingList();
     }
@@ -7608,29 +7633,25 @@
         if (!localStorage.getItem(SITE_DIRTY_STORAGE)) localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
     }
 
+    // The HTML build number is NOT a data schema version. Never delete user content on deployment.
     function sitePrepareBuildCachePolicy() {
         const previousBuild = localStorage.getItem(SITE_BUILD_STORAGE) || '';
         if (previousBuild === SITE_BUILD_VERSION) return;
-
-        const wasDirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
-        if (wasDirty) {
-            // Never silently destroy an administrator's unsynchronised work. Keep one backup.
-            try {
-                localStorage.setItem(SITE_UNSYNCED_BACKUP_STORAGE, JSON.stringify({
-                    build: previousBuild || 'unknown',
-                    savedAt: localStorage.getItem(SITE_LOCAL_UPDATED_STORAGE) || new Date().toISOString(),
-                    siteConfig: JSON.parse(localStorage.getItem(SITE_CONFIG_STORAGE) || 'null'),
-                    siteTeam: JSON.parse(localStorage.getItem(SITE_TEAM_STORAGE) || 'null'),
-                    sitePrices: JSON.parse(localStorage.getItem(SITE_PRICES_STORAGE) || 'null')
-                }));
-            } catch (error) {}
-        }
-
-        // A new HTML build should not inherit stale public cache as authoritative content.
-        [SITE_CONFIG_STORAGE, SITE_TEAM_STORAGE, SITE_PRICES_STORAGE, SITE_LOCAL_UPDATED_STORAGE, SITE_SYNCED_UPDATED_STORAGE, SITE_DIRTY_STORAGE]
-            .forEach(key => localStorage.removeItem(key));
+        try {
+            // Preserve every existing dataset, including visibility flags, images and trainings.
+            const backup = {
+                build: previousBuild, savedAt: new Date().toISOString(),
+                siteConfig: localStorage.getItem(SITE_CONFIG_STORAGE),
+                siteTeam: localStorage.getItem(SITE_TEAM_STORAGE),
+                sitePrices: localStorage.getItem(SITE_PRICES_STORAGE),
+                trainings: localStorage.getItem(BPR_TRAININGS_STORAGE),
+                dirty: localStorage.getItem(SITE_DIRTY_STORAGE)
+            };
+            if (backup.siteConfig || backup.siteTeam || backup.sitePrices || backup.trainings) {
+                localStorage.setItem('inwhite_data_backup_before_build_57', JSON.stringify(backup));
+            }
+        } catch (error) { console.warn('Could not create site-data backup', error); }
         localStorage.setItem(SITE_BUILD_STORAGE, SITE_BUILD_VERSION);
-        localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
     }
 
     async function siteCheckForNewBuild() {
