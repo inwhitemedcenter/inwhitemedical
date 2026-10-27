@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="49">
+    <meta name="site-build" content="50">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4103,7 +4103,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v49</div>
+                        <div class="admin-v16-badge">● Admin v50</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -4715,7 +4715,7 @@
                                 <input id="bprEditLocationCity" placeholder="м. Чоп">
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="bprEditLocationVenue">Заклад та адреса</label>
+                                <label for="bprEditLocationVenue">Місце проведення (місто, заклад та адреса)</label>
                                 <input id="bprEditLocationVenue" placeholder="INWHITE MEDICAL, вул. ...">
                             </div>
                             <div class="bpr-field">
@@ -4784,7 +4784,7 @@
                             </label>
                         </div>
                         <div class="bpr-inline-actions">
-                            <button class="bpr-btn bpr-btn-primary" type="submit" id="bprSaveTrainingButton">Зберегти захід</button><div id="bprTrainingSaveStatus" role="status" aria-live="polite" style="padding:10px;color:#77603a;max-width:650px"></div>
+                            <button class="bpr-btn bpr-btn-primary" type="button" id="bprSaveTrainingButton" onclick="bprSaveTraining(event)">Зберегти захід</button><div id="bprTrainingSaveStatus" role="status" aria-live="polite" style="padding:10px;color:#77603a;max-width:650px"></div>
                             <button class="bpr-btn bpr-btn-danger" type="button" onclick="bprDeleteTraining()">Видалити захід</button>
                         </div>
                     </form>
@@ -6435,7 +6435,7 @@
                 const localEditsBelongToAdmin = !!supabaseAccessToken || bprDeveloperUnlocked === true;
                 // Public visitors must always receive the newest cloud data.
                 // We only protect newer local edits while an administrator is actively working.
-                if (!options.force && localEditsBelongToAdmin && dirty && localTime && localTime > remoteTime) {
+                if (localEditsBelongToAdmin && dirty && localTime && localTime > remoteTime) {
                     if (!options.silent) supabaseSetStatus('Локальні зміни новіші за базу. Вони не були перезаписані. Натисніть «Зберегти зміни» після входу адміністратора.');
                     adminRefreshSaveStatus();
                     return false;
@@ -6469,6 +6469,14 @@
                 headers: { Prefer: 'resolution=merge-duplicates' },
                 body: JSON.stringify(payload)
             }, true);
+            // Verify that the cloud actually contains the edited training after the write.
+            if (options.verifyTrainingId) {
+                const fresh = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=bpr_trainings,updated_at', { method:'GET' }, false);
+                const stored = Array.isArray(fresh?.[0]?.bpr_trainings) ? fresh[0].bpr_trainings : [];
+                const expected = bprTrainings.find(t=>t.id===options.verifyTrainingId);
+                const actual = stored.find(t=>t.id===options.verifyTrainingId);
+                if (!expected || !actual || actual.title !== expected.title) throw new Error('Не підтверджено запис заходу в Supabase');
+            }
             const savedAt = payload.updated_at || new Date().toISOString();
             localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, savedAt);
             localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, savedAt);
@@ -8683,7 +8691,7 @@
         document.getElementById('bprEditStartTime').value = training.startTime || '';
         document.getElementById('bprEditDurationHours').value = training.durationHours || '';
         document.getElementById('bprEditLocationCity').value = training.locationCity || '';
-        document.getElementById('bprEditLocationVenue').value = training.locationVenue || '';
+        document.getElementById('bprEditLocationVenue').value = [training.locationCity, training.locationVenue].filter(Boolean).join(', ');
         document.getElementById('bprEditYear').value = training.year || new Date().getFullYear();
         document.getElementById('bprEditProvider').value = training.providerCode || '';
         document.getElementById('bprEditTrainingNumber').value = training.trainingNumber || '';
@@ -8807,7 +8815,7 @@
             startDate: document.getElementById('bprEditStartDate').value,
             startTime: document.getElementById('bprEditStartTime').value,
             durationHours: document.getElementById('bprEditDurationHours').value,
-            locationCity: document.getElementById('bprEditLocationCity').value.trim(),
+            locationCity: '',
             locationVenue: document.getElementById('bprEditLocationVenue').value.trim(),
             year: Number(document.getElementById('bprEditYear').value) || new Date().getFullYear(),
             providerCode: document.getElementById('bprEditProvider').value.trim(),
@@ -8832,20 +8840,21 @@
             bprTrainings.push(training);
         }
         bprSaveState();
-        adminSaveSiteState();
+        adminSaveSiteState({markDirty:true});
         adminRenderPageHeroes();
         bprActiveTrainingCategory = training.category || 'online';
         bprSetTrainingCategory(bprActiveTrainingCategory);
         bprRenderTrainingCards();
         bprRenderDeveloperTrainingList();
+        showStatus('✓ Зміни заходу застосовано у списку. Перевіряю збереження в Supabase…');
         const warn = quizWarning ? ' Увага: тест містить не 10 коректних питань; його слід виправити до сертифікації.' : '';
         if (!supabaseAccessToken) {
             showStatus('Захід збережено лише локально — для публікації увійдіть до Supabase та збережіть ще раз.'+warn,true);
             adminRequireSupabaseLogin();return;
         }
         showStatus('Локально збережено, синхронізація з Supabase…');
-        const synced=await supabaseSaveSiteState({silentAuthPrompt:true});
-        showStatus(synced?'✓ Захід збережено в Supabase.': 'Зміни є локально, але НЕ опубліковані: не вдалося синхронізувати з Supabase.'+warn,!synced);
+        const synced=await supabaseSaveSiteState({silentAuthPrompt:true,verifyTrainingId:id});
+        showStatus(synced?'✓ Захід збережено в Supabase.': '⚠ Захід відредаговано на цьому пристрої, але НЕ збережено в базі. Перевірте вхід у Supabase та розділ «База».'+warn,!synced);
 
     }
 
@@ -9366,7 +9375,7 @@
 
         const groups = [
             {title:'1. Основна інформація', open:true, ids:['bprEditTitle','bprEditCategory','bprEditType','bprEditMode','bprEditShort','bprEditVisible']},
-            {title:'2. Дата та місце', open:true, ids:['bprEditStartDate','bprEditStartTime','bprEditDurationHours','bprEditLocationCity','bprEditLocationVenue']},
+            {title:'2. Дата та місце', open:true, ids:['bprEditStartDate','bprEditStartTime','bprEditDurationHours','bprEditLocationVenue']},
             {title:'3. Опис і зображення', open:true, ids:['bprEditImage','bprEditFull']},
             {title:'4. Реєстрація, оплата та запис', open:false, ids:['bprShowPrice','bprEditPrice','bprShowPayment','bprEditPaymentUrl','bprShowRegister','bprShowRecording','bprShowDetails','bprEditHasRecording','bprEditRecordingUrl','bprEditGoogleFormUrl']},
             {title:'5. Сертифікат БПР — технічні поля', open:false, ids:['bprEditYear','bprEditProvider','bprEditTrainingNumber','bprEditCertificateNext','bprEditCertificateDigits']},
@@ -9397,7 +9406,7 @@
         originalTrainingVisibilityUx();
         const category = document.getElementById('bprEditCategory')?.value || 'online';
         const isOffline = category === 'offline';
-        ['bprEditLocationCity','bprEditLocationVenue'].forEach(id => {
+        ['bprEditLocationVenue'].forEach(id => {
             const field = document.getElementById(id)?.closest('.bpr-field');
             if (field) field.hidden = !isOffline;
         });
