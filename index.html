@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="48">
+    <meta name="site-build" content="49">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4103,7 +4103,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v48</div>
+                        <div class="admin-v16-badge">● Admin v49</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -4663,7 +4663,7 @@
                         <div id="bprDevTrainingList" class="bpr-dev-list"></div>
                     </div>
 
-                    <form id="bprTrainingForm" onsubmit="bprSaveTraining(event)">
+                    <form id="bprTrainingForm" novalidate onsubmit="bprSaveTraining(event)">
                         <input type="hidden" id="bprEditId">
                         <div class="bpr-form-grid">
                             <div class="bpr-field bpr-full">
@@ -4784,7 +4784,7 @@
                             </label>
                         </div>
                         <div class="bpr-inline-actions">
-                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти захід</button>
+                            <button class="bpr-btn bpr-btn-primary" type="submit" id="bprSaveTrainingButton">Зберегти захід</button><div id="bprTrainingSaveStatus" role="status" aria-live="polite" style="padding:10px;color:#77603a;max-width:650px"></div>
                             <button class="bpr-btn bpr-btn-danger" type="button" onclick="bprDeleteTraining()">Видалити захід</button>
                         </div>
                     </form>
@@ -8776,14 +8776,17 @@
         return questions.length === 10;
     }
 
-    function bprSaveTraining(event) {
+    async function bprSaveTraining(event) {
         event.preventDefault();
-        adminSaveHeroImageFields();
         const quizText = document.getElementById('bprEditQuiz').value.trim();
         const category = document.getElementById('bprEditCategory').value;
-        if (category === 'online' && quizText && !bprValidateQuizText(quizText)) {
-            alert('Тест має містити рівно 10 коректних питань у вказаному форматі.');
-            return;
+        const quizWarning = category === 'online' && quizText && !bprValidateQuizText(quizText);
+        const status = document.getElementById('bprTrainingSaveStatus');
+        const showStatus = (msg, error=false) => { if(status){status.textContent=msg;status.style.color=error?'#a43b37':'#476b4b';} };
+        if (!document.getElementById('bprEditTitle').value.trim()) {
+            document.getElementById('bprEditTitle').closest('details')?.setAttribute('open','');
+            document.getElementById('bprEditTitle').focus();
+            showStatus('Не збережено: заповніть назву заходу.',true);return;
         }
 
         const id = document.getElementById('bprEditId').value || ('bpr-training-' + Date.now());
@@ -8835,9 +8838,15 @@
         bprSetTrainingCategory(bprActiveTrainingCategory);
         bprRenderTrainingCards();
         bprRenderDeveloperTrainingList();
-        if (supabaseAccessToken) supabaseSaveSiteState({silentAuthPrompt:true});
-        else adminRequireSupabaseLogin();
-        alert('Захід збережено локально. Для публікації на всіх пристроях перевірте статус синхронізації з Supabase.');
+        const warn = quizWarning ? ' Увага: тест містить не 10 коректних питань; його слід виправити до сертифікації.' : '';
+        if (!supabaseAccessToken) {
+            showStatus('Захід збережено лише локально — для публікації увійдіть до Supabase та збережіть ще раз.'+warn,true);
+            adminRequireSupabaseLogin();return;
+        }
+        showStatus('Локально збережено, синхронізація з Supabase…');
+        const synced=await supabaseSaveSiteState({silentAuthPrompt:true});
+        showStatus(synced?'✓ Захід збережено в Supabase.': 'Зміни є локально, але НЕ опубліковані: не вдалося синхронізувати з Supabase.'+warn,!synced);
+
     }
 
     function bprDeleteTraining() {
@@ -9344,6 +9353,7 @@
         const grid = form.querySelector('.bpr-form-grid');
         if (!grid) return;
         form.dataset.uxReady = 'true';
+        form.noValidate = true;
 
         const intro = document.createElement('div');
         intro.className = 'training-admin-intro';
