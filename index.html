@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="50">
+    <meta name="site-build" content="51">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4769,6 +4769,9 @@
                             <div class="bpr-field bpr-full">
                                 <label for="bprEditFull">Детальний опис</label>
                                 <textarea id="bprEditFull" required></textarea>
+                            </div><div class="bpr-field bpr-full">
+                                <label for="bprEditProgram">Програма заходу (показується при відкритті картки)</label>
+                                <textarea id="bprEditProgram" rows="9" placeholder="09:00–09:30 — Реєстрація учасників\n09:30–10:30 — Основна частина..."></textarea>
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="bprEditQuiz">Тестові питання</label>
@@ -4858,6 +4861,10 @@
             </div>
             <div id="bprModalDetails"></div>
             <p id="bprModalDescription" class="bpr-panel-subtitle"></p>
+            <section id="bprModalProgramBox" hidden style="margin:22px 0;padding:20px;border:1px solid #e5d8c7;border-radius:16px;background:#faf8f4">
+               <h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:12px">Програма заходу</h3>
+               <div id="bprModalProgram" style="white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere"></div>
+            </section>
             <div id="bprModalPrice" class="bpr-status bpr-status-warning"></div>
             <div id="bprOfflineRegistrationBox" class="bpr-inline-actions" hidden>
                 <a id="bprOfflineRegistrationLink" class="bpr-btn bpr-btn-primary" href="#" target="_blank" rel="noopener noreferrer">Зареєструватись на офлайн-захід</a>
@@ -5750,7 +5757,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '40';
+    const SITE_BUILD_VERSION = '51';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6435,7 +6442,7 @@
                 const localEditsBelongToAdmin = !!supabaseAccessToken || bprDeveloperUnlocked === true;
                 // Public visitors must always receive the newest cloud data.
                 // We only protect newer local edits while an administrator is actively working.
-                if (localEditsBelongToAdmin && dirty && localTime && localTime > remoteTime) {
+                if (localEditsBelongToAdmin && dirty && !options.discardLocalChanges) {
                     if (!options.silent) supabaseSetStatus('Локальні зміни новіші за базу. Вони не були перезаписані. Натисніть «Зберегти зміни» після входу адміністратора.');
                     adminRefreshSaveStatus();
                     return false;
@@ -6485,7 +6492,8 @@
             adminSetSaveStatus('Синхронізовано з Supabase ✓', 'success');
             return true;
         } catch (error) {
-            supabaseSetStatus('Помилка збереження сайту. Перевірте права таблиці або підключення.');
+            console.error('INWHITE: помилка запису в Supabase', error);
+            supabaseSetStatus('Помилка збереження сайту: ' + (error?.message || 'перевірте права таблиці або підключення.'));
             adminSetSaveStatus('Помилка синхронізації', 'error');
             return false;
         }
@@ -8317,6 +8325,11 @@
         document.getElementById('bprModalImage').src = adminNormalizeImageValue(training.image) || bprImageData('Навчальний захід');
         document.getElementById('bprModalTitle').textContent = training.title;
         document.getElementById('bprModalDescription').textContent = training.fullDescription;
+        const programBox = document.getElementById('bprModalProgramBox');
+        if (programBox) {
+            programBox.hidden = !String(training.program || '').trim();
+            document.getElementById('bprModalProgram').textContent = training.program || '';
+        }
         document.getElementById('bprModalPrice').textContent = training.showPrice === false ? '' : (training.price ? 'Вартість: ' + training.price : '');
         document.getElementById('bprModalMeta').innerHTML = `
             <span class="bpr-pill">${bprEscapeText(training.type)}</span>
@@ -8709,6 +8722,7 @@
         document.getElementById('bprEditGoogleFormUrl').value = training.googleFormUrl || '';
         document.getElementById('bprEditShort').value = training.shortDescription || '';
         document.getElementById('bprEditFull').value = training.fullDescription || '';
+        document.getElementById('bprEditProgram').value = training.program || '';
         document.getElementById('bprEditQuiz').value = training.quizText || bprDefaultQuizText();
         document.getElementById('bprEditVisible').checked = Boolean(training.visible);
         bprUpdateTrainingFormVisibility();
@@ -8750,7 +8764,8 @@
             recordingUrl: '',
             googleFormUrl: '',
             shortDescription: 'Короткий опис навчального заходу.',
-            fullDescription: 'Детальний опис навчального заходу, програма, цільова аудиторія та умови отримання сертифіката.',
+            fullDescription: 'Детальний опис навчального заходу, цільова аудиторія та умови отримання сертифіката.',
+            program: '',
             quizText: bprDefaultQuizText(),
             visible: false
         };
@@ -8785,7 +8800,7 @@
     }
 
     async function bprSaveTraining(event) {
-        event.preventDefault();
+        if (event && typeof event.preventDefault === 'function') event.preventDefault();
         const quizText = document.getElementById('bprEditQuiz').value.trim();
         const category = document.getElementById('bprEditCategory').value;
         const quizWarning = category === 'online' && quizText && !bprValidateQuizText(quizText);
@@ -8829,6 +8844,7 @@
             googleFormUrl: document.getElementById('bprEditGoogleFormUrl').value.trim(),
             shortDescription: document.getElementById('bprEditShort').value.trim(),
             fullDescription: document.getElementById('bprEditFull').value.trim(),
+            program: document.getElementById('bprEditProgram').value.trim(),
             quizText: quizText || bprDefaultQuizText(),
             visible: document.getElementById('bprEditVisible').checked
         };
@@ -8845,8 +8861,9 @@
         bprActiveTrainingCategory = training.category || 'online';
         bprSetTrainingCategory(bprActiveTrainingCategory);
         bprRenderTrainingCards();
+        bprFillTrainingForm(training);
         bprRenderDeveloperTrainingList();
-        showStatus('✓ Зміни заходу застосовано у списку. Перевіряю збереження в Supabase…');
+        showStatus('✓ Захід оновлено в лівому списку. Зберігаю в Supabase…');
         const warn = quizWarning ? ' Увага: тест містить не 10 коректних питань; його слід виправити до сертифікації.' : '';
         if (!supabaseAccessToken) {
             showStatus('Захід збережено лише локально — для публікації увійдіть до Supabase та збережіть ще раз.'+warn,true);
@@ -8857,6 +8874,19 @@
         showStatus(synced?'✓ Захід збережено в Supabase.': '⚠ Захід відредаговано на цьому пристрої, але НЕ збережено в базі. Перевірте вхід у Supabase та розділ «База».'+warn,!synced);
 
     }
+
+    // V51: guarantee a click triggers exactly one save, even if old inline handlers exist.
+    document.addEventListener('click', (e) => {
+        const button=e.target.closest('#bprSaveTrainingButton');
+        if (!button) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        Promise.resolve(bprSaveTraining(e)).catch(error => {
+            console.error('INWHITE training save error', error);
+            const el=document.getElementById('bprTrainingSaveStatus');
+            if (el) {el.textContent='Помилка збереження: '+(error?.message || String(error));el.style.color='#a43b37';}
+        });
+    }, true);
 
     function bprDeleteTraining() {
         const id = document.getElementById('bprEditId').value;
@@ -9376,7 +9406,7 @@
         const groups = [
             {title:'1. Основна інформація', open:true, ids:['bprEditTitle','bprEditCategory','bprEditType','bprEditMode','bprEditShort','bprEditVisible']},
             {title:'2. Дата та місце', open:true, ids:['bprEditStartDate','bprEditStartTime','bprEditDurationHours','bprEditLocationVenue']},
-            {title:'3. Опис і зображення', open:true, ids:['bprEditImage','bprEditFull']},
+            {title:'3. Опис і зображення', open:true, ids:['bprEditImage','bprEditFull','bprEditProgram']},
             {title:'4. Реєстрація, оплата та запис', open:false, ids:['bprShowPrice','bprEditPrice','bprShowPayment','bprEditPaymentUrl','bprShowRegister','bprShowRecording','bprShowDetails','bprEditHasRecording','bprEditRecordingUrl','bprEditGoogleFormUrl']},
             {title:'5. Сертифікат БПР — технічні поля', open:false, ids:['bprEditYear','bprEditProvider','bprEditTrainingNumber','bprEditCertificateNext','bprEditCertificateDigits']},
             {title:'6. Тест для онлайн-курсу (необов’язково)', open:false, ids:['bprEditQuiz']}
