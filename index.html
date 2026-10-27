@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="53">
+    <meta name="site-build" content="55">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3593,6 +3593,31 @@
 .training-schedule-row textarea {min-height:46px;resize:vertical}
 .training-schedule-row button {min-height:44px;border:1px solid #e1c8c3;background:#fff7f6;border-radius:10px;padding:8px 12px;color:#983c35;cursor:pointer}
 @media(max-width:750px){.training-schedule-row {grid-template-columns:1fr 1fr}.training-schedule-row textarea {grid-column:1/-1}.training-schedule-row button {grid-column:1/-1}}
+
+/* v54 — optional schedule column and clean description bullets */
+.training-schedule-details-switch{display:flex;align-items:center;gap:10px;padding:12px 0;font-weight:600;cursor:pointer}
+.training-schedule-details-switch input{width:20px;height:20px;accent-color:#c9a96e}
+#trainingScheduleEditor:not(.schedule-show-details) .training-schedule-row{grid-template-columns:minmax(130px,1fr) minmax(250px,4fr) auto}
+#trainingScheduleEditor .training-schedule-details[hidden]{display:none!important}
+.training-schedule-two-cols{min-width:420px;table-layout:auto}
+.training-schedule-two-cols td:first-child,.training-schedule-two-cols th:first-child{width:155px}
+#bprModalDescription ul.training-description-list{list-style:none;padding-left:0;margin:.65em 0 1.1em}
+#bprModalDescription ul.training-description-list li{position:relative;padding-left:1.45em;margin:.35em 0}
+#bprModalDescription ul.training-description-list li::before{content:'◆';position:absolute;left:0;top:0;color:#4485bb;font-size:.8em}
+@media(max-width:750px){#trainingScheduleEditor:not(.schedule-show-details) .training-schedule-row{grid-template-columns:1fr auto}#trainingScheduleEditor:not(.schedule-show-details) .training-schedule-topic{grid-column:1/-1;grid-row:2}}
+
+    /* v55: price is a prominent detail near the event heading, never an empty pill */
+    #bprModalPrice[hidden] { display: none !important; }
+    #bprModalPrice.bpr-training-cost {
+        display: inline-flex; align-items: center; gap: 8px;
+        width: fit-content; max-width: 100%;
+        margin: 14px 0 10px; padding: 11px 17px;
+        border-radius: 12px; border: 1px solid rgba(201,169,110,.55);
+        background: rgba(201,169,110,.13); color: #8b6930;
+        font-weight: 700; font-size: 1.05rem;
+    }
+    .bpr-card-cost { color: #9a753a; font-weight: 750; font-size: 1.02rem; }
+    .bpr-card-footer:empty { display: none; }
 </style>
     <!-- INWHITE build 48: non-blocking startup + safe update check -->
 </head>
@@ -4690,7 +4715,6 @@
                                 <label for="bprEditType">Тип заходу</label>
                                 <select id="bprEditType">
                                     <option value="">Оберіть тип заходу</option>
-                                    <option value="Тренінг">Тренінг</option>
                                     <option value="Тренінг з оволодіння практичними навичками">Тренінг з оволодіння практичними навичками</option>
                                     <option value="Майстер-клас">Майстер-клас</option>
                                     <option value="Семінар">Семінар</option>
@@ -4793,14 +4817,15 @@
                             </div><div class="bpr-field bpr-full">
                                 <label for="bprEditProgram">Програма заходу (показується при відкритті картки)</label>
                                 <div id="trainingScheduleEditor">
-                                    <p class="bpr-note">Додавайте рядки по одному або вставте всю програму через вкладку «Швидке вставлення». Колонки: час, тема, зміст.</p>
+                                    <p class="bpr-note">Додавайте рядки по одному або вставте всю програму через вкладку «Швидке вставлення». Обов’язкові лише час і тема; «Зміст» можна ввімкнути за потреби.</p>
+                                    <label class="training-schedule-details-switch"><input type="checkbox" id="trainingScheduleShowDetails" onchange="trainingScheduleToggleDetails()"> Показувати колонку «Зміст»</label>
                                     <div id="trainingScheduleRows"></div>
                                     <div class="bpr-inline-actions" style="margin-top:12px;flex-wrap:wrap">
                                         <button type="button" class="bpr-btn bpr-btn-secondary" onclick="trainingScheduleAddRow()">+ Додати рядок</button>
                                         <button type="button" class="bpr-btn bpr-btn-secondary" onclick="trainingScheduleToggleImport()">Вставити таблицю</button>
                                     </div>
                                     <div id="trainingScheduleImport" hidden style="margin-top:12px">
-                                        <label for="trainingSchedulePaste">Вставте рядки з Excel або Word (3 колонки: Час, Тема, Зміст) чи розділіть їх знаком |</label>
+                                        <label for="trainingSchedulePaste">Вставте рядки з Excel або Word (2 колонки: Час, Тема; третя «Зміст» — необов’язкова) або розділіть знаком |</label>
                                         <textarea id="trainingSchedulePaste" rows="5" placeholder="09:30–10:00 | Вступ | Знайомство та очікування&#10;10:00–10:30 | Вигорання | Основні ознаки"></textarea>
                                         <button type="button" class="bpr-btn bpr-btn-primary" onclick="trainingScheduleImportRows()">Додати рядки з тексту</button>
                                     </div>
@@ -4894,14 +4919,14 @@
                 <button class="bpr-close" type="button" onclick="bprCloseEventModal()">×</button>
             </div>
             <div id="bprModalDetails"></div>
-            <p id="bprModalDescription" class="bpr-panel-subtitle"></p>
+            <div id="bprModalPrice" class="bpr-training-cost" hidden></div>
+            <div id="bprModalDescription" class="bpr-panel-subtitle"></div>
             <section id="bprModalProgramBox" hidden style="margin:22px 0;padding:20px;border:1px solid #e5d8c7;border-radius:16px;background:#faf8f4">
                <h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:12px">Програма заходу</h3>
                <div id="bprModalProgram" style="white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere"></div>
             </section>
-            <div id="bprModalPrice" class="bpr-status bpr-status-warning"></div>
             <div id="bprOfflineRegistrationBox" class="bpr-inline-actions" hidden>
-                <a id="bprOfflineRegistrationLink" class="bpr-btn bpr-btn-primary" href="#" target="_blank" rel="noopener noreferrer">Зареєструватись на офлайн-захід</a>
+                <a id="bprOfflineRegistrationLink" class="bpr-btn bpr-btn-primary" href="#" target="_blank" rel="noopener noreferrer">Зареєструватись</a>
                 <a id="bprOfflineRecordingLink" class="bpr-btn bpr-btn-secondary" href="#" target="_blank" rel="noopener noreferrer" hidden>Переглянути запис</a>
             </div>
 
@@ -4934,7 +4959,7 @@
                     </div>
                 </div>
                 <div class="bpr-inline-actions">
-                    <button class="bpr-btn bpr-btn-primary" type="submit">Зареєструватись і перейти до оплати</button>
+                    <button class="bpr-btn bpr-btn-primary" type="submit">Зареєструватись</button>
                 </div>
             </form>
         </div>
@@ -8342,10 +8367,11 @@
                     <h3>${bprEscapeText(training.title)}</h3>
                     ${bprRenderEventDetails(training)}
                     <p>${bprEscapeText(training.shortDescription)}</p>
+                    ${(training.showPrice !== false && String(training.price || '').trim()) || training.showDetails !== false ? `
                     <div class="bpr-card-footer">
-                        <span>${training.showPrice === false ? '' : bprEscapeText(training.price || '')}</span>
-                        <span>${training.showDetails === false ? '' : ((training.category || 'online') === 'offline' ? 'Детальніше' : 'Детальніше')}</span>
-                    </div>
+                        ${training.showPrice !== false && String(training.price || '').trim() ? `<span class="bpr-card-cost">${bprEscapeText(training.price)}</span>` : ''}
+                        ${training.showDetails !== false ? '<span>Детальніше →</span>' : ''}
+                    </div>` : ''}
                 </div>
             </article>
         `).join('');
@@ -8362,9 +8388,12 @@
         const programBox = document.getElementById('bprModalProgramBox');
         if (programBox) {
             programBox.hidden = !String(training.program || '').trim();
-            document.getElementById('bprModalProgram').innerHTML = trainingScheduleRender(training.program || '');
+            document.getElementById('bprModalProgram').innerHTML = trainingScheduleRender(training.program || '', training.programShowDetails);
         }
-        document.getElementById('bprModalPrice').textContent = training.showPrice === false ? '' : (training.price ? 'Вартість: ' + training.price : '');
+        const priceBox = document.getElementById('bprModalPrice');
+        const showCost = training.showPrice !== false && Boolean(String(training.price || '').trim());
+        priceBox.hidden = !showCost;
+        priceBox.textContent = showCost ? 'Вартість участі: ' + String(training.price).trim() : '';
         document.getElementById('bprModalMeta').innerHTML = `
             <span class="bpr-pill">${bprEscapeText(training.type)}</span>
             <span class="bpr-pill bpr-pill-muted">${bprEscapeText(training.mode)}</span>
@@ -8725,7 +8754,7 @@
         document.getElementById('bprEditId').value = training.id;
         document.getElementById('bprEditTitle').value = training.title || '';
         const typeSelect = document.getElementById('bprEditType');
-        const eventType = training.type || '';
+        const eventType = training.type === 'Тренінг' ? 'Тренінг з оволодіння практичними навичками' : (training.type || '');
         typeSelect.querySelectorAll('[data-custom-type]').forEach(option => option.remove());
         if (eventType && ![...typeSelect.options].some(option=>option.value===eventType)) {
             typeSelect.add(new Option(eventType,eventType));
@@ -8762,7 +8791,7 @@
         document.getElementById('bprEditShort').value = training.shortDescription || '';
         document.getElementById('bprEditFull').value = training.fullDescription || '';
         document.getElementById('bprEditProgram').value = training.program || '';
-        trainingScheduleLoad(training.program || '');
+        trainingScheduleLoad(training.program || '', training.programShowDetails);
         document.getElementById('bprEditQuiz').value = training.quizText || '';
         document.getElementById('bprEditVisible').checked = Boolean(training.visible);
         bprUpdateTrainingFormVisibility();
@@ -8886,6 +8915,7 @@
             shortDescription: document.getElementById('bprEditShort').value.trim(),
             fullDescription: document.getElementById('bprEditFull').value.trim(),
             program: document.getElementById('bprEditProgram').value.trim(),
+            programShowDetails: document.getElementById('trainingScheduleShowDetails')?.checked === true,
             quizText,
             visible: document.getElementById('bprEditVisible').checked
         };
@@ -11201,6 +11231,9 @@ function trainingScheduleAddRow(item={}) {
     row.querySelector('button').addEventListener('click',()=>{row.remove();trainingScheduleSync();});
     row.querySelectorAll('input,textarea').forEach(el=>el.addEventListener('input',trainingScheduleSync));
     host.appendChild(row);
+    const details=row.querySelector('.training-schedule-details');
+    const show=document.getElementById('trainingScheduleShowDetails')?.checked === true;
+    details.hidden=!show; details.disabled=!show;
 }
 function trainingScheduleRead() {
     return [...(document.querySelectorAll('#trainingScheduleRows .training-schedule-row')||[])].map(row=>({
@@ -11213,11 +11246,24 @@ function trainingScheduleSync(){
     const store=document.getElementById('bprEditProgram');
     if(store) store.value=JSON.stringify(trainingScheduleRead());
 }
-function trainingScheduleLoad(text) {
+function trainingScheduleToggleDetails() {
+    const show=document.getElementById('trainingScheduleShowDetails')?.checked === true;
+    document.getElementById('trainingScheduleEditor')?.classList.toggle('schedule-show-details', show);
+    document.querySelectorAll('#trainingScheduleRows .training-schedule-details').forEach(field=>{
+        field.hidden=!show;
+        field.disabled=!show;
+    });
+    trainingScheduleSync();
+}
+function trainingScheduleLoad(text, showDetails) {
     const host=document.getElementById('trainingScheduleRows');if(!host)return;
     host.innerHTML='';
-    trainingScheduleParse(text).forEach(x=>trainingScheduleAddRow(x));
+    const rows=trainingScheduleParse(text);
+    const checkbox=document.getElementById('trainingScheduleShowDetails');
+    if(checkbox) checkbox.checked = typeof showDetails === 'boolean' ? showDetails : rows.some(row=>!!row.details);
+    rows.forEach(x=>trainingScheduleAddRow(x));
     const store=document.getElementById('bprEditProgram');if(store)store.value=text||'';
+    trainingScheduleToggleDetails();
 }
 function trainingScheduleToggleImport(){
     const box=document.getElementById('trainingScheduleImport');if(box) box.hidden=!box.hidden;
@@ -11231,26 +11277,28 @@ function trainingScheduleImportRows(){
     trainingScheduleSync();input.value='';
     document.getElementById('trainingScheduleImport').hidden=true;
 }
-function trainingScheduleRender(text){
+function trainingScheduleRender(text, showDetails){
     const rows=trainingScheduleParse(text);
     if(!rows.length)return '';
-    return '<div class="training-schedule-table-wrap"><table class="training-schedule-table"><thead><tr><th>Час</th><th>Тема</th><th>Зміст</th></tr></thead><tbody>'+
-       rows.map(r=>'<tr><td>'+trainingScheduleEscape(r.time)+'</td><td>'+trainingScheduleEscape(r.topic)+'</td><td>'+trainingScheduleEscape(r.details)+'</td></tr>').join('')+
-       '</tbody></table></div>';
+    const details = typeof showDetails === 'boolean' ? showDetails : rows.some(r=>!!r.details);
+    return '<div class="training-schedule-table-wrap"><table class="training-schedule-table'+(details?'':' training-schedule-two-cols')+'"><thead><tr><th>Час</th><th>Тема</th>'+(details?'<th>Зміст</th>':'')+'</tr></thead><tbody>'+rows.map(r=>'<tr><td>'+trainingScheduleEscape(r.time)+'</td><td>'+trainingScheduleEscape(r.topic)+'</td>'+(details?'<td>'+trainingScheduleEscape(r.details)+'</td>':'')+'</tr>').join('')+'</tbody></table></div>';
 }
 function trainingFormatDescription(text){
     const esc=trainingScheduleEscape;
-    const raw=String(text||'').replace(/\r/g,'').replace(/\s*([🔹🔸🔷♦️◆])\s*/g,'\n$1 ');
+    // Replacement characters come from damaged legacy Unicode data. They are not actual bullets.
+    // Treat a standalone replacement character as a broken bullet and remove it.
+    let raw=String(text||'').replace(/\r/g,'').replace(/(^|\n)\s*\uFFFD\s*(?=\S)/gu,'$1🔹 ').replace(/\uFFFD/g,'');
+    raw=raw.replace(/\s*([🔹🔸🔷♦️◆])\s*/gu,'\n$1 ');
     const lines=raw.split(/\n/);
     let items=[],out=[];
-    const flush=()=>{if(items.length){out.push('<ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>');items=[];}};
+    const flush=()=>{if(items.length){out.push('<ul class="training-description-list">'+items.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>');items=[];}};
     for(const line of lines){
-       const trimmed=line.trim();
-       if(!trimmed){flush();continue;}
-       if(/^[🔹🔸🔷◆•●▪\-]/u.test(trimmed)){items.push(trimmed.replace(/^[🔹🔸🔷◆•●▪\-]\s*/u,''));continue;}
-       flush();out.push('<p>'+esc(trimmed)+'</p>');
-    }flush();
-    return out.join('');
+        const trimmed=line.trim();
+        if(!trimmed){flush();continue;}
+        if(/^[🔹🔸🔷◆•●▪]/u.test(trimmed)){const item=trimmed.replace(/^[🔹🔸🔷◆•●▪]\s*/u,'').trim();if(item)items.push(item);continue;}
+        flush();out.push('<p>'+esc(trimmed)+'</p>');
+    }
+    flush();return out.join('');
 }
 </script>
 </body>
