@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="47">
+    <meta name="site-build" content="48">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3578,7 +3578,7 @@
     }
 
 </style>
-    <!-- INWHITE build 47: non-blocking startup + safe update check -->
+    <!-- INWHITE build 48: non-blocking startup + safe update check -->
 </head>
 <body>
 
@@ -4103,7 +4103,7 @@
                 <div class="bpr-topbar" style="margin-bottom: 24px;">
                     <div>
                         <h2 class="bpr-panel-title">Адмін-панель сайту</h2>
-                        <div class="admin-v16-badge">● Admin v47</div>
+                        <div class="admin-v16-badge">● Admin v48</div>
                         <p class="bpr-panel-subtitle">
                             Тут можна змінювати основну інформацію сайту, показувати або приховувати сторінки,
                             редагувати команду, прайс і навчальні заходи. Застарілі дублюючі поля приховані.
@@ -4651,7 +4651,8 @@
 
                 <div class="admin-section" data-admin-panel="training">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Навчальні заходи</h3>
-                    <p class="bpr-panel-subtitle">Онлайн-заходи мають запис, тест і сертифікат. Офлайн-заходи ведуть на ваше посилання Google Forms.</p>
+                    <button type="button" class="bpr-btn bpr-btn-primary" style="margin:14px 0" onclick="bprCreateTraining()">＋ Створити новий захід</button>
+                    <p class="bpr-panel-subtitle">Створіть будь-яку кількість заходів. Налаштовуйте реєстрацію, оплату, запис і кнопки окремо для кожного заходу.</p>
                     <div class="bpr-inline-actions" style="margin-bottom: 18px;">
                         
                     </div>
@@ -4688,6 +4689,11 @@
                                 <label for="bprEditPoints">Кількість балів БПР</label>
                                 <input id="bprEditPoints" type="number" min="0" required>
                             </div>
+                            <label class="bpr-field bpr-checkbox"><input id="bprShowPrice" type="checkbox" checked onchange="bprUpdateTrainingFormVisibility()"> Показувати вартість на сайті</label>
+                            <label class="bpr-field bpr-checkbox"><input id="bprShowRegister" type="checkbox" checked onchange="bprUpdateTrainingFormVisibility()"> Показувати кнопку реєстрації</label>
+                            <label class="bpr-field bpr-checkbox"><input id="bprShowRecording" type="checkbox" checked onchange="bprUpdateTrainingFormVisibility()"> Показувати кнопку перегляду запису</label>
+                            <label class="bpr-field bpr-checkbox"><input id="bprShowPayment" type="checkbox" onchange="bprUpdateTrainingFormVisibility()"> Показувати кнопку оплати</label>
+                            <label class="bpr-field bpr-checkbox"><input id="bprShowDetails" type="checkbox" checked> Показувати кнопку «Детальніше»</label>
                             <div class="bpr-field">
                                 <label for="bprEditPrice">Вартість</label>
                                 <input id="bprEditPrice" placeholder="1200 грн">
@@ -4733,8 +4739,11 @@
                                 <input id="bprEditCertificateDigits" type="number" min="5" max="8" required>
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="bprEditImage">Посилання на картинку</label>
-                                <input id="bprEditImage" placeholder="assets/pocus.png або https://...">
+                                <label for="bprEditImage">Фото-прев’ю заходу</label>
+                                <input id="bprEditImageFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="bprUploadTrainingImage(event)">
+                                <img id="bprTrainingImagePreview" alt="Прев’ю тренінгу" style="display:block;width:min(100%,340px);height:185px;object-fit:cover;border-radius:16px;margin:12px 0;border:1px solid #e8ddd0">
+                                <div class="bpr-note">Фото завантажується і стискається автоматично. Можна також вказати шлях нижче.</div>                                <label for="bprEditImage">Посилання на картинку</label>
+                                <input id="bprEditImage" placeholder="Необов’язково: assets/photo.jpg або https://..." oninput="bprPreviewTrainingImage()">
                                 <p class="bpr-note">Для файлів із GitHub використовуйте assets/назва-файлу.png. Якщо випадково написати assest або outputs/assets, сайт виправить шлях під час збереження.</p>
                             </div>
                             <div class="bpr-field">
@@ -4763,7 +4772,7 @@
                             </div>
                             <div class="bpr-field bpr-full">
                                 <label for="bprEditQuiz">Тестові питання</label>
-                                <textarea id="bprEditQuiz" required></textarea>
+                                <textarea id="bprEditQuiz"></textarea>
                                 <p class="bpr-note">
                                     Формат одного питання: питання | відповідь 1 | відповідь 2 | відповідь 3 | відповідь 4 | номер правильної відповіді від 1 до 4.
                                     Має бути 10 рядків.
@@ -8229,11 +8238,7 @@
         supabaseAccessToken = sessionStorage.getItem(SUPABASE_TOKEN_STORAGE) || '';
         const defaultTrainings = bprDefaultTrainings();
         const storedTrainings = bprReadStorage(BPR_TRAININGS_STORAGE, defaultTrainings);
-        defaultTrainings.forEach(defaultTraining => {
-            if (!storedTrainings.some(training => training.id === defaultTraining.id)) {
-                storedTrainings.push(defaultTraining);
-            }
-        });
+        // Defaults are only seeded when no saved data exists. Never resurrect deleted events.
         bprTrainings = storedTrainings.map(training => {
             const category = training.category || 'online';
             return {
@@ -8288,8 +8293,8 @@
                     ${bprRenderEventDetails(training)}
                     <p>${bprEscapeText(training.shortDescription)}</p>
                     <div class="bpr-card-footer">
-                        <span>${bprEscapeText(training.price || 'Вартість уточнюється')}</span>
-                        <span>${(training.category || 'online') === 'offline' ? 'Реєстрація' : 'Детальніше'}</span>
+                        <span>${training.showPrice === false ? '' : bprEscapeText(training.price || '')}</span>
+                        <span>${training.showDetails === false ? '' : ((training.category || 'online') === 'offline' ? 'Детальніше' : 'Детальніше')}</span>
                     </div>
                 </div>
             </article>
@@ -8304,7 +8309,7 @@
         document.getElementById('bprModalImage').src = adminNormalizeImageValue(training.image) || bprImageData('Навчальний захід');
         document.getElementById('bprModalTitle').textContent = training.title;
         document.getElementById('bprModalDescription').textContent = training.fullDescription;
-        document.getElementById('bprModalPrice').textContent = 'Вартість: ' + (training.price || 'уточнюється');
+        document.getElementById('bprModalPrice').textContent = training.showPrice === false ? '' : (training.price ? 'Вартість: ' + training.price : '');
         document.getElementById('bprModalMeta').innerHTML = `
             <span class="bpr-pill">${bprEscapeText(training.type)}</span>
             <span class="bpr-pill bpr-pill-muted">${bprEscapeText(training.mode)}</span>
@@ -8313,11 +8318,11 @@
         document.getElementById('bprModalDetails').innerHTML = bprRenderEventDetails(training);
         const isOffline = (training.category || 'online') === 'offline';
         const hasRecording = training.hasRecording === true && Boolean(training.recordingUrl);
-        document.getElementById('bprRegisterForm').hidden = isOffline;
-        document.getElementById('bprOfflineRegistrationBox').hidden = !isOffline;
+        document.getElementById('bprRegisterForm').hidden = isOffline || training.showRegister === false;
+        document.getElementById('bprOfflineRegistrationBox').hidden = !isOffline || training.showRegister === false;
         document.getElementById('bprOfflineRegistrationLink').href = training.googleFormUrl || '#';
         const offlineRecordingLink = document.getElementById('bprOfflineRecordingLink');
-        const showOfflineRecording = isOffline && hasRecording;
+        const showOfflineRecording = isOffline && hasRecording && training.showRecording !== false;
         offlineRecordingLink.hidden = !showOfflineRecording;
         offlineRecordingLink.style.display = showOfflineRecording ? '' : 'none';
         offlineRecordingLink.href = hasRecording ? training.recordingUrl : '#';
@@ -8389,20 +8394,22 @@
         document.getElementById('bprParticipantName').textContent = participant.fullName;
         document.getElementById('bprParticipantStatus').textContent = paid ? 'Оплата підтверджена, доступ відкрито' : 'Зареєстровано, очікується оплата';
 
+        const accessGranted = paid || training.showPayment === false;
         const recordingLink = document.getElementById('bprRecordingLink');
         recordingLink.href = training.recordingUrl || '#';
-        recordingLink.style.opacity = paid ? '1' : '0.45';
-        recordingLink.style.pointerEvents = paid ? 'auto' : 'none';
+        recordingLink.style.opacity = accessGranted ? '1' : '0.45';
+        recordingLink.style.pointerEvents = accessGranted && training.showRecording !== false ? 'auto' : 'none';
+        recordingLink.hidden = training.showRecording === false;
 
         const startButton = document.querySelector('#bprCoursePanel button[onclick="bprStartQuiz()"]');
         if (startButton) {
-            startButton.disabled = !paid;
-            startButton.style.opacity = paid ? '1' : '0.45';
+            startButton.disabled = !accessGranted || !training.quizText?.trim();
+            startButton.style.opacity = startButton.disabled ? '0.45' : '1';
         }
 
         const paymentLink = document.getElementById('bprPaymentLink');
         paymentLink.href = training.paymentUrl || '#';
-        document.getElementById('bprPaymentBox').hidden = paid;
+        document.getElementById('bprPaymentBox').hidden = paid || training.showPayment === false;
         document.getElementById('bprCoursePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -8667,6 +8674,11 @@
         document.getElementById('bprEditMode').value = training.mode || '';
         document.getElementById('bprEditPoints').value = training.points || 0;
         document.getElementById('bprEditPrice').value = training.price || '';
+        document.getElementById('bprShowPrice').checked=training.showPrice !== false;
+        document.getElementById('bprShowRegister').checked=training.showRegister !== false;
+        document.getElementById('bprShowRecording').checked=training.showRecording !== false;
+        document.getElementById('bprShowPayment').checked=training.showPayment === true || (training.showPayment == null && !!training.paymentUrl && training.price !== '');
+        document.getElementById('bprShowDetails').checked=training.showDetails !== false;
         document.getElementById('bprEditStartDate').value = training.startDate || '';
         document.getElementById('bprEditStartTime').value = training.startTime || '';
         document.getElementById('bprEditDurationHours').value = training.durationHours || '';
@@ -8692,6 +8704,7 @@
         document.getElementById('bprEditQuiz').value = training.quizText || bprDefaultQuizText();
         document.getElementById('bprEditVisible').checked = Boolean(training.visible);
         bprUpdateTrainingFormVisibility();
+        bprPreviewTrainingImage();
         bprRenderDeveloperTrainingList();
     }
 
@@ -8708,6 +8721,11 @@
             mode: bprActiveTrainingCategory === 'offline' ? 'Офлайн, очна участь' : 'Онлайн, запис',
             points: 5,
             price: '',
+            showPrice: false,
+            showPayment: false,
+            showRegister: true,
+            showRecording: true,
+            showDetails: true,
             startDate: '',
             startTime: '',
             durationHours: '',
@@ -8732,6 +8750,25 @@
         bprSaveState();
         bprRenderTrainingCards();
         bprFillTrainingForm(training);
+        document.querySelectorAll('#bprTrainingForm details.training-admin-group').forEach((g,i)=>g.open=i===0);
+        document.getElementById('bprEditTitle')?.focus();
+        document.getElementById('bprTrainingForm')?.scrollIntoView({block:'start',behavior:'smooth'});
+    }
+
+    async function bprUploadTrainingImage(event) {
+        const file=event.target.files?.[0];
+        if(!file) return;
+        if(!file.type.startsWith('image/')) {alert('Оберіть фото JPG, PNG або WebP');return;}
+        try {
+            const data=await adminHeroCompressImage(file);
+            document.getElementById('bprEditImage').value=data;
+            bprPreviewTrainingImage();
+        } catch(e) {alert('Не вдалося прочитати фото: '+e.message);}
+        event.target.value='';
+    }
+    function bprPreviewTrainingImage() {
+        const img=document.getElementById('bprTrainingImagePreview');
+        if(img) img.src=adminNormalizeImageValue(document.getElementById('bprEditImage')?.value || '') || bprImageData('Навчальний захід');
     }
 
     function bprValidateQuizText(quizText) {
@@ -8744,7 +8781,7 @@
         adminSaveHeroImageFields();
         const quizText = document.getElementById('bprEditQuiz').value.trim();
         const category = document.getElementById('bprEditCategory').value;
-        if (category === 'online' && !bprValidateQuizText(quizText)) {
+        if (category === 'online' && quizText && !bprValidateQuizText(quizText)) {
             alert('Тест має містити рівно 10 коректних питань у вказаному форматі.');
             return;
         }
@@ -8759,6 +8796,11 @@
             mode: document.getElementById('bprEditMode').value.trim(),
             points: Number(document.getElementById('bprEditPoints').value) || 0,
             price: document.getElementById('bprEditPrice').value.trim(),
+            showPrice: document.getElementById('bprShowPrice').checked,
+            showPayment: document.getElementById('bprShowPayment').checked,
+            showRegister: document.getElementById('bprShowRegister').checked,
+            showRecording: document.getElementById('bprShowRecording').checked,
+            showDetails: document.getElementById('bprShowDetails').checked,
             startDate: document.getElementById('bprEditStartDate').value,
             startTime: document.getElementById('bprEditStartTime').value,
             durationHours: document.getElementById('bprEditDurationHours').value,
@@ -8793,7 +8835,9 @@
         bprSetTrainingCategory(bprActiveTrainingCategory);
         bprRenderTrainingCards();
         bprRenderDeveloperTrainingList();
-        alert('Захід збережено.');
+        if (supabaseAccessToken) supabaseSaveSiteState({silentAuthPrompt:true});
+        else adminRequireSupabaseLogin();
+        alert('Захід збережено локально. Для публікації на всіх пристроях перевірте статус синхронізації з Supabase.');
     }
 
     function bprDeleteTraining() {
@@ -8802,6 +8846,7 @@
         if (!confirm('Видалити цей навчальний захід?')) return;
         bprTrainings = bprTrainings.filter(training => training.id !== id);
         bprSaveState();
+        if(supabaseAccessToken) supabaseSaveSiteState({silentAuthPrompt:true});
         bprRenderTrainingCards();
         bprRenderDeveloperTrainingList();
         if (bprTrainings.length) {
@@ -9310,12 +9355,12 @@
         grid.parentNode.insertBefore(stack, grid);
 
         const groups = [
-            {title:'1. Основна інформація', open:true, ids:['bprEditTitle','bprEditType','bprEditCategory','bprEditMode','bprEditPoints','bprEditPrice','bprEditVisible']},
+            {title:'1. Основна інформація', open:true, ids:['bprEditTitle','bprEditCategory','bprEditType','bprEditMode','bprEditShort','bprEditVisible']},
             {title:'2. Дата та місце', open:true, ids:['bprEditStartDate','bprEditStartTime','bprEditDurationHours','bprEditLocationCity','bprEditLocationVenue']},
-            {title:'3. Опис і зображення', open:true, ids:['bprEditImage','bprEditShort','bprEditFull']},
-            {title:'4. Реєстрація, оплата та запис', open:false, ids:['bprEditPaymentUrl','bprEditHasRecording','bprEditRecordingUrl','bprEditGoogleFormUrl']},
+            {title:'3. Опис і зображення', open:true, ids:['bprEditImage','bprEditFull']},
+            {title:'4. Реєстрація, оплата та запис', open:false, ids:['bprShowPrice','bprEditPrice','bprShowPayment','bprEditPaymentUrl','bprShowRegister','bprShowRecording','bprShowDetails','bprEditHasRecording','bprEditRecordingUrl','bprEditGoogleFormUrl']},
             {title:'5. Сертифікат БПР — технічні поля', open:false, ids:['bprEditYear','bprEditProvider','bprEditTrainingNumber','bprEditCertificateNext','bprEditCertificateDigits']},
-            {title:'6. Тест для онлайн-курсу', open:false, ids:['bprEditQuiz']}
+            {title:'6. Тест для онлайн-курсу (необов’язково)', open:false, ids:['bprEditQuiz']}
         ];
         groups.forEach(group => {
             const details = document.createElement('details');
@@ -9346,6 +9391,14 @@
             const field = document.getElementById(id)?.closest('.bpr-field');
             if (field) field.hidden = !isOffline;
         });
+        const showField=(id, show)=>{const f=document.getElementById(id)?.closest('.bpr-field');if(f)f.hidden=!show;};
+        const online=category==='online';
+        showField('bprEditPrice', document.getElementById('bprShowPrice')?.checked);
+        showField('bprEditPaymentUrl', document.getElementById('bprShowPayment')?.checked);
+        showField('bprEditHasRecording', online);
+        showField('bprEditRecordingUrl', online && document.getElementById('bprShowRecording')?.checked);
+        showField('bprShowRecording', online);
+        const recording=document.getElementById('bprEditRecordingUrl'); if(recording) recording.required=false;
         const googleField = document.getElementById('bprEditGoogleFormUrl')?.closest('.bpr-field');
         if (googleField) googleField.hidden = !isOffline;
         const quizField = document.getElementById('bprEditQuiz')?.closest('.bpr-field');
