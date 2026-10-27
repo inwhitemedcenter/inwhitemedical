@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="55">
+    <meta name="site-build" content="56">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -3620,6 +3620,7 @@
     .bpr-card-footer:empty { display: none; }
 </style>
     <!-- INWHITE build 48: non-blocking startup + safe update check -->
+<style>#trainingScheduleControls[hidden], #bprModalProgramBox[hidden]{display:none !important}</style>
 </head>
 <body>
 
@@ -4818,6 +4819,8 @@
                                 <label for="bprEditProgram">Програма заходу (показується при відкритті картки)</label>
                                 <div id="trainingScheduleEditor">
                                     <p class="bpr-note">Додавайте рядки по одному або вставте всю програму через вкладку «Швидке вставлення». Обов’язкові лише час і тема; «Зміст» можна ввімкнути за потреби.</p>
+                                    <label class="training-schedule-details-switch"><input type="checkbox" id="trainingScheduleVisible" onchange="trainingScheduleToggleVisibility()"> Показувати програму заходу на сайті</label>
+                                    <div id="trainingScheduleControls">
                                     <label class="training-schedule-details-switch"><input type="checkbox" id="trainingScheduleShowDetails" onchange="trainingScheduleToggleDetails()"> Показувати колонку «Зміст»</label>
                                     <div id="trainingScheduleRows"></div>
                                     <div class="bpr-inline-actions" style="margin-top:12px;flex-wrap:wrap">
@@ -4830,6 +4833,7 @@
                                         <button type="button" class="bpr-btn bpr-btn-primary" onclick="trainingScheduleImportRows()">Додати рядки з тексту</button>
                                     </div>
                                 </div>
+                                    </div><!-- /trainingScheduleControls -->
                                 <textarea id="bprEditProgram" rows="2" hidden aria-hidden="true"></textarea>
                             </div>
                             <div class="bpr-field bpr-full">
@@ -5816,7 +5820,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '51';
+    const SITE_BUILD_VERSION = '56';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -8387,8 +8391,11 @@
         document.getElementById('bprModalDescription').innerHTML = trainingFormatDescription(training.fullDescription || training.shortDescription || '');
         const programBox = document.getElementById('bprModalProgramBox');
         if (programBox) {
-            programBox.hidden = !String(training.program || '').trim();
-            document.getElementById('bprModalProgram').innerHTML = trainingScheduleRender(training.program || '', training.programShowDetails);
+            const renderedProgram = trainingScheduleRender(training.program || '', training.programShowDetails);
+            const rowsExist = trainingScheduleParse(training.program || '').some(row => row.time || row.topic || row.details);
+            const showProgram = training.programVisible !== false && rowsExist && !!renderedProgram;
+            document.getElementById('bprModalProgram').innerHTML = showProgram ? renderedProgram : '';
+            programBox.hidden = !showProgram;
         }
         const priceBox = document.getElementById('bprModalPrice');
         const showCost = training.showPrice !== false && Boolean(String(training.price || '').trim());
@@ -8792,6 +8799,9 @@
         document.getElementById('bprEditFull').value = training.fullDescription || '';
         document.getElementById('bprEditProgram').value = training.program || '';
         trainingScheduleLoad(training.program || '', training.programShowDetails);
+        const programVisible = document.getElementById('trainingScheduleVisible');
+        if (programVisible) programVisible.checked = training.programVisible !== false && trainingScheduleParse(training.program || '').some(row => row.time || row.topic || row.details);
+        trainingScheduleToggleVisibility();
         document.getElementById('bprEditQuiz').value = training.quizText || '';
         document.getElementById('bprEditVisible').checked = Boolean(training.visible);
         bprUpdateTrainingFormVisibility();
@@ -8916,6 +8926,7 @@
             fullDescription: document.getElementById('bprEditFull').value.trim(),
             program: document.getElementById('bprEditProgram').value.trim(),
             programShowDetails: document.getElementById('trainingScheduleShowDetails')?.checked === true,
+            programVisible: document.getElementById('trainingScheduleVisible')?.checked === true,
             quizText,
             visible: document.getElementById('bprEditVisible').checked
         };
@@ -11245,6 +11256,11 @@ function trainingScheduleRead() {
 function trainingScheduleSync(){
     const store=document.getElementById('bprEditProgram');
     if(store) store.value=JSON.stringify(trainingScheduleRead());
+}
+function trainingScheduleToggleVisibility(){
+    const checkbox = document.getElementById('trainingScheduleVisible');
+    const controls = document.getElementById('trainingScheduleControls');
+    if(checkbox && controls) controls.hidden = !checkbox.checked;
 }
 function trainingScheduleToggleDetails() {
     const show=document.getElementById('trainingScheduleShowDetails')?.checked === true;
