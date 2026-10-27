@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="58">
+    <meta name="site-build" content="59">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5827,7 +5827,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '58';
+    const SITE_BUILD_VERSION = '59';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6173,12 +6173,16 @@
     }
 
     function supabaseHeaders(useAdminToken) {
-        const token = useAdminToken && supabaseAccessToken ? supabaseAccessToken : supabaseConfig.publishableKey;
-        return {
+        // Supabase publishable keys are API keys, not JWTs. Anonymous reads
+        // must not send a publishable key as an Authorization Bearer token.
+        const headers = {
             apikey: supabaseConfig.publishableKey,
-            Authorization: 'Bearer ' + token,
             'Content-Type': 'application/json'
         };
+        if (useAdminToken && supabaseAccessToken) {
+            headers.Authorization = 'Bearer ' + supabaseAccessToken;
+        }
+        return headers;
     }
 
     function supabaseCurrentPageUrl() {
@@ -7661,7 +7665,7 @@
                 dirty: localStorage.getItem(SITE_DIRTY_STORAGE)
             };
             if (backup.siteConfig || backup.siteTeam || backup.sitePrices || backup.trainings) {
-                localStorage.setItem('inwhite_data_backup_before_build_58', JSON.stringify(backup));
+                localStorage.setItem('inwhite_data_backup_before_build_59', JSON.stringify(backup));
             }
         } catch (error) { console.warn('Could not create site-data backup', error); }
         localStorage.setItem(SITE_BUILD_STORAGE, SITE_BUILD_VERSION);
