@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="60">
+    <meta name="site-build" content="61">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5217,10 +5217,12 @@
         currentPageName = pageName;
         if (pageName === 'training' && typeof bprTrainings !== 'undefined') {
             const visible = bprTrainings.filter(t => t && t.visible === true);
-            const available = visible.some(t => (t.category || 'online') === bprActiveTrainingCategory);
-            if (!available && visible.length && typeof bprSetTrainingCategory === 'function') {
-                bprSetTrainingCategory(visible[0].category || 'online');
+            if (visible.length && typeof bprSetTrainingCategory === 'function') {
+                const preferred = visible.find(t => (t.category || 'online') === bprActiveTrainingCategory) || visible[0];
+                bprSetTrainingCategory(preferred.category || 'online');
             }
+            // The training page always refreshes server-side content on entry.
+            if (typeof siteRefreshCloudData === 'function') siteRefreshCloudData(true);
         }
         closeMobileMenu();
         const developerPanel = document.getElementById('bprDevPanel');
@@ -5827,7 +5829,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '60';
+    const SITE_BUILD_VERSION = '61';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6540,6 +6542,9 @@
                     return false;
                 }
                 supabaseApplySitePayload(rows[0]);
+                siteCloudLoadConfirmed = true;
+                siteCloudRevision = rows[0].updated_at || '';
+                document.documentElement.removeAttribute('data-inwhite-cloud-error');
                 if (!options.silent) supabaseSetStatus('Дані сайту завантажені з Supabase.');
                 adminRefreshSaveStatus();
                 return true;
@@ -6561,6 +6566,11 @@
             if (!options.silentAuthPrompt) adminRequireSupabaseLogin();
             return false;
         }
+        if (!siteCloudLoadConfirmed) {
+            supabaseSetStatus('Збереження заблоковано: спочатку завантажте актуальні дані з Supabase.');
+            adminSetSaveStatus('Помилка: немає підтвердженої синхронізації', 'error');
+            return false;
+        }
         try {
             supabaseSetStatus('Збереження сайту в Supabase...');
             adminSetSaveStatus('Зберігаю в Supabase…', 'saving');
@@ -6570,6 +6580,10 @@
             const existingRows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=site_prices,site_team,site_config,updated_at', { method:'GET', cache:'no-store' }, false);
             const cloud = existingRows?.[0];
             if (cloud) {
+                // Never overwrite another device's newer edits. Reopen the admin editor and reload first.
+                if (siteCloudRevision && cloud.updated_at && cloud.updated_at !== siteCloudRevision) {
+                    throw new Error('Збереження заблоковано: дані Supabase оновилися в іншому браузері. Завантажте їх із бази перед редагуванням.');
+                }
                 const cloudPrices = Array.isArray(cloud.site_prices) ? cloud.site_prices.length : 0;
                 const cloudTeam = Array.isArray(cloud.site_team) ? cloud.site_team.length : 0;
                 if ((cloudPrices >= 10 && sitePrices.length <= 5) ||
@@ -6591,6 +6605,7 @@
                 if (!expected || !actual || actual.title !== expected.title) throw new Error('Не підтверджено запис заходу в Supabase');
             }
             const savedAt = payload.updated_at || new Date().toISOString();
+            siteCloudRevision = savedAt;
             localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, savedAt);
             localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, savedAt);
             localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
@@ -7666,7 +7681,7 @@
                 dirty: localStorage.getItem(SITE_DIRTY_STORAGE)
             };
             if (backup.siteConfig || backup.siteTeam || backup.sitePrices || backup.trainings) {
-                localStorage.setItem('inwhite_data_backup_before_build_59', JSON.stringify(backup));
+                localStorage.setItem('inwhite_data_backup_before_build_61', JSON.stringify(backup));
             }
         } catch (error) { console.warn('Could not create site-data backup', error); }
         localStorage.setItem(SITE_BUILD_STORAGE, SITE_BUILD_VERSION);
@@ -7716,6 +7731,8 @@
         }
     }
 
+    let siteCloudLoadConfirmed = false;
+    let siteCloudRevision = '';
     let siteLastCloudRefresh = 0;
     async function siteRefreshCloudData(force = true, initialLoad = false) {
         const now = Date.now();
