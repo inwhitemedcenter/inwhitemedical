@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="61">
+    <meta name="site-build" content="62">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4609,6 +4609,19 @@
                         </div>
                     </form>
 
+                    <section style="margin:16px 0;padding:16px;border:1px solid #d7c6a2;border-radius:14px;background:#fffaf0">
+                        <strong style="display:block;margin-bottom:7px">🛡️ Безпека та резервні копії</strong>
+                        <p style="font-size:13px;margin:0 0 12px">Резервна копія завантажується з Supabase, а не з кешу цього браузера. Зберігайте файл у безпечному місці: він може містити персональні дані й фотографії.</p>
+                        <div class="bpr-inline-actions">
+                            <button class="bpr-btn bpr-btn-primary" type="button" onclick="inwhiteExportCloudBackup()">⬇️ Завантажити резервну копію</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteCheckCloudStatus()">🔄 Перевірити синхронізацію</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="document.getElementById('inwhiteBackupImportFile').click()">Переглянути резервну копію</button>
+                            <input id="inwhiteBackupImportFile" type="file" accept="application/json,.json" hidden onchange="inwhitePreviewBackupFile(event)">
+                        </div>
+                        <div id="inwhiteBackupStatus" aria-live="polite" style="font-size:13px;margin-top:10px;white-space:pre-wrap"></div>
+                        <div id="inwhiteBackupPreview" hidden style="margin-top:12px;padding:12px;background:#fff;border-radius:10px"></div>
+                    </section>
+
                     <form id="supabaseLoginForm" onsubmit="supabaseLogin(event)" style="margin-top: 22px;">
                         <div class="bpr-form-grid">
                             <div class="bpr-field">
@@ -5829,7 +5842,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '61';
+    const SITE_BUILD_VERSION = '62';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6325,6 +6338,7 @@
             throw new Error('Supabase не налаштований.');
         }
         const response = await fetch(supabaseConfig.url + path, {
+            cache: 'no-store',
             ...options,
             headers: {
                 ...supabaseHeaders(useAdminToken),
@@ -6549,7 +6563,7 @@
                 adminRefreshSaveStatus();
                 return true;
             } else if (!options.silent) {
-                supabaseSetStatus('У базі ще немає запису сайту. Увійдіть і натисніть «Зберегти зміни».');
+                supabaseSetStatus('Немає запису у Supabase. Збереження заблоковано; зверніться до адміністратора.');
             }
         } catch (error) {
             console.error('INWHITE: не вдалося отримати актуальні дані з Supabase', error);
@@ -6591,11 +6605,25 @@
                     throw new Error('Збереження заблоковано: локальні дані неповні порівняно з Supabase. Спочатку натисніть «Завантажити з бази».');
                 }
             }
-            await supabaseRequest('/rest/v1/inwhite_site_state?on_conflict=id', {
-                method: 'POST',
-                headers: { Prefer: 'resolution=merge-duplicates' },
-                body: JSON.stringify(payload)
+            // Optimistic concurrency: modify existing row only if revision still matches.
+            // No INSERT/UPSERT on normal saves, so an empty or wrong project cannot
+            // silently acquire HTML demo data as the production site state.
+            if (!siteCloudRevision || !cloud?.updated_at) throw new Error('Немає перевіреної версії даних. Завантажте інформацію з бази.');
+            const filter = encodeURIComponent(siteCloudRevision);
+            const writtenRows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&updated_at=eq.' + filter + '&select=updated_at', {
+                method: 'PATCH',
+                headers: { Prefer: 'return=representation' },
+                body: JSON.stringify({
+                    site_config: payload.site_config,
+                    site_team: payload.site_team,
+                    site_prices: payload.site_prices,
+                    bpr_trainings: payload.bpr_trainings,
+                    updated_at: payload.updated_at
+                })
             }, true);
+            if (!Array.isArray(writtenRows) || writtenRows.length !== 1) {
+                throw new Error('Запис не підтверджено. Дані могли змінитися в іншому вікні. Перезавантажте інформацію з бази.');
+            }
             // Verify that the cloud actually contains the edited training after the write.
             if (options.verifyTrainingId) {
                 const fresh = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=bpr_trainings,updated_at', { method:'GET' }, false);
@@ -7681,7 +7709,7 @@
                 dirty: localStorage.getItem(SITE_DIRTY_STORAGE)
             };
             if (backup.siteConfig || backup.siteTeam || backup.sitePrices || backup.trainings) {
-                localStorage.setItem('inwhite_data_backup_before_build_61', JSON.stringify(backup));
+                localStorage.setItem('inwhite_data_backup_before_build_62', JSON.stringify(backup));
             }
         } catch (error) { console.warn('Could not create site-data backup', error); }
         localStorage.setItem(SITE_BUILD_STORAGE, SITE_BUILD_VERSION);
@@ -11387,6 +11415,69 @@ function trainingFormatDescription(text){
     }
     flush();return out.join('');
 }
+</script>
+<script>
+// Admin-only recovery tools. Import is preview-only; never silently write a file to production.
+(function () {
+  const status = (message) => { const el = document.getElementById('inwhiteBackupStatus'); if(el) el.textContent = message; };
+  const counts = (r) => ({
+    prices: Array.isArray(r.site_prices) ? r.site_prices.length : 0,
+    doctors: Array.isArray(r.site_team) ? r.site_team.length : 0,
+    trainings: Array.isArray(r.bpr_trainings) ? r.bpr_trainings.length : 0,
+    services: Array.isArray(r.site_config?.serviceCards) ? r.site_config.serviceCards.length : 0
+  });
+  const cloud = async () => {
+    const r = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=*', { method: 'GET' }, false);
+    if (!Array.isArray(r) || !r[0]) throw Error('У базі Supabase не знайдено запису сайту.');
+    return r[0];
+  };
+  const download = (object, name) => {
+    const blob = new Blob([JSON.stringify(object,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+  };
+  window.inwhiteExportCloudBackup = async function() {
+    try {
+      status('Отримую актуальні дані з Supabase…');
+      const row=await cloud();
+      download({format:'INWHITE_site_state_backup_v1', exportedAt:new Date().toISOString(), source:'supabase', data:row},
+        'INWHITE_Supabase_backup_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');
+      status('✅ Копію завантажено з Supabase. Записів: '+JSON.stringify(counts(row))+'; стан бази: '+(row.updated_at||'невідомо'));
+    } catch(e) { status('❌ Не вдалося створити копію: '+e.message); }
+  };
+  window.inwhiteCheckCloudStatus = async function() {
+    try {
+      status('Перевіряю зв’язок із Supabase…');
+      const row=await cloud();
+      const c=counts(row);
+      const rev = typeof siteCloudRevision !== 'undefined' ? siteCloudRevision : '';
+      status('✅ Supabase доступний. Прайс: '+c.prices+'; спеціалісти: '+c.doctors+'; тренінги: '+c.trainings+'; картки послуг: '+c.services+'\n'+
+        'Оновлено в базі: '+(row.updated_at||'невідомо')+'\n'+
+        (rev && rev!==row.updated_at ? '⚠️ Відкрита адмінпанель має застарілі дані. Завантажте інформацію з бази перед редагуванням.' : 'Версія локально завантажених даних: '+(rev||'ще не підтверджена')));
+    } catch(e) { status('❌ Помилка підключення: '+e.message); }
+  };
+  window.inwhitePreviewBackupFile = async function(event) {
+    const panel=document.getElementById('inwhiteBackupPreview');
+    if(panel) { panel.hidden=true;panel.textContent=''; }
+    try {
+      const file=event.target.files?.[0]; if(!file) return;
+      if(file.size>40*1024*1024) throw Error('Файл більший за 40 МБ.');
+      const raw=JSON.parse(await file.text());
+      let data=raw?.format==='INWHITE_site_state_backup_v1' ? raw.data : null;
+      // Legacy Safari backups consist of serialized localStorage values.
+      if (!data && raw?.inwhite_site_config_v1 && raw?.inwhite_site_prices_v1) {
+        data={site_config:JSON.parse(raw.inwhite_site_config_v1),site_prices:JSON.parse(raw.inwhite_site_prices_v1),
+          site_team:JSON.parse(raw.inwhite_site_team_v1||'[]'), bpr_trainings:JSON.parse(raw.inwhite_bpr_trainings_v1||'[]')};
+      }
+      if (!data || !Array.isArray(data.site_prices) || !Array.isArray(data.site_team) || !Array.isArray(data.bpr_trainings)) throw Error('Невідомий формат або неповні дані.');
+      const c=counts(data);
+      if(panel){panel.hidden=false;panel.textContent='Попередній перегляд: '+file.name+'\nПрайс: '+c.prices+'; спеціалісти: '+c.doctors+'; тренінги: '+c.trainings+'; картки послуг: '+c.services+'\n\n🔒 ЦЕ ЛИШЕ ПЕРЕГЛЯД. Дані в Supabase НЕ змінено. Для відновлення передайте файл адміністратору.';}
+      status('Файл перевірено. Автоматичний імпорт вимкнено, щоб запобігти випадковій втраті даних.');
+    } catch(e) { status('❌ Не вдається прочитати копію: '+e.message); }
+    finally { event.target.value=''; }
+  };
+})();
 </script>
 </body>
 </html>
