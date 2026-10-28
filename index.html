@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="62">
+    <meta name="site-build" content="63">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4605,7 +4605,7 @@
                         </div>
                         <div class="bpr-inline-actions">
                             <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти підключення</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseLoadSiteState()">Завантажити з бази</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">Завантажити з бази</button>
                         </div>
                     </form>
 
@@ -4615,6 +4615,7 @@
                         <div class="bpr-inline-actions">
                             <button class="bpr-btn bpr-btn-primary" type="button" onclick="inwhiteExportCloudBackup()">⬇️ Завантажити резервну копію</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteCheckCloudStatus()">🔄 Перевірити синхронізацію</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">✅ Підтвердити синхронізацію й завантажити з бази</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="document.getElementById('inwhiteBackupImportFile').click()">Переглянути резервну копію</button>
                             <input id="inwhiteBackupImportFile" type="file" accept="application/json,.json" hidden onchange="inwhitePreviewBackupFile(event)">
                         </div>
@@ -5842,7 +5843,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '62';
+    const SITE_BUILD_VERSION = '63';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6390,7 +6391,12 @@
             supabaseAccessToken = data.access_token;
             sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
             document.getElementById('supabaseAdminPassword').value = '';
-            supabaseSetStatus('Supabase: адмін увійшов, можна зберігати зміни.');
+            supabaseSetStatus('Supabase: вхід успішний. Перевіряю стан даних…');
+            if (!siteCloudLoadConfirmed && localStorage.getItem(SITE_DIRTY_STORAGE) !== 'true') {
+                await supabaseLoadSiteState({ discardLocalChanges: true });
+            } else if (!siteCloudLoadConfirmed) {
+                supabaseSetStatus('Вхід успішний. Є локальні незбережені зміни: натисніть «Підтвердити синхронізацію й завантажити з бази» (спочатку створиться локальна копія).');
+            }
             adminRefreshSaveStatus();
         } catch (error) {
             supabaseSetStatus('Помилка входу: перевірте email, пароль і чи підтверджений користувач у Supabase Auth.');
@@ -6537,6 +6543,23 @@
         bprRenderDeveloperTrainingList();
     }
 
+    async function inwhiteExplicitCloudRefresh() {
+        const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
+        if (dirty) {
+            // Save a recoverable snapshot of the current local draft before overwriting it.
+            const backup = {createdAt:new Date().toISOString(),source:'local-draft-before-sync',
+                site_config:siteConfig,site_team:siteTeam,site_prices:sitePrices,bpr_trainings:bprTrainings};
+            const blob = new Blob([JSON.stringify(backup,null,2)], {type:'application/json'});
+            const url=URL.createObjectURL(blob),a=document.createElement('a');
+            a.href=url;a.download='INWHITE_local_draft_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+            document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+            if (!confirm('Виявлено локальні зміни. Завантажено їхню резервну копію. Завантажити актуальний стан із Supabase? Локальні незбережені зміни в редакторі буде замінено.')) return false;
+        }
+        const ok = await supabaseLoadSiteState({discardLocalChanges:true});
+        if (ok) supabaseSetStatus('✅ Синхронізацію підтверджено. Дані редактора завантажено з Supabase. Тепер можете вносити зміни та зберігати.');
+        return ok;
+    }
+
     async function supabaseLoadSiteState(options = {}) {
         try {
             supabaseConfig = supabaseNormalizeConfig(supabaseConfig);
@@ -6551,7 +6574,7 @@
                 // Public visitors must always receive the newest cloud data.
                 // We only protect newer local edits while an administrator is actively working.
                 if (localEditsBelongToAdmin && dirty && !options.discardLocalChanges) {
-                    if (!options.silent) supabaseSetStatus('Локальні зміни новіші за базу. Вони не були перезаписані. Натисніть «Зберегти зміни» після входу адміністратора.');
+                    if (!options.silent) supabaseSetStatus('Синхронізацію не підтверджено: є локальні зміни. Використайте «Підтвердити синхронізацію й завантажити з бази», локальну копію буде завантажено перед заміною.');
                     adminRefreshSaveStatus();
                     return false;
                 }
