@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="66">
+    <meta name="site-build" content="67">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5843,7 +5843,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '66';
+    const SITE_BUILD_VERSION = '67';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6549,23 +6549,34 @@
         bprRenderDeveloperTrainingList();
     }
 
+    function inwhiteDownloadLocalDraftBeforeRefresh() {
+        const draft = {
+            format:'INWHITE_local_draft_before_cloud_refresh_v67',
+            exportedAt:new Date().toISOString(),
+            site_config:siteConfig,site_team:siteTeam,site_prices:sitePrices,bpr_trainings:bprTrainings
+        };
+        const json=JSON.stringify(draft);
+        const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+        const link=document.createElement('a');
+        link.href=url;
+        link.download='INWHITE_local_draft_before_refresh_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+        document.body.appendChild(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }
     async function inwhiteExplicitCloudRefresh() {
+        // localStorage commonly fills up because photos are base64. A large
+        // backup must be downloaded, not stored again in localStorage.
         const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
         if (dirty) {
-            // Keep a local recovery snapshot WITHOUT triggering an unwanted download.
-            try {
-                localStorage.setItem('inwhite_backup_before_manual_cloud_refresh', JSON.stringify({
-                    savedAt:new Date().toISOString(), site_config:siteConfig, site_team:siteTeam,
-                    site_prices:sitePrices, bpr_trainings:bprTrainings
-                }));
-            } catch (error) {
-                supabaseSetStatus('Не вдалося створити локальну копію. Завантажте резервну копію вручну перед заміною.');
+            try { inwhiteDownloadLocalDraftBeforeRefresh(); }
+            catch (error) {
+                supabaseSetStatus('Не вдалося завантажити локальну копію: '+(error?.message||error)+'. Дані не замінено.');
                 return false;
             }
-            if (!confirm('Є локальні незбережені зміни. Замінити їх поточними даними із Supabase? Автоматичну локальну копію створено в цьому браузері. JSON завантажувати не потрібно.')) return false;
+            if (!confirm('Є локальні зміни. Завантажено їхню JSON-копію у ваші Завантаження. Переконайтеся, що файл збережено. Замінити поточні дані редактора актуальним станом Supabase?')) return false;
         }
         const ok = await supabaseLoadSiteState({discardLocalChanges:true});
-        if (ok) supabaseSetStatus('✅ Дані редактора оновлено з Supabase. Можете редагувати та зберігати.');
+        if (ok) supabaseSetStatus('✅ Дані редактора отримано з Supabase. Можете редагувати й зберігати.');
         return ok;
     }
 
@@ -7722,22 +7733,26 @@
         `).join('');
     }
 
+    // v67: storage quota is not a cloud failure. Photos encoded in base64 can
+    // exhaust localStorage; the authoritative Supabase payload lives in memory.
+    function inwhiteStorageSetSafe(key, value) {
+        try { localStorage.setItem(key, value); return true; }
+        catch (error) { console.warn('INWHITE: localStorage full for ' + key, error?.name || error); return false; }
+    }
     function adminSaveSiteState(options = {}) {
-        localStorage.setItem(SITE_CONFIG_STORAGE, JSON.stringify(siteConfig));
-        localStorage.setItem(SITE_TEAM_STORAGE, JSON.stringify(siteTeam));
-        localStorage.setItem(SITE_PRICES_STORAGE, JSON.stringify(sitePrices));
+        inwhiteStorageSetSafe(SITE_CONFIG_STORAGE, JSON.stringify(siteConfig));
+        inwhiteStorageSetSafe(SITE_TEAM_STORAGE, JSON.stringify(siteTeam));
+        inwhiteStorageSetSafe(SITE_PRICES_STORAGE, JSON.stringify(sitePrices));
         const timestamp = options.updatedAt || new Date().toISOString();
-        localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, timestamp);
-
+        inwhiteStorageSetSafe(SITE_LOCAL_UPDATED_STORAGE, timestamp);
         const isAdminEditing = options.markDirty === true || !!supabaseAccessToken || bprDeveloperUnlocked === true;
         if (options.fromCloud) {
-            localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, timestamp);
-            localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
+            inwhiteStorageSetSafe(SITE_SYNCED_UPDATED_STORAGE, timestamp);
+            inwhiteStorageSetSafe(SITE_DIRTY_STORAGE, 'false');
         } else if (isAdminEditing) {
-            localStorage.setItem(SITE_DIRTY_STORAGE, 'true');
+            inwhiteStorageSetSafe(SITE_DIRTY_STORAGE, 'true');
         } else {
-            // Rendering/normalization on a visitor device is only a cache write, not an edit.
-            localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
+            inwhiteStorageSetSafe(SITE_DIRTY_STORAGE, 'false');
         }
         adminRefreshSaveStatus();
     }
@@ -8411,8 +8426,9 @@
     }
 
     function bprSaveState() {
-        localStorage.setItem(BPR_TRAININGS_STORAGE, JSON.stringify(bprTrainings));
-        localStorage.setItem(BPR_PARTICIPANTS_STORAGE, JSON.stringify(bprParticipants));
+        // Save best-effort locally; Supabase is authoritative for training data.
+        inwhiteStorageSetSafe(BPR_TRAININGS_STORAGE, JSON.stringify(bprTrainings));
+        inwhiteStorageSetSafe(BPR_PARTICIPANTS_STORAGE, JSON.stringify(bprParticipants));
     }
 
     function bprFindTraining(trainingId) {
