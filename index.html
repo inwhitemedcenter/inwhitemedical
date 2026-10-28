@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="65">
+    <meta name="site-build" content="66">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5843,7 +5843,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '65';
+    const SITE_BUILD_VERSION = '66';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6397,7 +6397,7 @@
             if (!siteCloudLoadConfirmed) {
                 const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
                 if (dirty) {
-                    supabaseSetStatus('Вхід успішний. У браузері є локальна чернетка. Натисніть «Оновити редактор із бази», щоб підтвердити версію Supabase. Перед заміною чернетка збережеться локально.');
+                    supabaseSetStatus('Вхід успішний. Виявлено локальну чернетку. Якщо вона не потрібна — натисніть «ОНОВИТИ РЕДАКТОР ІЗ БАЗИ». Якщо потрібна — збережіть її копію, перш ніж замінювати.');
                 } else {
                     const loaded = await supabaseLoadSiteState({discardLocalChanges:true});
                     if (!loaded) supabaseSetStatus('Вхід успішний, але завантаження бази не підтверджене. Скористайтеся «Оновити редактор із бази».');
@@ -6612,10 +6612,34 @@
             if (!options.silentAuthPrompt) adminRequireSupabaseLogin();
             return false;
         }
+        // The browser may have lost its in-memory sync flag after a deploy/reload.
+        // Revalidate against Supabase rather than trapping the admin in a login/reload loop.
         if (!siteCloudLoadConfirmed) {
-            supabaseSetStatus('Збереження заблоковано: спочатку завантажте актуальні дані з Supabase.');
-            adminSetSaveStatus('Помилка: немає підтвердженої синхронізації', 'error');
-            return false;
+            try {
+                const latest = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=updated_at,site_prices,site_team', {method:'GET'}, false);
+                const remote = latest?.[0];
+                const lastSynced = localStorage.getItem(SITE_SYNCED_UPDATED_STORAGE) || '';
+                if (remote?.updated_at && lastSynced && remote.updated_at === lastSynced &&
+                    sitePrices.length >= 6 && siteTeam.length >= 3) {
+                    siteCloudRevision = remote.updated_at;
+                    siteCloudLoadConfirmed = true;
+                    supabaseSetStatus('✅ Попередню синхронізацію підтверджено базою. Зберігаю зміни…');
+                } else if (remote?.updated_at && localStorage.getItem(SITE_DIRTY_STORAGE) !== 'true') {
+                    // Nothing in the editor to preserve: adopt current authoritative cloud state.
+                    const loaded = await supabaseLoadSiteState({discardLocalChanges:true});
+                    if (!loaded) throw new Error('Не вдалося завантажити актуальні дані.');
+                    supabaseSetStatus('✅ Дані бази завантажені. Якщо ви редагували поля перед цим, перевірте їх повторно.');
+                    adminSetSaveStatus('Синхронізовано · перевірте зміни', 'success');
+                    return false; // Never silently turn a refresh into a write.
+                } else {
+                    throw new Error('База оновилася після останньої синхронізації або є незбережена чернетка. Натисніть «ОНОВИТИ РЕДАКТОР ІЗ БАЗИ»; локальну копію буде збережено.');
+                }
+            } catch (error) {
+                const msg = error?.message || 'Невідома помилка';
+                supabaseSetStatus('Збереження зупинено: ' + msg);
+                adminSetSaveStatus('Синхронізація потрібна · див. БАЗА', 'error');
+                return false;
+            }
         }
         try {
             supabaseSetStatus('Збереження сайту в Supabase...');
@@ -11189,7 +11213,8 @@
         siteConfig=adminNormalizeSiteConfig(siteConfig||{}); siteConfig.pages={...(siteConfig.pages||{}),offer:siteConfig.pages?.offer!==false};
         siteConfig.offerTag=siteConfig.offerTag||V29_DEFAULTS.offerTag; siteConfig.offerTitle=siteConfig.offerTitle||V29_DEFAULTS.offerTitle; siteConfig.offerShortDescription=siteConfig.offerShortDescription||V29_DEFAULTS.offerShortDescription; siteConfig.offerFullText=offerTextLooksComplete(siteConfig.offerFullText)?siteConfig.offerFullText:V29_DEFAULTS.offerFullText; siteConfig.offerProgramsTable=siteConfig.offerProgramsTable||V29_DEFAULTS.offerProgramsTable; siteConfig.offerPackagesTable=siteConfig.offerPackagesTable||V29_DEFAULTS.offerPackagesTable; if(!siteConfig.offerPrice || /1\s?500/.test(siteConfig.offerPrice)) siteConfig.offerPrice=V29_DEFAULTS.offerPrice; siteConfig.phone2=siteConfig.phone2||'';
         normalizeAllPrices();
-        adminSaveSiteState();
+        // Never mark local data dirty just because a new HTML build ran.
+        if (!localStorage.getItem(SITE_CONFIG_STORAGE)) adminSaveSiteState();
     }
     migrateV29();
     function receptionPriceEscape(value){
