@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="68">
+    <meta name="site-build" content="69">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5832,7 +5832,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '68';
+    const SITE_BUILD_VERSION = '69';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6564,19 +6564,11 @@
         setTimeout(()=>URL.revokeObjectURL(url),60000);
     }
     async function inwhiteExplicitCloudRefresh() {
-        // localStorage commonly fills up because photos are base64. A large
-        // backup must be downloaded, not stored again in localStorage.
+        // No automatic downloads. Explicit refresh may discard local edits only after consent.
         const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
-        if (dirty) {
-            try { inwhiteDownloadLocalDraftBeforeRefresh(); }
-            catch (error) {
-                supabaseSetStatus('Не вдалося завантажити локальну копію: '+(error?.message||error)+'. Дані не замінено.');
-                return false;
-            }
-            if (!confirm('Є локальні зміни. Завантажено їхню JSON-копію у ваші Завантаження. Переконайтеся, що файл збережено. Замінити поточні дані редактора актуальним станом Supabase?')) return false;
-        }
+        if (dirty && !confirm('У редакторі можуть бути незбережені зміни. Оновлення замінить їх даними Supabase. Продовжити?')) return false;
         const ok = await supabaseLoadSiteState({discardLocalChanges:true});
-        if (ok) supabaseSetStatus('✅ Дані редактора отримано з Supabase. Можете редагувати й зберігати.');
+        if (ok) supabaseSetStatus('✅ Редактор оновлений з Supabase.');
         return ok;
     }
 
@@ -6616,101 +6608,91 @@
         return false;
     }
 
-    async function supabaseSaveSiteState(options = {}) {
+    // Serializes saves and reconciles each *section* against the last read cloud state.
+    // UI edits may contain multiple new services; never infer conflict from item count.
+    let inwhiteSaveQueue = Promise.resolve();
+    function supabaseSaveSiteState(options = {}) {
+        const action = () => inwhitePerformCloudSave(options);
+        const result = inwhiteSaveQueue.then(action, action);
+        inwhiteSaveQueue = result.catch(() => {});
+        return result;
+    }
+    async function inwhitePerformCloudSave(options = {}) {
         if (!supabaseAccessToken) {
-            supabaseSetStatus('Спочатку увійдіть в Supabase як адміністратор.');
-            adminSetSaveStatus('Локально збережено · потрібен вхід', 'local');
+            supabaseSetStatus('Увійдіть у Supabase для збереження.');
+            adminSetSaveStatus('Потрібен вхід', 'error');
             if (!options.silentAuthPrompt) adminRequireSupabaseLogin();
             return false;
         }
-        // A stale in-memory revision must not turn an ordinary edit into a dead end.
-        // Initial cloud state is still required; never push HTML demo data.
-        if (!siteCloudLoadConfirmed || !siteCloudBaseline) {
-            const previous = localStorage.getItem(SITE_SYNCED_UPDATED_STORAGE) || '';
-            const rows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=*', {method:'GET'}, false);
-            const remote = rows?.[0];
-            if (!remote) { supabaseSetStatus('Не вдалося прочитати базу. Спробуйте ще раз.'); return false; }
-            if (previous && remote.updated_at === previous && sitePrices.length >= 6 && siteTeam.length >= 3) {
-                siteCloudRevision = remote.updated_at;
-                siteCloudBaseline = JSON.parse(JSON.stringify(siteSnapshotParts(remote)));
-                siteCloudLoadConfirmed = true;
-            } else {
-                supabaseSetStatus('Потрібно один раз завантажити актуальні дані. Якщо є незбережені зміни, збережіть чернетку перед оновленням.');
-                adminSetSaveStatus('Спочатку оновіть з бази', 'error');
-                return false;
-            }
-        }
         try {
-            supabaseSetStatus('Збереження сайту в Supabase...');
-            adminSetSaveStatus('Зберігаю в Supabase…', 'saving');
+            if (!siteCloudBaseline || !siteCloudLoadConfirmed) {
+                throw new Error('Редактор ще не отримав актуальні дані Supabase. Натисніть «Оновити з бази» перед редагуванням.');
+            }
+            adminSetSaveStatus('Зберігаю…', 'saving');
             const payload = supabaseSitePayload();
-            // Safety gate: never replace an established catalogue with the HTML's
-            // small default arrays after a failed cloud load or version change.
-            const existingRows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=site_prices,site_team,site_config,updated_at', { method:'GET', cache:'no-store' }, false);
-            const cloud = existingRows?.[0];
-            if (cloud) {
-                // Never overwrite another device's newer edits. Reopen the admin editor and reload first.
-                // Revision conflicts are reconciled per-section below.
-                const cloudPrices = Array.isArray(cloud.site_prices) ? cloud.site_prices.length : 0;
-                const cloudTeam = Array.isArray(cloud.site_team) ? cloud.site_team.length : 0;
-                if ((cloudPrices >= 10 && sitePrices.length <= 5) ||
-                    (cloudTeam >= 4 && siteTeam.length <= 2)) {
-                    throw new Error('Збереження заблоковано: локальні дані неповні порівняно з Supabase. Спочатку натисніть «Завантажити з бази».');
+            const localParts = siteSnapshotParts(payload);
+            for (let attempt = 0; attempt < 3; attempt++) {
+                const rows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=*', {method:'GET'}, false);
+                const remote = rows?.[0];
+                if (!remote) throw new Error('Не вдалося отримати поточний стан Supabase.');
+                const remoteParts = siteSnapshotParts(remote);
+                const changes = {};
+                const conflicting = [];
+                let edits = 0;
+                for (const key of ['site_config','site_team','site_prices','bpr_trainings']) {
+                    const changedLocally = !sameSitePart(localParts[key], siteCloudBaseline[key]);
+                    const changedRemotely = !sameSitePart(remoteParts[key], siteCloudBaseline[key]);
+                    if (changedLocally && changedRemotely && !sameSitePart(localParts[key], remoteParts[key])) conflicting.push(key);
+                    if (changedLocally) edits++;
+                    changes[key] = changedLocally ? localParts[key] : remoteParts[key];
                 }
-            }
-            // Safe three-way reconciliation: if the database changed, keep only
-            // local changes in sections not edited remotely. No silent data loss.
-            const current = siteSnapshotParts(payload);
-            let writeParts = current;
-            let expectedRevision = siteCloudRevision;
-            if (cloud.updated_at !== siteCloudRevision) {
-                const keys = ['site_config','site_team','site_prices','bpr_trainings'];
-                const merged = {};
-                const conflicts = [];
-                for (const key of keys) {
-                    const localChanged = !sameSitePart(current[key],siteCloudBaseline[key]);
-                    const remoteChanged = !sameSitePart(cloud[key],siteCloudBaseline[key]);
-                    if (localChanged && remoteChanged && !sameSitePart(current[key],cloud[key])) conflicts.push(key);
-                    merged[key] = localChanged ? current[key] : cloud[key];
+                if (conflicting.length) {
+                    throw new Error('Інший браузер змінив розділ: '+conflicting.join(', ')+'. Оновіть редактор із бази перед повторним редагуванням.');
                 }
-                if (conflicts.length) {
-                    throw new Error('Інша вкладка змінила той самий розділ (' + conflicts.join(', ') + '). Щоб нічого не загубити, експортуйте чернетку й оновіть редактор із бази.');
+                if (!edits) {
+                    siteCloudRevision = remote.updated_at;
+                    siteCloudBaseline = JSON.parse(JSON.stringify(remoteParts));
+                    siteCloudLoadConfirmed = true;
+                    inwhiteStorageSetSafe(SITE_DIRTY_STORAGE, 'false');
+                    adminSetSaveStatus('Дані вже синхронізовані ✓', 'success');
+                    supabaseSetStatus('Немає нових змін.');
+                    return true;
                 }
-                writeParts = merged;
-                expectedRevision = cloud.updated_at;
+                if ((Array.isArray(remote.site_prices) && remote.site_prices.length >= 10 && changes.site_prices.length <= 5) ||
+                    (Array.isArray(remote.site_team) && remote.site_team.length >= 4 && changes.site_team.length <= 2)) {
+                    throw new Error('Захист від втрати даних: редактор містить неповний прайс або команду.');
+                }
+                const timestamp = new Date().toISOString();
+                const match = encodeURIComponent(remote.updated_at);
+                const result = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&updated_at=eq.'+match+'&select=updated_at', {
+                    method:'PATCH', headers:{Prefer:'return=representation'},
+                    body:JSON.stringify({...changes,updated_at:timestamp})
+                },true);
+                if (Array.isArray(result) && result.length === 1) {
+                    // Prefer the server's timestamp, whose fractional precision may differ from JS.
+                    const savedTime = result[0].updated_at || timestamp;
+                    siteCloudRevision = savedTime;
+                    siteCloudBaseline = JSON.parse(JSON.stringify(changes));
+                    siteCloudLoadConfirmed = true;
+                    inwhiteStorageSetSafe(SITE_SYNCED_UPDATED_STORAGE, savedTime);
+                    inwhiteStorageSetSafe(SITE_LOCAL_UPDATED_STORAGE, savedTime);
+                    inwhiteStorageSetSafe(SITE_DIRTY_STORAGE, 'false');
+                    // Do not overwrite an in-progress draft with automatically downloaded JSON.
+                    if (options.verifyTrainingId) {
+                        const found = (changes.bpr_trainings||[]).some(t=>t.id===options.verifyTrainingId);
+                        if (!found) throw new Error('Не знайдено навчальний захід у даних збереження.');
+                    }
+                    adminSetSaveStatus('Збережено в Supabase ✓', 'success');
+                    supabaseSetStatus('✅ Збережено в Supabase.');
+                    return true;
+                }
+                // Another write raced us; re-read, compare changes and retry safely.
             }
-            if (!expectedRevision) throw new Error('Немає перевіреної версії бази.');
-            const filter = encodeURIComponent(expectedRevision);
-            const writtenRows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&updated_at=eq.' + filter + '&select=updated_at', {
-                method: 'PATCH',
-                headers: { Prefer: 'return=representation' },
-                body: JSON.stringify({...writeParts, updated_at: payload.updated_at})
-            }, true);
-            if (!Array.isArray(writtenRows) || writtenRows.length !== 1) {
-                throw new Error('Запис не підтверджено. Дані могли змінитися в іншому вікні. Перезавантажте інформацію з бази.');
-            }
-            // Verify that the cloud actually contains the edited training after the write.
-            if (options.verifyTrainingId) {
-                const fresh = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=bpr_trainings,updated_at', { method:'GET' }, false);
-                const stored = Array.isArray(fresh?.[0]?.bpr_trainings) ? fresh[0].bpr_trainings : [];
-                const expected = bprTrainings.find(t=>t.id===options.verifyTrainingId);
-                const actual = stored.find(t=>t.id===options.verifyTrainingId);
-                if (!expected || !actual || actual.title !== expected.title) throw new Error('Не підтверджено запис заходу в Supabase');
-            }
-            const savedAt = payload.updated_at || new Date().toISOString();
-            siteCloudRevision = savedAt;
-            siteCloudBaseline = JSON.parse(JSON.stringify(writeParts));
-            siteCloudLoadConfirmed = true;
-            localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, savedAt);
-            localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, savedAt);
-            localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
-            supabaseSetStatus('Сайт збережено в Supabase.');
-            adminSetSaveStatus('Синхронізовано з Supabase ✓', 'success');
-            return true;
+            throw new Error('Дані змінилися під час збереження. Повторіть дію.');
         } catch (error) {
-            console.error('INWHITE: помилка запису в Supabase', error);
-            supabaseSetStatus('Помилка збереження сайту: ' + (error?.message || 'перевірте права таблиці або підключення.'));
-            adminSetSaveStatus('Помилка синхронізації', 'error');
+            console.error('INWHITE: Supabase save failed',error);
+            supabaseSetStatus('Помилка збереження: '+(error?.message||error));
+            adminSetSaveStatus('Помилка збереження — див. БАЗА', 'error');
             return false;
         }
     }
