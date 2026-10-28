@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="63">
+    <meta name="site-build" content="64">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4605,7 +4605,7 @@
                         </div>
                         <div class="bpr-inline-actions">
                             <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти підключення</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">Завантажити з бази</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">Оновити з бази</button>
                         </div>
                     </form>
 
@@ -4615,7 +4615,7 @@
                         <div class="bpr-inline-actions">
                             <button class="bpr-btn bpr-btn-primary" type="button" onclick="inwhiteExportCloudBackup()">⬇️ Завантажити резервну копію</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteCheckCloudStatus()">🔄 Перевірити синхронізацію</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">✅ Підтвердити синхронізацію й завантажити з бази</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">Оновити редактор із бази (замінить локальні зміни)</button>
                             <button class="bpr-btn bpr-btn-secondary" type="button" onclick="document.getElementById('inwhiteBackupImportFile').click()">Переглянути резервну копію</button>
                             <input id="inwhiteBackupImportFile" type="file" accept="application/json,.json" hidden onchange="inwhitePreviewBackupFile(event)">
                         </div>
@@ -6395,7 +6395,27 @@
             if (!siteCloudLoadConfirmed && localStorage.getItem(SITE_DIRTY_STORAGE) !== 'true') {
                 await supabaseLoadSiteState({ discardLocalChanges: true });
             } else if (!siteCloudLoadConfirmed) {
-                supabaseSetStatus('Вхід успішний. Є локальні незбережені зміни: натисніть «Підтвердити синхронізацію й завантажити з бази» (спочатку створиться локальна копія).');
+                // Preserve pending edits instead of forcing a cloud download that discards them.
+                const rows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=updated_at,site_config,site_team,site_prices,bpr_trainings', {method:'GET'}, false);
+                const remote = rows?.[0];
+                if (!remote?.updated_at) {
+                    supabaseSetStatus('У базі не знайдено запису сайту. Локальні зміни збережені, синхронізація заблокована.');
+                } else {
+                    const lastSync = localStorage.getItem(SITE_SYNCED_UPDATED_STORAGE) || '';
+                    if (lastSync && lastSync !== remote.updated_at) {
+                        supabaseSetStatus('У базі є новіша версія з іншого пристрою. Локальні зміни збережено; перевірте конфлікт перед заміною.');
+                    } else {
+                        // First-time edit with no known revision requires explicit user consent.
+                        const approved = !!lastSync || confirm('Є локальні незбережені зміни. Залишити їх у редакторі та дозволити записати в Supabase? Дані з бази не завантажуватимуться поверх чернетки.');
+                        if (approved) {
+                            siteCloudRevision = remote.updated_at;
+                            siteCloudLoadConfirmed = true;
+                            supabaseSetStatus('Локальні зміни збережені. Тепер натисніть «Зберегти», щоб записати їх у базу.');
+                        } else {
+                            supabaseSetStatus('Локальні зміни залишено без змін. Можете зберегти резервну копію вручну або звірити їх із базою.');
+                        }
+                    }
+                }
             }
             adminRefreshSaveStatus();
         } catch (error) {
@@ -6546,17 +6566,20 @@
     async function inwhiteExplicitCloudRefresh() {
         const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
         if (dirty) {
-            // Save a recoverable snapshot of the current local draft before overwriting it.
-            const backup = {createdAt:new Date().toISOString(),source:'local-draft-before-sync',
-                site_config:siteConfig,site_team:siteTeam,site_prices:sitePrices,bpr_trainings:bprTrainings};
-            const blob = new Blob([JSON.stringify(backup,null,2)], {type:'application/json'});
-            const url=URL.createObjectURL(blob),a=document.createElement('a');
-            a.href=url;a.download='INWHITE_local_draft_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
-            document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
-            if (!confirm('Виявлено локальні зміни. Завантажено їхню резервну копію. Завантажити актуальний стан із Supabase? Локальні незбережені зміни в редакторі буде замінено.')) return false;
+            // Keep a local recovery snapshot WITHOUT triggering an unwanted download.
+            try {
+                localStorage.setItem('inwhite_backup_before_manual_cloud_refresh', JSON.stringify({
+                    savedAt:new Date().toISOString(), site_config:siteConfig, site_team:siteTeam,
+                    site_prices:sitePrices, bpr_trainings:bprTrainings
+                }));
+            } catch (error) {
+                supabaseSetStatus('Не вдалося створити локальну копію. Завантажте резервну копію вручну перед заміною.');
+                return false;
+            }
+            if (!confirm('Є локальні незбережені зміни. Замінити їх поточними даними із Supabase? Автоматичну локальну копію створено в цьому браузері. JSON завантажувати не потрібно.')) return false;
         }
         const ok = await supabaseLoadSiteState({discardLocalChanges:true});
-        if (ok) supabaseSetStatus('✅ Синхронізацію підтверджено. Дані редактора завантажено з Supabase. Тепер можете вносити зміни та зберігати.');
+        if (ok) supabaseSetStatus('✅ Дані редактора оновлено з Supabase. Можете редагувати та зберігати.');
         return ok;
     }
 
@@ -9422,10 +9445,10 @@
     const originalAdminFillForms = adminFillForms;
     adminFillForms = function(){ originalAdminFillForms(); adminRenderPriceEditor(); adminRenderTeamEditor(); };
 
-    adminSavePrices = function(event){event.preventDefault();sitePrices=adminCollectPriceEditor();document.getElementById('adminPricesEditor').value=adminPricesToText(sitePrices);adminSaveSiteState();adminRenderPrices();adminRenderPriceEditor();if(supabaseAccessToken)supabaseSaveSiteState();alert('Прайс збережено'+(supabaseAccessToken?' у базі Supabase.':'. Увійдіть у Supabase, щоб синхронізувати з базою.'));};
+    adminSavePrices = function(event){event.preventDefault();sitePrices=adminCollectPriceEditor();document.getElementById('adminPricesEditor').value=adminPricesToText(sitePrices);adminSaveSiteState();adminRenderPrices();adminRenderPriceEditor();if(supabaseAccessToken){supabaseSaveSiteState().then(ok=>alert(ok?'Прайс збережено у Supabase.':'Прайс збережено лише локально. Перевірте повідомлення про синхронізацію.'));}else{alert('Прайс збережено локально. Увійдіть у Supabase, щоб синхронізувати.');}};
 
     const originalAdminSaveTeam = adminSaveTeam;
-    adminSaveTeam = function(event){event.preventDefault();adminSaveHeroImageFields();siteTeam=adminCollectTeamEditor();document.getElementById('adminTeamEditor').value=adminTeamToText(siteTeam);adminSaveSiteState();adminRenderPageHeroes();adminRenderTeam();adminRenderTeamEditor();adminRenderAppointmentServices();if(supabaseAccessToken)supabaseSaveSiteState();alert('Команду збережено'+(supabaseAccessToken?' у базі Supabase.':'. Увійдіть у Supabase, щоб синхронізувати з базою.'));};
+    adminSaveTeam = function(event){event.preventDefault();adminSaveHeroImageFields();siteTeam=adminCollectTeamEditor();document.getElementById('adminTeamEditor').value=adminTeamToText(siteTeam);adminSaveSiteState();adminRenderPageHeroes();adminRenderTeam();adminRenderTeamEditor();adminRenderAppointmentServices();if(supabaseAccessToken){supabaseSaveSiteState().then(ok=>alert(ok?'Команду збережено у Supabase.':'Команду збережено лише локально. Перевірте повідомлення про синхронізацію.'));}else{alert('Команду збережено локально. Увійдіть у Supabase, щоб синхронізувати.');}};
 
     // Shareable page URLs (#prices, #team, ...) + browser back/forward support.
     const showPageWithActiveState = showPage;
@@ -10256,7 +10279,7 @@
     adminEnsureLocalVersionMarker();
     adminRefreshSaveStatus();
     // Public pages are remote-first: Supabase is the source of truth.
-    siteRefreshCloudData(true, true);
+    siteRefreshCloudData(true, localStorage.getItem(SITE_DIRTY_STORAGE) !== 'true');
     siteCheckForNewBuild();
     supabaseOpenRecoveryModal();
 
