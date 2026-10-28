@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="67">
+    <meta name="site-build" content="68">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4584,10 +4584,7 @@
 
                 <div class="admin-section" data-admin-panel="database">
                     <h3 class="bpr-panel-title" style="font-size: 1.6rem;">Supabase база даних</h3>
-                    <p class="bpr-panel-subtitle">
-                        Зберігайте зміни сайту в базі даних, щоб вони були видимі всім користувачам.
-                        У браузер вводиться тільки URL, publishable key та логін адміністратора Supabase Auth.
-                    </p>
+                    <p class="bpr-panel-subtitle">Після входу натискайте «Зберегти зміни» — інформація зберігається в Supabase. Резервна копія потрібна лише час від часу.</p>
                     <div class="admin-help">
                         Secret key і пароль PostgreSQL не вставляйте в сайт. Для запису змін створіть адміністратора
                         в Supabase Auth і увійдіть тут через email та пароль.
@@ -4604,8 +4601,7 @@
                             </div>
                         </div>
                         <div class="bpr-inline-actions">
-                            <button class="bpr-btn bpr-btn-primary" type="submit">Зберегти підключення</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">Оновити з бази</button>
+                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">↻ Оновити дані з бази</button>
                         </div>
                     </form>
 
@@ -4614,9 +4610,7 @@
                         <p style="font-size:13px;margin:0 0 12px">Резервна копія завантажується з Supabase, а не з кешу цього браузера. Зберігайте файл у безпечному місці: він може містити персональні дані й фотографії.</p>
                         <div class="bpr-inline-actions">
                             <button class="bpr-btn bpr-btn-primary" type="button" onclick="inwhiteExportCloudBackup()">⬇️ Завантажити резервну копію</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteCheckCloudStatus()">🔄 Перевірити синхронізацію</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="inwhiteExplicitCloudRefresh()">Оновити редактор із бази (замінить локальні зміни)</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="document.getElementById('inwhiteBackupImportFile').click()">Переглянути резервну копію</button>
+
                             <input id="inwhiteBackupImportFile" type="file" accept="application/json,.json" hidden onchange="inwhitePreviewBackupFile(event)">
                         </div>
                         <div id="inwhiteBackupStatus" aria-live="polite" style="font-size:13px;margin-top:10px;white-space:pre-wrap"></div>
@@ -4637,12 +4631,7 @@
                         <p id="supabaseStatus" class="bpr-note" style="margin-top: 12px;">База ще не підключена.</p>
                         <div class="bpr-inline-actions">
                             <button class="bpr-btn bpr-btn-primary" type="submit">Увійти в Supabase</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseRegisterAdmin()">Створити адміна</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseSendPasswordReset()">Надіслати зміну пароля</button>
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseUpdatePassword()">Змінити пароль</button>
-                            
-                            <button class="bpr-btn bpr-btn-secondary" type="button" onclick="supabaseLoadParticipants()">Завантажити учасників</button>
-                            <button class="bpr-btn bpr-btn-quiet" type="button" onclick="supabaseSyncParticipants()">Синхронізувати учасників</button>
+
                         </div>
                     </form>
                 </div>
@@ -5843,7 +5832,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '67';
+    const SITE_BUILD_VERSION = '68';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6517,8 +6506,19 @@
         };
     }
 
+    let siteCloudBaseline = null;
+    function siteSnapshotParts(row) {
+        return {
+            site_config: row.site_config,
+            site_team: row.site_team,
+            site_prices: row.site_prices,
+            bpr_trainings: row.bpr_trainings
+        };
+    }
+    function sameSitePart(a,b) { return JSON.stringify(a) === JSON.stringify(b); }
     function supabaseApplySitePayload(row) {
         if (!row) return;
+        siteCloudBaseline = JSON.parse(JSON.stringify(siteSnapshotParts(row)));
         try {
             const oldConfig = localStorage.getItem(SITE_CONFIG_STORAGE);
             const oldTeam = localStorage.getItem(SITE_TEAM_STORAGE);
@@ -6623,32 +6623,20 @@
             if (!options.silentAuthPrompt) adminRequireSupabaseLogin();
             return false;
         }
-        // The browser may have lost its in-memory sync flag after a deploy/reload.
-        // Revalidate against Supabase rather than trapping the admin in a login/reload loop.
-        if (!siteCloudLoadConfirmed) {
-            try {
-                const latest = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=updated_at,site_prices,site_team', {method:'GET'}, false);
-                const remote = latest?.[0];
-                const lastSynced = localStorage.getItem(SITE_SYNCED_UPDATED_STORAGE) || '';
-                if (remote?.updated_at && lastSynced && remote.updated_at === lastSynced &&
-                    sitePrices.length >= 6 && siteTeam.length >= 3) {
-                    siteCloudRevision = remote.updated_at;
-                    siteCloudLoadConfirmed = true;
-                    supabaseSetStatus('✅ Попередню синхронізацію підтверджено базою. Зберігаю зміни…');
-                } else if (remote?.updated_at && localStorage.getItem(SITE_DIRTY_STORAGE) !== 'true') {
-                    // Nothing in the editor to preserve: adopt current authoritative cloud state.
-                    const loaded = await supabaseLoadSiteState({discardLocalChanges:true});
-                    if (!loaded) throw new Error('Не вдалося завантажити актуальні дані.');
-                    supabaseSetStatus('✅ Дані бази завантажені. Якщо ви редагували поля перед цим, перевірте їх повторно.');
-                    adminSetSaveStatus('Синхронізовано · перевірте зміни', 'success');
-                    return false; // Never silently turn a refresh into a write.
-                } else {
-                    throw new Error('База оновилася після останньої синхронізації або є незбережена чернетка. Натисніть «ОНОВИТИ РЕДАКТОР ІЗ БАЗИ»; локальну копію буде збережено.');
-                }
-            } catch (error) {
-                const msg = error?.message || 'Невідома помилка';
-                supabaseSetStatus('Збереження зупинено: ' + msg);
-                adminSetSaveStatus('Синхронізація потрібна · див. БАЗА', 'error');
+        // A stale in-memory revision must not turn an ordinary edit into a dead end.
+        // Initial cloud state is still required; never push HTML demo data.
+        if (!siteCloudLoadConfirmed || !siteCloudBaseline) {
+            const previous = localStorage.getItem(SITE_SYNCED_UPDATED_STORAGE) || '';
+            const rows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=*', {method:'GET'}, false);
+            const remote = rows?.[0];
+            if (!remote) { supabaseSetStatus('Не вдалося прочитати базу. Спробуйте ще раз.'); return false; }
+            if (previous && remote.updated_at === previous && sitePrices.length >= 6 && siteTeam.length >= 3) {
+                siteCloudRevision = remote.updated_at;
+                siteCloudBaseline = JSON.parse(JSON.stringify(siteSnapshotParts(remote)));
+                siteCloudLoadConfirmed = true;
+            } else {
+                supabaseSetStatus('Потрібно один раз завантажити актуальні дані. Якщо є незбережені зміни, збережіть чернетку перед оновленням.');
+                adminSetSaveStatus('Спочатку оновіть з бази', 'error');
                 return false;
             }
         }
@@ -6662,9 +6650,7 @@
             const cloud = existingRows?.[0];
             if (cloud) {
                 // Never overwrite another device's newer edits. Reopen the admin editor and reload first.
-                if (siteCloudRevision && cloud.updated_at && cloud.updated_at !== siteCloudRevision) {
-                    throw new Error('Збереження заблоковано: дані Supabase оновилися в іншому браузері. Завантажте їх із бази перед редагуванням.');
-                }
+                // Revision conflicts are reconciled per-section below.
                 const cloudPrices = Array.isArray(cloud.site_prices) ? cloud.site_prices.length : 0;
                 const cloudTeam = Array.isArray(cloud.site_team) ? cloud.site_team.length : 0;
                 if ((cloudPrices >= 10 && sitePrices.length <= 5) ||
@@ -6672,21 +6658,33 @@
                     throw new Error('Збереження заблоковано: локальні дані неповні порівняно з Supabase. Спочатку натисніть «Завантажити з бази».');
                 }
             }
-            // Optimistic concurrency: modify existing row only if revision still matches.
-            // No INSERT/UPSERT on normal saves, so an empty or wrong project cannot
-            // silently acquire HTML demo data as the production site state.
-            if (!siteCloudRevision || !cloud?.updated_at) throw new Error('Немає перевіреної версії даних. Завантажте інформацію з бази.');
-            const filter = encodeURIComponent(siteCloudRevision);
+            // Safe three-way reconciliation: if the database changed, keep only
+            // local changes in sections not edited remotely. No silent data loss.
+            const current = siteSnapshotParts(payload);
+            let writeParts = current;
+            let expectedRevision = siteCloudRevision;
+            if (cloud.updated_at !== siteCloudRevision) {
+                const keys = ['site_config','site_team','site_prices','bpr_trainings'];
+                const merged = {};
+                const conflicts = [];
+                for (const key of keys) {
+                    const localChanged = !sameSitePart(current[key],siteCloudBaseline[key]);
+                    const remoteChanged = !sameSitePart(cloud[key],siteCloudBaseline[key]);
+                    if (localChanged && remoteChanged && !sameSitePart(current[key],cloud[key])) conflicts.push(key);
+                    merged[key] = localChanged ? current[key] : cloud[key];
+                }
+                if (conflicts.length) {
+                    throw new Error('Інша вкладка змінила той самий розділ (' + conflicts.join(', ') + '). Щоб нічого не загубити, експортуйте чернетку й оновіть редактор із бази.');
+                }
+                writeParts = merged;
+                expectedRevision = cloud.updated_at;
+            }
+            if (!expectedRevision) throw new Error('Немає перевіреної версії бази.');
+            const filter = encodeURIComponent(expectedRevision);
             const writtenRows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&updated_at=eq.' + filter + '&select=updated_at', {
                 method: 'PATCH',
                 headers: { Prefer: 'return=representation' },
-                body: JSON.stringify({
-                    site_config: payload.site_config,
-                    site_team: payload.site_team,
-                    site_prices: payload.site_prices,
-                    bpr_trainings: payload.bpr_trainings,
-                    updated_at: payload.updated_at
-                })
+                body: JSON.stringify({...writeParts, updated_at: payload.updated_at})
             }, true);
             if (!Array.isArray(writtenRows) || writtenRows.length !== 1) {
                 throw new Error('Запис не підтверджено. Дані могли змінитися в іншому вікні. Перезавантажте інформацію з бази.');
@@ -6701,6 +6699,8 @@
             }
             const savedAt = payload.updated_at || new Date().toISOString();
             siteCloudRevision = savedAt;
+            siteCloudBaseline = JSON.parse(JSON.stringify(writeParts));
+            siteCloudLoadConfirmed = true;
             localStorage.setItem(SITE_LOCAL_UPDATED_STORAGE, savedAt);
             localStorage.setItem(SITE_SYNCED_UPDATED_STORAGE, savedAt);
             localStorage.setItem(SITE_DIRTY_STORAGE, 'false');
