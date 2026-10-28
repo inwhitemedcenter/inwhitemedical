@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="64">
+    <meta name="site-build" content="65">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5843,7 +5843,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '63';
+    const SITE_BUILD_VERSION = '65';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6392,29 +6392,15 @@
             sessionStorage.setItem(SUPABASE_TOKEN_STORAGE, supabaseAccessToken);
             document.getElementById('supabaseAdminPassword').value = '';
             supabaseSetStatus('Supabase: вхід успішний. Перевіряю стан даних…');
-            if (!siteCloudLoadConfirmed && localStorage.getItem(SITE_DIRTY_STORAGE) !== 'true') {
-                await supabaseLoadSiteState({ discardLocalChanges: true });
-            } else if (!siteCloudLoadConfirmed) {
-                // Preserve pending edits instead of forcing a cloud download that discards them.
-                const rows = await supabaseRequest('/rest/v1/inwhite_site_state?id=eq.main&select=updated_at,site_config,site_team,site_prices,bpr_trainings', {method:'GET'}, false);
-                const remote = rows?.[0];
-                if (!remote?.updated_at) {
-                    supabaseSetStatus('У базі не знайдено запису сайту. Локальні зміни збережені, синхронізація заблокована.');
+            // Authentication alone must NEVER authorize overwriting a cloud state
+            // with an unverified local draft (especially after a website upgrade).
+            if (!siteCloudLoadConfirmed) {
+                const dirty = localStorage.getItem(SITE_DIRTY_STORAGE) === 'true';
+                if (dirty) {
+                    supabaseSetStatus('Вхід успішний. У браузері є локальна чернетка. Натисніть «Оновити редактор із бази», щоб підтвердити версію Supabase. Перед заміною чернетка збережеться локально.');
                 } else {
-                    const lastSync = localStorage.getItem(SITE_SYNCED_UPDATED_STORAGE) || '';
-                    if (lastSync && lastSync !== remote.updated_at) {
-                        supabaseSetStatus('У базі є новіша версія з іншого пристрою. Локальні зміни збережено; перевірте конфлікт перед заміною.');
-                    } else {
-                        // First-time edit with no known revision requires explicit user consent.
-                        const approved = !!lastSync || confirm('Є локальні незбережені зміни. Залишити їх у редакторі та дозволити записати в Supabase? Дані з бази не завантажуватимуться поверх чернетки.');
-                        if (approved) {
-                            siteCloudRevision = remote.updated_at;
-                            siteCloudLoadConfirmed = true;
-                            supabaseSetStatus('Локальні зміни збережені. Тепер натисніть «Зберегти», щоб записати їх у базу.');
-                        } else {
-                            supabaseSetStatus('Локальні зміни залишено без змін. Можете зберегти резервну копію вручну або звірити їх із базою.');
-                        }
-                    }
+                    const loaded = await supabaseLoadSiteState({discardLocalChanges:true});
+                    if (!loaded) supabaseSetStatus('Вхід успішний, але завантаження бази не підтверджене. Скористайтеся «Оновити редактор із бази».');
                 }
             }
             adminRefreshSaveStatus();
@@ -7829,7 +7815,7 @@
             adminSetSaveStatus(dirty ? 'Локально збережено · потрібен вхід' : 'Потрібен вхід для Supabase', 'local');
             return;
         }
-        adminSetSaveStatus(dirty ? 'Є незбережені в базі зміни' : 'Синхронізовано з Supabase ✓', dirty ? 'local' : 'success');
+        adminSetSaveStatus(!siteCloudLoadConfirmed ? 'Потрібно оновити редактор із бази' : (dirty ? 'Є незбережені в базі зміни' : 'Синхронізовано з Supabase ✓'), !siteCloudLoadConfirmed ? 'error' : (dirty ? 'local' : 'success'));
     }
 
     function adminRenderSite() {
@@ -10279,7 +10265,7 @@
     adminEnsureLocalVersionMarker();
     adminRefreshSaveStatus();
     // Public pages are remote-first: Supabase is the source of truth.
-    siteRefreshCloudData(true, localStorage.getItem(SITE_DIRTY_STORAGE) !== 'true');
+    siteRefreshCloudData(true, true);
     siteCheckForNewBuild();
     supabaseOpenRecoveryModal();
 
