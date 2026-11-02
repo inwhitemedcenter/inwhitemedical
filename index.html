@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="69">
+    <meta name="site-build" content="70">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -5832,7 +5832,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '69';
+    const SITE_BUILD_VERSION = '70';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -6640,7 +6640,9 @@
                 const conflicting = [];
                 let edits = 0;
                 for (const key of ['site_config','site_team','site_prices','bpr_trainings']) {
-                    const changedLocally = !sameSitePart(localParts[key], siteCloudBaseline[key]);
+                    // A price save changes ONLY prices; never push incidental edits to site_config.
+                    const inScope = !options.onlySection || options.onlySection === key;
+                    const changedLocally = inScope && !sameSitePart(localParts[key], siteCloudBaseline[key]);
                     const changedRemotely = !sameSitePart(remoteParts[key], siteCloudBaseline[key]);
                     if (changedLocally && changedRemotely && !sameSitePart(localParts[key], remoteParts[key])) conflicting.push(key);
                     if (changedLocally) edits++;
@@ -6673,6 +6675,13 @@
                     const savedTime = result[0].updated_at || timestamp;
                     siteCloudRevision = savedTime;
                     siteCloudBaseline = JSON.parse(JSON.stringify(changes));
+                    // Preserve current edited section, adopt newer remote values in untouched sections.
+                    if (options.onlySection) {
+                        siteConfig = adminNormalizeSiteConfig(changes.site_config);
+                        siteTeam = changes.site_team;
+                        bprTrainings = changes.bpr_trainings;
+                        sitePrices = changes.site_prices;
+                    }
                     siteCloudLoadConfirmed = true;
                     inwhiteStorageSetSafe(SITE_SYNCED_UPDATED_STORAGE, savedTime);
                     inwhiteStorageSetSafe(SITE_LOCAL_UPDATED_STORAGE, savedTime);
@@ -9453,7 +9462,7 @@
     const originalAdminFillForms = adminFillForms;
     adminFillForms = function(){ originalAdminFillForms(); adminRenderPriceEditor(); adminRenderTeamEditor(); };
 
-    adminSavePrices = function(event){event.preventDefault();sitePrices=adminCollectPriceEditor();document.getElementById('adminPricesEditor').value=adminPricesToText(sitePrices);adminSaveSiteState();adminRenderPrices();adminRenderPriceEditor();if(supabaseAccessToken){supabaseSaveSiteState().then(ok=>alert(ok?'Прайс збережено у Supabase.':'Прайс збережено лише локально. Перевірте повідомлення про синхронізацію.'));}else{alert('Прайс збережено локально. Увійдіть у Supabase, щоб синхронізувати.');}};
+    adminSavePrices = function(event){event.preventDefault();sitePrices=adminCollectPriceEditor();document.getElementById('adminPricesEditor').value=adminPricesToText(sitePrices);adminSaveSiteState();adminRenderPrices();adminRenderPriceEditor();if(supabaseAccessToken){supabaseSaveSiteState({onlySection:'site_prices'}).then(ok=>alert(ok?'Прайс збережено у Supabase.':'Прайс збережено лише локально. Перевірте повідомлення про синхронізацію.'));}else{alert('Прайс збережено локально. Увійдіть у Supabase, щоб синхронізувати.');}};
 
     const originalAdminSaveTeam = adminSaveTeam;
     adminSaveTeam = function(event){event.preventDefault();adminSaveHeroImageFields();siteTeam=adminCollectTeamEditor();document.getElementById('adminTeamEditor').value=adminTeamToText(siteTeam);adminSaveSiteState();adminRenderPageHeroes();adminRenderTeam();adminRenderTeamEditor();adminRenderAppointmentServices();if(supabaseAccessToken){supabaseSaveSiteState().then(ok=>alert(ok?'Команду збережено у Supabase.':'Команду збережено лише локально. Перевірте повідомлення про синхронізацію.'));}else{alert('Команду збережено локально. Увійдіть у Supabase, щоб синхронізувати.');}};
@@ -10299,6 +10308,10 @@
         }
     });
     window.addEventListener('focus', () => siteRefreshCloudData(false));
+    // Keep open public tabs current across phones, laptops and browsers.
+    setInterval(() => {
+        if (document.visibilityState === 'visible' && !supabaseAccessToken && !bprDeveloperUnlocked) siteRefreshCloudData(false);
+    }, 60000);
 
 
     // ===== V16 ROBUST ADMIN INITIALIZATION + LEGACY ICON REPAIR =====
