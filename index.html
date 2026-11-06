@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="73">
+    <meta name="site-build" content="74">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -2806,6 +2806,17 @@
         .training-admin-intro { background:linear-gradient(135deg,#fff,#f8f3eb); border:1px solid var(--beige); border-radius:18px; padding:18px 20px; margin-bottom:18px; }
         .training-admin-intro strong { color:var(--dark); display:block; margin-bottom:6px; }
         .training-admin-stack { display:grid; gap:14px; }
+        .bpr-selected-training-banner { position:sticky; top:88px; z-index:25; display:flex; flex-direction:column; gap:5px; padding:13px 19px; border:2px solid #c9a96e; border-radius:15px; background:#fff9eb; box-shadow:0 8px 24px rgba(42,42,42,.09); margin-bottom:17px; }
+        .bpr-selected-training-banner strong { font-size:1.05rem; color:#342d22; line-height:1.35; }
+        .bpr-selected-training-caption { font-size:.72rem; letter-spacing:.09em; color:#8a6e39; font-weight:700; }
+        .bpr-selected-training-banner span {font-size:.78rem; color:#586d50;}
+        .bpr-selected-training-banner.is-dirty {border-color:#d09f56;background:#fff5df;}
+        .bpr-selected-training-banner.is-dirty span {color:#a05b18;font-weight:700;}
+        .bpr-dev-item.active {background:#fff2d8 !important; border:2px solid #b89558 !important; box-shadow:0 0 0 4px rgba(201,169,110,.16) !important;}
+        #bprSaveTrainingButton.is-saving {opacity:.75;cursor:wait;}
+        #bprSaveTrainingButton.is-saving::before {content:'◌';display:inline-block;margin-right:7px;animation:bprSpin 1s linear infinite;}
+        @keyframes bprSpin {to{transform:rotate(360deg)}}
+        @media(max-width:620px){.bpr-selected-training-banner{top:70px;}}
         .training-admin-group { border:1px solid var(--beige); border-radius:18px; background:white; overflow:hidden; }
         .training-admin-group > summary { cursor:pointer; list-style:none; padding:17px 20px; font-weight:700; color:var(--dark); display:flex; align-items:center; justify-content:space-between; gap:10px; }
         .training-admin-group > summary::-webkit-details-marker { display:none; }
@@ -4723,6 +4734,7 @@
 
                     <form id="bprTrainingForm" novalidate onsubmit="bprSaveTraining(event)">
                         <input type="hidden" id="bprEditId">
+                        <input type="hidden" id="bprEditLocationCity">
                         <div class="bpr-form-grid">
                             <div class="bpr-field bpr-full">
                                 <label for="bprEditTitle">Назва заходу</label>
@@ -4778,10 +4790,8 @@
                                 <label for="bprEditDurationHours">Тривалість, годин</label>
                                 <input id="bprEditDurationHours" type="number" min="0" step="0.5" placeholder="4">
                             </div>
-                            <!-- Старе поле міста збережено для сумісності з Supabase, але не дублюється в редакторі. -->
-                            <input type="hidden" id="bprEditLocationCity">
                             <div class="bpr-field bpr-full">
-                                <label for="bprEditLocationVenue">Місце проведення (місто, заклад та адреса)</label>
+                                <label for="bprEditLocationVenue">Місце проведення — місто, заклад, точна адреса</label>
                                 <input id="bprEditLocationVenue" placeholder="INWHITE MEDICAL, вул. ...">
                             </div>
                             <div class="bpr-field">
@@ -5849,7 +5859,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '73';
+    const SITE_BUILD_VERSION = '74';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -8958,7 +8968,7 @@
         if (!list) return;
         list.innerHTML = bprTrainings.map(training => `
             <button class="bpr-dev-item ${training.id === document.getElementById('bprEditId')?.value ? 'active' : ''}" type="button" onclick="bprEditTraining('${bprEscapeText(training.id)}')">
-                <strong>${bprEscapeText(training.title || 'Новий захід — без назви')}</strong><br>
+                <strong>${training.id === document.getElementById('bprEditId')?.value ? '✏️ Редагується · ' : ''}${bprEscapeText(training.title || 'Новий захід — без назви')}</strong><br>
                 <span>${(training.category || 'online') === 'offline' ? 'Офлайн' : 'Онлайн'} · ${training.visible ? 'Показується' : 'Приховано'} · ${bprEscapeText(training.year)}-${bprEscapeText(training.providerCode)}-${bprEscapeText(training.trainingNumber)}-${String(training.certificateNext).padStart(Number(training.certificateDigits) || 6, '0')}</span>
             </button>
         `).join('');
@@ -8979,6 +8989,24 @@
         recordingField.hidden = !showRecording;
         recordingInput.required = category === 'online';
         // Preserve recording URL even if recording is temporarily hidden.
+    }
+
+    function bprUpdateSelectedTrainingBanner(isDirty=false) {
+        const banner=document.getElementById('bprSelectedTrainingBanner');
+        if(!banner) return;
+        const id=document.getElementById('bprEditId')?.value;
+        const training=id ? bprFindTraining(id) : null;
+        const title=document.getElementById('bprEditTitle')?.value.trim() || training?.title || 'Новий захід';
+        banner.replaceChildren();
+        const label=document.createElement('div');
+        label.className='bpr-selected-training-caption';
+        label.textContent='✏️ ЗАРАЗ РЕДАГУЄТЬСЯ';
+        const name=document.createElement('strong');
+        name.textContent=title;
+        const detail=document.createElement('span');
+        detail.textContent=isDirty ? '● Є незбережені зміни' : 'Оберіть інший захід зліва, щоб перейти до його редагування';
+        banner.classList.toggle('is-dirty',isDirty);
+        banner.append(label,name,detail);
     }
 
     function bprFillTrainingForm(training) {
@@ -9013,7 +9041,8 @@
             sessions.slice(1).forEach(session=>bprAddTrainingSession(session.date,session.time));
         }
         document.getElementById('bprEditDurationHours').value = training.durationHours || '';
-        document.getElementById('bprEditLocationCity').value = training.locationCity || '';
+        const cityField = document.getElementById('bprEditLocationCity');
+        if (cityField) cityField.value = training.locationCity || '';
         document.getElementById('bprEditLocationVenue').value = training.locationVenue || '';
         document.getElementById('bprEditYear').value = training.year || new Date().getFullYear();
         document.getElementById('bprEditProvider').value = training.providerCode || '';
@@ -9042,6 +9071,9 @@
         bprUpdateTrainingFormVisibility();
         bprPreviewTrainingImage();
         bprRenderDeveloperTrainingList();
+        bprUpdateSelectedTrainingBanner(false);
+        const saveStatus=document.getElementById('bprTrainingSaveStatus');
+        if(saveStatus) saveStatus.textContent='';
     }
 
     function bprEditTraining(trainingId) {
@@ -9121,7 +9153,9 @@
         const category = document.getElementById('bprEditCategory').value;
         const quizWarning = category === 'online' && quizText && !bprValidateQuizText(quizText);
         const status = document.getElementById('bprTrainingSaveStatus');
-        const showStatus = (msg, error=false) => { if(status){status.textContent=msg;status.style.color=error?'#a43b37':'#476b4b';} };
+        const saveButton = document.getElementById('bprSaveTrainingButton');
+        const showStatus = (msg, error=false) => { if(status){status.textContent=msg;status.style.color=error?'#a43b37':'#476b4b';status.classList.toggle('is-error',error);} };
+        if (saveButton?.disabled) return;
         if (!document.getElementById('bprEditTitle').value.trim()) {
             document.getElementById('bprEditTitle').closest('details')?.setAttribute('open','');
             document.getElementById('bprEditTitle').focus();
@@ -9148,7 +9182,7 @@
             startTime: document.getElementById('bprEditStartTime').value,
             sessions: bprReadTrainingSessions(),
             durationHours: document.getElementById('bprEditDurationHours').value,
-            locationCity: document.getElementById('bprEditLocationCity').value.trim(),
+            locationCity: document.getElementById('bprEditLocationCity')?.value.trim() ?? (bprFindTraining(id)?.locationCity || ''),
             locationVenue: document.getElementById('bprEditLocationVenue').value.trim(),
             year: Number(document.getElementById('bprEditYear').value) || new Date().getFullYear(),
             providerCode: document.getElementById('bprEditProvider').value.trim(),
@@ -9183,15 +9217,25 @@
         bprRenderTrainingCards();
         bprFillTrainingForm(training);
         bprRenderDeveloperTrainingList();
-        showStatus('✓ Захід оновлено в лівому списку. Зберігаю в Supabase…');
+        bprUpdateSelectedTrainingBanner(true);
+        if(saveButton){saveButton.disabled=true;saveButton.classList.add('is-saving');saveButton.textContent='Зберігаю…';}
+        showStatus('⏳ Збереження у Supabase…');
         const warn = quizWarning ? ' Увага: тест містить не 10 коректних питань; його слід виправити до сертифікації.' : '';
         if (!supabaseAccessToken) {
             showStatus('Захід збережено лише локально — для публікації увійдіть до Supabase та збережіть ще раз.'+warn,true);
+            if(saveButton){saveButton.disabled=false;saveButton.classList.remove('is-saving');saveButton.textContent='Зберегти захід';}
             adminRequireSupabaseLogin();return;
         }
         showStatus('Локально збережено, синхронізація з Supabase…');
-        const synced=await supabaseSaveSiteState({silentAuthPrompt:true,verifyTrainingId:id});
-        showStatus(synced?'✓ Захід збережено в Supabase.': '⚠ Захід відредаговано на цьому пристрої, але НЕ збережено в базі. Перевірте вхід у Supabase та розділ «База».'+warn,!synced);
+        try {
+            const synced=await supabaseSaveSiteState({silentAuthPrompt:true,verifyTrainingId:id});
+            if(synced) bprUpdateSelectedTrainingBanner(false);
+            showStatus(synced?'✓ Захід збережено в Supabase.': '⚠ Зміни є лише в редакторі — сервер їх не підтвердив. Перевірте повідомлення у розділі «База».'+warn,!synced);
+        } catch(error) {
+            showStatus('Помилка синхронізації: '+(error?.message || String(error)),true);
+        } finally {
+            if(saveButton){saveButton.disabled=false;saveButton.classList.remove('is-saving');saveButton.textContent='Зберегти захід';}
+        }
 
     }
 
@@ -9713,11 +9757,20 @@
         if (!grid) return;
         form.dataset.uxReady = 'true';
         form.noValidate = true;
+        form.addEventListener('input', e=>{ if(e.isTrusted && e.target.id!=='bprEditId') bprUpdateSelectedTrainingBanner(true); });
+        form.addEventListener('change', e=>{ if(e.isTrusted && e.target.id!=='bprEditId') bprUpdateSelectedTrainingBanner(true); });
 
         const intro = document.createElement('div');
         intro.className = 'training-admin-intro';
         intro.innerHTML = '<strong>Редактор навчального заходу</strong><span>Заповнюйте блоки зверху вниз. Основні поля відкриті одразу, технічні налаштування сертифікатів сховані в окремому блоці.</span><div id="trainingKindHint" class="training-kind-hint"></div>';
         grid.parentNode.insertBefore(intro, grid);
+        const selected = document.createElement('div');
+        selected.id = 'bprSelectedTrainingBanner';
+        selected.className = 'bpr-selected-training-banner';
+        selected.setAttribute('role','status');
+        selected.setAttribute('aria-live','polite');
+        intro.after(selected);
+        bprUpdateSelectedTrainingBanner();
 
         const stack = document.createElement('div');
         stack.className = 'training-admin-stack';
