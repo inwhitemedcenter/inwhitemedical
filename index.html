@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="72">
+    <meta name="site-build" content="73">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -2814,6 +2814,19 @@
         .training-admin-group-body { padding:0 20px 20px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
         .training-admin-group-body .bpr-field.bpr-full { grid-column:1/-1; }
         .training-admin-group-body .bpr-field { margin:0; }
+        /* Training visibility is a primary publishing control: large and accessible. */
+        #bprEditVisible { width:26px !important; height:26px !important; min-width:26px; accent-color:#64865d; cursor:pointer; }
+        #bprEditVisible:focus-visible { outline:3px solid #c9a96e; outline-offset:4px; }
+        #bprEditVisible:checked { accent-color:#64865d; }
+        .training-admin-group-body .bpr-checkbox:has(#bprEditVisible) {
+            display:flex; align-items:center; gap:14px; min-height:65px; padding:14px 20px;
+            background:#f2f7ef; border:2px solid #a3bea0; border-radius:15px;
+            font-size:1.01rem; font-weight:700; cursor:pointer; grid-column:1/-1;
+        }
+        .training-admin-group-body .bpr-checkbox:has(#bprEditVisible):has(input:not(:checked)) {
+            background:#f8f3eb; border-color:#decbb4;
+        }
+
         .training-editor-sticky { position:sticky; bottom:10px; z-index:20; background:rgba(250,250,248,.94); backdrop-filter:blur(12px); border:1px solid var(--beige); border-radius:16px; padding:12px; margin-top:16px; box-shadow:0 10px 35px rgba(0,0,0,.08); }
         .training-kind-hint { font-size:.8rem; color:var(--graphite-light); margin-top:4px; }
         @media (max-width: 760px) {
@@ -4765,10 +4778,8 @@
                                 <label for="bprEditDurationHours">Тривалість, годин</label>
                                 <input id="bprEditDurationHours" type="number" min="0" step="0.5" placeholder="4">
                             </div>
-                            <div class="bpr-field">
-                                <label for="bprEditLocationCity">Місто</label>
-                                <input id="bprEditLocationCity" placeholder="м. Чоп">
-                            </div>
+                            <!-- Старе поле міста збережено для сумісності з Supabase, але не дублюється в редакторі. -->
+                            <input type="hidden" id="bprEditLocationCity">
                             <div class="bpr-field bpr-full">
                                 <label for="bprEditLocationVenue">Місце проведення (місто, заклад та адреса)</label>
                                 <input id="bprEditLocationVenue" placeholder="INWHITE MEDICAL, вул. ...">
@@ -4855,7 +4866,7 @@
                             </div>
                             <label class="bpr-field bpr-checkbox bpr-full">
                                 <input id="bprEditVisible" type="checkbox">
-                                Показувати картку на сайті
+                                Відображати захід на сайті
                             </label>
                         </div>
                         <div class="bpr-inline-actions">
@@ -5838,7 +5849,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '72';
+    const SITE_BUILD_VERSION = '73';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -8495,7 +8506,12 @@
         const items = [];
         const date = bprFormatEventDate(training);
         const duration = bprFormatDuration(training);
-        const location = [training.locationCity, training.locationVenue].filter(Boolean).join(', ');
+        const venue = String(training.locationVenue || '').trim();
+        const city = String(training.locationCity || '').trim();
+        // Legacy records often include the city inside the full venue address.
+        // Avoid displaying "Дніпро, ... Дніпро" on a public card.
+        const location = !city || venue.toLocaleLowerCase('uk').includes(city.toLocaleLowerCase('uk').replace(/^м\.\s*/,''))
+            ? (venue || city) : [city, venue].filter(Boolean).join(', ');
         if (date) items.push('📅 ' + date);
         if (duration) items.push('⏱ ' + duration);
         if (location) items.push('📍 ' + location);
@@ -8970,7 +8986,10 @@
         document.getElementById('bprEditId').value = training.id;
         document.getElementById('bprEditTitle').value = training.title || '';
         const typeSelect = document.getElementById('bprEditType');
-        const eventType = training.type === 'Тренінг' ? 'Тренінг з оволодіння практичними навичками' : (training.type || '');
+        const rawType = String(training.type || '').trim();
+        // Historical content used multiple grammatical variants of the same BPR training type.
+        const eventType = /^(тренінг|тренинг)(\s+з\s+оволодінн(я|ям)\s+практичн(ими|их)\s+навичк(ами|ок))?$/iu.test(rawType)
+            ? 'Тренінг з оволодіння практичними навичками' : rawType;
         typeSelect.querySelectorAll('[data-custom-type]').forEach(option => option.remove());
         if (eventType && ![...typeSelect.options].some(option=>option.value===eventType)) {
             typeSelect.add(new Option(eventType,eventType));
@@ -9706,7 +9725,7 @@
 
         const groups = [
             {title:'1. Основна інформація', open:true, ids:['bprEditTitle','bprEditCategory','bprEditType','bprEditPoints','bprEditShort','bprEditVisible']},
-            {title:'2. Дата та місце', open:true, ids:['bprEditStartDate','bprAdditionalSessionsList','bprEditStartTime','bprEditDurationHours','bprEditLocationCity','bprEditLocationVenue']},
+            {title:'2. Дата та місце', open:true, ids:['bprEditStartDate','bprEditStartTime','bprAdditionalSessionsList','bprEditDurationHours','bprEditLocationVenue']},
             {title:'3. Опис і зображення', open:true, ids:['bprEditImage','bprEditFull','bprEditProgram']},
             {title:'4. Реєстрація, оплата та запис', open:false, ids:['bprShowPrice','bprEditPrice','bprShowPayment','bprEditPaymentUrl','bprShowRegister','bprShowRecording','bprShowDetails','bprEditHasRecording','bprEditRecordingUrl','bprEditGoogleFormUrl']},
             {title:'5. Сертифікат БПР — технічні поля', open:false, ids:['bprEditYear','bprEditProvider','bprEditTrainingNumber','bprEditCertificateNext','bprEditCertificateDigits']},
@@ -9747,7 +9766,7 @@
     const originalTrainingVisibilityUx = bprUpdateTrainingFormVisibility;
     bprUpdateTrainingFormVisibility = function() {
         originalTrainingVisibilityUx();
-        ['bprEditLocationCity','bprEditLocationVenue','bprEditPrice','bprEditPaymentUrl',
+        ['bprEditLocationVenue','bprEditPrice','bprEditPaymentUrl',
          'bprEditHasRecording','bprEditRecordingUrl','bprShowRecording',
          'bprEditGoogleFormUrl','bprEditQuiz'].forEach(id=>{
             const field=document.getElementById(id)?.closest('.bpr-field');
