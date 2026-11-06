@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="75">
+    <meta name="site-build" content="76">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4778,7 +4778,7 @@
                             </div>
                             <div class="bpr-field bpr-full" id="bprAdditionalSessionsField">
                                 <label>Додаткові дати проведення (повторення тренінгу)</label>
-                                <p style="font-size:.8rem;color:#68645f;margin:5px 0 12px">Основну дату вкажіть вище. Для повторного проведення додайте інші дати — кожна з власним часом початку. Всі дати відображатимуться на картці та в описі заходу.</p>
+                                <p style="font-size:.8rem;color:#68645f;margin:5px 0 12px">Для кожної дати можна вказати окрему Google-форму. Посилання основної дати налаштовується нижче у блоці «Реєстрація».</p>
                                 <div id="bprAdditionalSessionsList" style="display:grid;gap:9px"></div>
                                 <button type="button" class="btn-secondary" style="padding:9px 15px;margin-top:10px" onclick="bprAddTrainingSession()">＋ Додати дату</button>
                             </div>
@@ -4835,7 +4835,7 @@
                                 <input id="bprEditRecordingUrl" placeholder="https://...">
                             </div>
                             <div class="bpr-field bpr-full">
-                                <label for="bprEditGoogleFormUrl">Посилання Google Forms для офлайн-реєстрації</label>
+                                <label for="bprEditGoogleFormUrl">Google-форма для ОСНОВНОЇ дати проведення</label>
                                 <input id="bprEditGoogleFormUrl" placeholder="https://forms.gle/...">
                             </div>
                             <div class="bpr-field bpr-full">
@@ -4960,7 +4960,7 @@
                <div id="bprModalProgram" style="white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere"></div>
             </section>
             <div id="bprOfflineRegistrationBox" class="bpr-inline-actions" hidden>
-                <a id="bprOfflineRegistrationLink" class="bpr-btn bpr-btn-primary" href="#" target="_blank" rel="noopener noreferrer">Зареєструватись</a>
+                <div id="bprDateRegistrationLinks" style="width:100%;display:grid;gap:12px"></div>
                 <a id="bprOfflineRecordingLink" class="bpr-btn bpr-btn-secondary" href="#" target="_blank" rel="noopener noreferrer" hidden>Переглянути запис</a>
             </div>
 
@@ -5859,7 +5859,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '75';
+    const SITE_BUILD_VERSION = '76';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -8459,10 +8459,10 @@
 
     // All training records share the same schedule format. Older records remain compatible.
     function bprTrainingSessions(training) {
-        const clean = (entry) => ({date:String(entry?.date || '').trim(), time:String(entry?.time || '').trim()});
+        const clean = (entry) => ({date:String(entry?.date || '').trim(), time:String(entry?.time || '').trim(), registrationUrl:String(entry?.registrationUrl || '').trim()});
         const entries = Array.isArray(training?.sessions) && training.sessions.length
             ? training.sessions.map(clean)
-            : [{date:training?.startDate || '',time:training?.startTime || ''}];
+            : [{date:training?.startDate || '',time:training?.startTime || '',registrationUrl:training?.googleFormUrl || ''}];
         return entries.filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date));
     }
     function bprFormatEventDate(training) {
@@ -8474,7 +8474,7 @@
             return item.time ? formatted+' о '+item.time : formatted;
         }).join(' · ');
     }
-    function bprAddTrainingSession(date='',time='') {
+    function bprAddTrainingSession(date='',time='',registrationUrl='') {
         const list=document.getElementById('bprAdditionalSessionsList');
         if(!list) return;
         const row=document.createElement('div');
@@ -8488,20 +8488,27 @@
         timeInput.type='time';timeInput.value=time;timeInput.className='bpr-extra-time';
         timeInput.setAttribute('aria-label','Час додаткової дати');
         timeInput.style.cssText='flex:1 1 110px;min-width:100px';
+        const registrationInput=document.createElement('input');
+        registrationInput.type='url';registrationInput.value=registrationUrl;registrationInput.className='bpr-extra-registration-url';
+        registrationInput.placeholder='https://forms.gle/... — форма реєстрації для цієї дати';
+        registrationInput.setAttribute('aria-label','Окрема Google-форма для цієї дати');
+        registrationInput.style.cssText='flex:1 1 100%;min-width:180px';
         const remove=document.createElement('button');
         remove.type='button';remove.textContent='Видалити';
         remove.className='btn-secondary';remove.style.cssText='padding:9px 12px';
         remove.onclick=()=>row.remove();
-        row.append(dateInput,timeInput,remove);list.appendChild(row);
+        row.append(dateInput,timeInput,registrationInput,remove);list.appendChild(row);
     }
     function bprReadTrainingSessions() {
         const date=document.getElementById('bprEditStartDate')?.value || '';
         const time=document.getElementById('bprEditStartTime')?.value || '';
         const additional=[...document.querySelectorAll('#bprAdditionalSessionsList .bpr-session-row')].map(row=>({
             date:row.querySelector('.bpr-extra-date')?.value || '',
-            time:row.querySelector('.bpr-extra-time')?.value || ''
+            time:row.querySelector('.bpr-extra-time')?.value || '',
+            registrationUrl:row.querySelector('.bpr-extra-registration-url')?.value.trim() || ''
         })).filter(entry=>entry.date);
-        const result=[...(date?[{date,time}]:[]),...additional];
+        const mainUrl=document.getElementById('bprEditGoogleFormUrl')?.value.trim() || '';
+        const result=[...(date?[{date,time,registrationUrl:mainUrl}]:[]),...additional];
         const seen=new Set();
         return result.filter(entry=>{const key=entry.date+'|'+entry.time;if(seen.has(key))return false;seen.add(key);return true;});
     }
@@ -8617,6 +8624,39 @@
         `).join('');
     }
 
+    // Each repeated session has a distinct registration link; never route a later date to the first date's form.
+    function bprRenderDateRegistrationLinks(training) {
+        const box=document.getElementById('bprDateRegistrationLinks');
+        if (!box) return;
+        box.replaceChildren();
+        const sessions=bprTrainingSessions(training);
+        const list=sessions.length ? sessions : [{date:training.startDate || '',time:training.startTime || '',registrationUrl:training.googleFormUrl || ''}];
+        list.forEach((session,index)=>{
+            const url=String(index===0 ? (session.registrationUrl || training.googleFormUrl || '') : (session.registrationUrl || '')).trim();
+            const label=session.date && /^\d{4}-\d{2}-\d{2}$/.test(session.date)
+                ? session.date.split('-').reverse().join('.')+(session.time?' о '+session.time:'')
+                : 'Дата проведення не вказана';
+            const row=document.createElement('div');
+            row.style.cssText='display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border:1px solid #e8ddd0;border-radius:13px;padding:12px;background:#faf8f4';
+            const heading=document.createElement('strong');
+            heading.textContent=label;
+            row.appendChild(heading);
+            if (/^https:\/\//i.test(url)) {
+                const a=document.createElement('a');
+                a.className='bpr-btn bpr-btn-primary';
+                a.textContent='Реєстрація на '+(session.date?session.date.split('-').reverse().join('.'):'цей тренінг');
+                a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+                row.appendChild(a);
+            } else {
+                const missing=document.createElement('span');
+                missing.style.cssText='color:#936d47;font-size:.85rem';
+                missing.textContent='Посилання на реєстрацію уточнюється';
+                row.appendChild(missing);
+            }
+            box.appendChild(row);
+        });
+    }
+
     function bprOpenEventModal(trainingId) {
         const training = bprFindTraining(trainingId);
         if (!training) return;
@@ -8647,7 +8687,7 @@
         const hasRecording = training.hasRecording === true && Boolean(training.recordingUrl);
         document.getElementById('bprRegisterForm').hidden = isOffline || training.showRegister === false;
         document.getElementById('bprOfflineRegistrationBox').hidden = !isOffline || training.showRegister === false;
-        document.getElementById('bprOfflineRegistrationLink').href = training.googleFormUrl || '#';
+        bprRenderDateRegistrationLinks(training);
         const offlineRecordingLink = document.getElementById('bprOfflineRecordingLink');
         const showOfflineRecording = isOffline && hasRecording && training.showRecording !== false;
         offlineRecordingLink.hidden = !showOfflineRecording;
@@ -9039,7 +9079,7 @@
         if (extraList) {
             extraList.replaceChildren();
             const sessions=bprTrainingSessions(training);
-            sessions.slice(1).forEach(session=>bprAddTrainingSession(session.date,session.time));
+            sessions.slice(1).forEach(session=>bprAddTrainingSession(session.date,session.time,session.registrationUrl));
         }
         document.getElementById('bprEditDurationHours').value = training.durationHours || '';
         const cityField = document.getElementById('bprEditLocationCity');
