@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="site-build" content="74">
+    <meta name="site-build" content="75">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -2806,7 +2806,7 @@
         .training-admin-intro { background:linear-gradient(135deg,#fff,#f8f3eb); border:1px solid var(--beige); border-radius:18px; padding:18px 20px; margin-bottom:18px; }
         .training-admin-intro strong { color:var(--dark); display:block; margin-bottom:6px; }
         .training-admin-stack { display:grid; gap:14px; }
-        .bpr-selected-training-banner { position:sticky; top:88px; z-index:25; display:flex; flex-direction:column; gap:5px; padding:13px 19px; border:2px solid #c9a96e; border-radius:15px; background:#fff9eb; box-shadow:0 8px 24px rgba(42,42,42,.09); margin-bottom:17px; }
+        .bpr-selected-training-banner { position:fixed; top:91px; right:22px; width:min(440px, calc(100vw - 44px)); max-height:120px; overflow:hidden; pointer-events:none; z-index:2500; display:flex; flex-direction:column; gap:5px; padding:13px 19px; border:2px solid #c9a96e; border-radius:15px; background:#fff9eb; box-shadow:0 8px 24px rgba(42,42,42,.09); margin-bottom:17px; }
         .bpr-selected-training-banner strong { font-size:1.05rem; color:#342d22; line-height:1.35; }
         .bpr-selected-training-caption { font-size:.72rem; letter-spacing:.09em; color:#8a6e39; font-weight:700; }
         .bpr-selected-training-banner span {font-size:.78rem; color:#586d50;}
@@ -2816,7 +2816,7 @@
         #bprSaveTrainingButton.is-saving {opacity:.75;cursor:wait;}
         #bprSaveTrainingButton.is-saving::before {content:'◌';display:inline-block;margin-right:7px;animation:bprSpin 1s linear infinite;}
         @keyframes bprSpin {to{transform:rotate(360deg)}}
-        @media(max-width:620px){.bpr-selected-training-banner{top:70px;}}
+        @media(max-width:620px){.bpr-selected-training-banner{top:76px;right:10px;width:calc(100vw - 20px);padding:8px 12px;}}
         .training-admin-group { border:1px solid var(--beige); border-radius:18px; background:white; overflow:hidden; }
         .training-admin-group > summary { cursor:pointer; list-style:none; padding:17px 20px; font-weight:700; color:var(--dark); display:flex; align-items:center; justify-content:space-between; gap:10px; }
         .training-admin-group > summary::-webkit-details-marker { display:none; }
@@ -5859,7 +5859,7 @@
     const SITE_LOCAL_UPDATED_STORAGE = 'inwhite_site_local_updated_v1';
     const SITE_SYNCED_UPDATED_STORAGE = 'inwhite_site_synced_updated_v1';
     const SITE_DIRTY_STORAGE = 'inwhite_site_dirty_v1';
-    const SITE_BUILD_VERSION = '74';
+    const SITE_BUILD_VERSION = '75';
     const SITE_BUILD_STORAGE = 'inwhite_site_build_version_v1';
     const SITE_UNSYNCED_BACKUP_STORAGE = 'inwhite_site_unsynced_backup_v1';
     const SUPABASE_CONFIG_STORAGE = 'inwhite_supabase_config_v1';
@@ -8520,8 +8520,9 @@
         const city = String(training.locationCity || '').trim();
         // Legacy records often include the city inside the full venue address.
         // Avoid displaying "Дніпро, ... Дніпро" on a public card.
-        const location = !city || venue.toLocaleLowerCase('uk').includes(city.toLocaleLowerCase('uk').replace(/^м\.\s*/,''))
-            ? (venue || city) : [city, venue].filter(Boolean).join(', ');
+        // The single visible venue field contains the city and full address.
+        // Older hidden locationCity values must never prepend a stale city.
+        const location = venue || city;
         if (date) items.push('📅 ' + date);
         if (duration) items.push('⏱ ' + duration);
         if (location) items.push('📍 ' + location);
@@ -9042,7 +9043,7 @@
         }
         document.getElementById('bprEditDurationHours').value = training.durationHours || '';
         const cityField = document.getElementById('bprEditLocationCity');
-        if (cityField) cityField.value = training.locationCity || '';
+        if (cityField) cityField.value = training.locationCity || ''; // legacy metadata, may not exist
         document.getElementById('bprEditLocationVenue').value = training.locationVenue || '';
         document.getElementById('bprEditYear').value = training.year || new Date().getFullYear();
         document.getElementById('bprEditProvider').value = training.providerCode || '';
@@ -9182,7 +9183,7 @@
             startTime: document.getElementById('bprEditStartTime').value,
             sessions: bprReadTrainingSessions(),
             durationHours: document.getElementById('bprEditDurationHours').value,
-            locationCity: document.getElementById('bprEditLocationCity')?.value.trim() ?? (bprFindTraining(id)?.locationCity || ''),
+            locationCity: (bprFindTraining(id)?.locationCity || ''), // legacy value retained; visible location is locationVenue
             locationVenue: document.getElementById('bprEditLocationVenue').value.trim(),
             year: Number(document.getElementById('bprEditYear').value) || new Date().getFullYear(),
             providerCode: document.getElementById('bprEditProvider').value.trim(),
@@ -9228,7 +9229,7 @@
         }
         showStatus('Локально збережено, синхронізація з Supabase…');
         try {
-            const synced=await supabaseSaveSiteState({silentAuthPrompt:true,verifyTrainingId:id});
+            const synced=await supabaseSaveSiteState({silentAuthPrompt:true,onlySection:'bpr_trainings',verifyTrainingId:id});
             if(synced) bprUpdateSelectedTrainingBanner(false);
             showStatus(synced?'✓ Захід збережено в Supabase.': '⚠ Зміни є лише в редакторі — сервер їх не підтвердив. Перевірте повідомлення у розділі «База».'+warn,!synced);
         } catch(error) {
